@@ -44,7 +44,7 @@ function Router() {
             <>
               <Route path="/" component={AdminDashboard} />
               <Route path="/admin" component={AdminDashboard} />
-              <Route path="/admin/modules" component={AdminDashboard} />
+              <Route path="/admin/modules" component={AdminModulesPage} />
               <Route path="/admin/students" component={AdminDashboard} />
               <Route path="/admin/analytics" component={AdminDashboard} />
               <Route path="/admin/settings" component={AdminDashboard} />
