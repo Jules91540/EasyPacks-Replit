@@ -34,13 +34,13 @@ const storage_multer = multer.diskStorage({
 const upload = multer({
   storage: storage_multer,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 20 * 1024 * 1024, // 20MB limit
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('Seuls les fichiers image sont autorisés'));
     }
   }
 });
@@ -516,11 +516,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Profile photo upload route
-  app.post("/api/profile/upload-photo", isAuthenticated, upload.single('photo'), async (req: any, res) => {
+  // Profile photo upload route with better error handling
+  app.post("/api/profile/upload-photo", isAuthenticated, (req: any, res, next) => {
+    upload.single('photo')(req, res, (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ 
+            message: "Le fichier est trop volumineux. Taille maximum: 20MB" 
+          });
+        }
+        if (err.message === 'Seuls les fichiers image sont autorisés') {
+          return res.status(400).json({ 
+            message: "Seuls les fichiers image sont autorisés" 
+          });
+        }
+        return res.status(400).json({ 
+          message: "Erreur lors de l'upload: " + err.message 
+        });
+      }
+      next();
+    });
+  }, async (req: any, res) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
+        return res.status(400).json({ message: "Aucun fichier téléchargé" });
       }
 
       const userId = req.user.id;
@@ -535,7 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ photoUrl, user: updatedUser });
     } catch (error) {
       console.error("Error uploading profile photo:", error);
-      res.status(500).json({ message: "Failed to upload photo" });
+      res.status(500).json({ message: "Échec du téléchargement de la photo" });
     }
   });
 

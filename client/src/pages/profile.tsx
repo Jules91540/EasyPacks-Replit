@@ -149,10 +149,21 @@ export default function ProfilePage() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      let errorMessage = "Impossible de mettre à jour la photo";
+      
+      // Parse error message from server response
+      if (error.message) {
+        if (error.message.includes('trop volumineux')) {
+          errorMessage = "Le fichier est trop volumineux. Taille maximum: 20MB";
+        } else if (error.message.includes('image')) {
+          errorMessage = "Seuls les fichiers image sont autorisés";
+        }
+      }
+      
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour la photo",
+        title: "Erreur d'upload",
+        description: errorMessage,
         variant: "destructive",
       });
     },
