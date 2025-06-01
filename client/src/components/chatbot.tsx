@@ -235,14 +235,20 @@ class ContentChatbot {
         };
         
       default:
+        const greetingMessages = [
+          `Salut ${userName} ! Alors, tu as des idées de vidéos pour aujourd'hui ? 🎬`,
+          `Hey ${userName} ! Prêt à créer du contenu incroyable ? Dis-moi tes idées !`,
+          `Bonjour ${userName} ! Qu'est-ce qu'on crée aujourd'hui ? J'ai plein de conseils pour toi !`
+        ];
+        
         return {
-          content: `Salut ${userName} ! Je suis ton assistant IA spécialisé en création de contenu. Je peux t'aider avec Twitch, YouTube, Instagram, TikTok, la monétisation et bien plus ! Quelle plateforme t'intéresse ?`,
+          content: greetingMessages[Math.floor(Math.random() * greetingMessages.length)],
           type: 'text',
           suggestions: [
-            "Conseils pour débuter sur Twitch",
-            "Comment créer du contenu viral ?",
-            "Stratégies de monétisation",
-            "Améliorer mon engagement"
+            "J'ai besoin d'idées de vidéos",
+            "Comment améliorer mes thumbnails ?",
+            "Conseils pour être viral",
+            "Stratégies d'engagement"
           ]
         };
     }
