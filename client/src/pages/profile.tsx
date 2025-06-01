@@ -11,7 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Edit2, Save, X, Award, BarChart3, Calendar, Trophy, Camera, Upload } from "lucide-react";
+import { User, Edit2, Save, X, Award, BarChart3, Calendar, Trophy, Camera, Upload, Key, Mail, Shield } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 
 export default function ProfilePage() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -23,6 +25,32 @@ export default function ProfilePage() {
     firstName: '',
     lastName: '',
     email: ''
+  });
+  
+  // Modal states
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
+  
+  // Password form
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  
+  // Email preferences
+  const [emailPreferences, setEmailPreferences] = useState({
+    marketing: false,
+    notifications: true,
+    weeklyDigest: true
+  });
+  
+  // Privacy settings
+  const [privacySettings, setPrivacySettings] = useState({
+    profileVisible: true,
+    showBadges: true,
+    showProgress: false
   });
 
   // Redirect if not authenticated
@@ -169,11 +197,148 @@ export default function ProfilePage() {
     },
   });
 
+  // Password change mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      const response = await fetch("/api/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Échec du changement de mot de passe');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Mot de passe modifié",
+        description: "Votre mot de passe a été mis à jour avec succès",
+      });
+      setPasswordModalOpen(false);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de changer le mot de passe",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Email preferences mutation
+  const updateEmailPreferencesMutation = useMutation({
+    mutationFn: async (data: typeof emailPreferences) => {
+      const response = await fetch("/api/email-preferences", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Échec de la mise à jour des préférences email');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Préférences sauvegardées",
+        description: "Vos préférences email ont été mises à jour",
+      });
+      setEmailModalOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de sauvegarder les préférences",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Privacy settings mutation
+  const updatePrivacySettingsMutation = useMutation({
+    mutationFn: async (data: typeof privacySettings) => {
+      const response = await fetch("/api/privacy-settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Échec de la mise à jour des paramètres de confidentialité');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Paramètres sauvegardés",
+        description: "Vos paramètres de confidentialité ont été mis à jour",
+      });
+      setPrivacyModalOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de sauvegarder les paramètres",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSave = () => {
     updateProfileMutation.mutate({
       firstName: editForm.firstName,
       lastName: editForm.lastName,
     });
+  };
+
+  const handlePasswordChange = () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast({
+        title: "Erreur",
+        description: "Les mots de passe ne correspondent pas",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (passwordForm.newPassword.length < 6) {
+      toast({
+        title: "Erreur",
+        description: "Le mot de passe doit contenir au moins 6 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    changePasswordMutation.mutate({
+      currentPassword: passwordForm.currentPassword,
+      newPassword: passwordForm.newPassword,
+    });
+  };
+
+  const handleEmailPreferencesUpdate = () => {
+    updateEmailPreferencesMutation.mutate(emailPreferences);
+  };
+
+  const handlePrivacySettingsUpdate = () => {
+    updatePrivacySettingsMutation.mutate(privacySettings);
   };
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -570,34 +735,187 @@ export default function ProfilePage() {
                   </h3>
                   
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-800">Notifications par email</p>
-                        <p className="text-sm text-gray-600">Recevez des mises à jour sur votre progression</p>
+                        <p className="font-medium text-card-foreground flex items-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          Notifications par email
+                        </p>
+                        <p className="text-sm text-muted-foreground">Recevez des mises à jour sur votre progression</p>
                       </div>
-                      <Button variant="outline" size="sm">
-                        Configurer
-                      </Button>
+                      <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            Configurer
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Préférences Email</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="marketing">Emails marketing</Label>
+                              <Switch
+                                id="marketing"
+                                checked={emailPreferences.marketing}
+                                onCheckedChange={(checked) => 
+                                  setEmailPreferences(prev => ({ ...prev, marketing: checked }))
+                                }
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="notifications">Notifications</Label>
+                              <Switch
+                                id="notifications"
+                                checked={emailPreferences.notifications}
+                                onCheckedChange={(checked) => 
+                                  setEmailPreferences(prev => ({ ...prev, notifications: checked }))
+                                }
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="weekly">Résumé hebdomadaire</Label>
+                              <Switch
+                                id="weekly"
+                                checked={emailPreferences.weeklyDigest}
+                                onCheckedChange={(checked) => 
+                                  setEmailPreferences(prev => ({ ...prev, weeklyDigest: checked }))
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-3">
+                            <Button variant="outline" onClick={() => setEmailModalOpen(false)}>
+                              Annuler
+                            </Button>
+                            <Button onClick={handleEmailPreferencesUpdate} disabled={updateEmailPreferencesMutation.isPending}>
+                              {updateEmailPreferencesMutation.isPending ? "Sauvegarde..." : "Sauvegarder"}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                     
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-800">Confidentialité</p>
-                        <p className="text-sm text-gray-600">Gérez vos préférences de confidentialité</p>
+                        <p className="font-medium text-card-foreground flex items-center gap-2">
+                          <Shield className="h-4 w-4" />
+                          Confidentialité
+                        </p>
+                        <p className="text-sm text-muted-foreground">Gérez vos préférences de confidentialité</p>
                       </div>
-                      <Button variant="outline" size="sm">
-                        Modifier
-                      </Button>
+                      <Dialog open={privacyModalOpen} onOpenChange={setPrivacyModalOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            Modifier
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Paramètres de Confidentialité</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="profile-visible">Profil visible</Label>
+                              <Switch
+                                id="profile-visible"
+                                checked={privacySettings.profileVisible}
+                                onCheckedChange={(checked) => 
+                                  setPrivacySettings(prev => ({ ...prev, profileVisible: checked }))
+                                }
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="show-badges">Afficher les badges</Label>
+                              <Switch
+                                id="show-badges"
+                                checked={privacySettings.showBadges}
+                                onCheckedChange={(checked) => 
+                                  setPrivacySettings(prev => ({ ...prev, showBadges: checked }))
+                                }
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="show-progress">Afficher les progrès</Label>
+                              <Switch
+                                id="show-progress"
+                                checked={privacySettings.showProgress}
+                                onCheckedChange={(checked) => 
+                                  setPrivacySettings(prev => ({ ...prev, showProgress: checked }))
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-3">
+                            <Button variant="outline" onClick={() => setPrivacyModalOpen(false)}>
+                              Annuler
+                            </Button>
+                            <Button onClick={handlePrivacySettingsUpdate} disabled={updatePrivacySettingsMutation.isPending}>
+                              {updatePrivacySettingsMutation.isPending ? "Sauvegarde..." : "Sauvegarder"}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                     
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-800">Mot de passe</p>
-                        <p className="text-sm text-gray-600">Modifiez votre mot de passe</p>
+                        <p className="font-medium text-card-foreground flex items-center gap-2">
+                          <Key className="h-4 w-4" />
+                          Mot de passe
+                        </p>
+                        <p className="text-sm text-muted-foreground">Modifiez votre mot de passe</p>
                       </div>
-                      <Button variant="outline" size="sm">
-                        Changer
-                      </Button>
+                      <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            Changer
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Changer le Mot de Passe</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="current-password">Mot de passe actuel</Label>
+                              <Input
+                                id="current-password"
+                                type="password"
+                                value={passwordForm.currentPassword}
+                                onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                              <Input
+                                id="new-password"
+                                type="password"
+                                value={passwordForm.newPassword}
+                                onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                              <Input
+                                id="confirm-password"
+                                type="password"
+                                value={passwordForm.confirmPassword}
+                                onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-3">
+                            <Button variant="outline" onClick={() => setPasswordModalOpen(false)}>
+                              Annuler
+                            </Button>
+                            <Button onClick={handlePasswordChange} disabled={changePasswordMutation.isPending}>
+                              {changePasswordMutation.isPending ? "Modification..." : "Modifier"}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 </CardContent>
