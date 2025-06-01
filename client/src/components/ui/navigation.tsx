@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Video, Home, BookOpen, Award, BarChart3, Settings, LogOut, User, Package, Search } from "lucide-react";
+import { Menu, Video, Home, BookOpen, Award, BarChart3, Settings, LogOut, User, Package, Search, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import boxIcon from "@assets/Capture d'écran 2025-06-01 215731.png";
 
@@ -38,6 +38,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
     { href: "/modules", label: "Formations", icon: BookOpen },
     { href: "/progress", label: "Ma Progression", icon: BarChart3 },
     { href: "/badges", label: "Mes Badges", icon: Award },
+    { href: "/forum", label: "Forum", icon: MessageSquare },
     { href: "/simulations", label: "Simulations", icon: Video },
     { href: "/profile", label: "Mon Profil", icon: User },
   ];

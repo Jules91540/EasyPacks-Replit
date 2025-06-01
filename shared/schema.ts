@@ -119,12 +119,46 @@ export const simulationUsage = pgTable("simulation_usage", {
   usedAt: timestamp("used_at").defaultNow(),
 });
 
+// Forum system
+export const forumCategories = pgTable("forum_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  color: varchar("color").default("#3B82F6"),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const forumTopics = pgTable("forum_topics", {
+  id: serial("id").primaryKey(),
+  categoryId: integer("category_id").notNull().references(() => forumCategories.id),
+  authorId: varchar("author_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  isPinned: boolean("is_pinned").default(false),
+  isLocked: boolean("is_locked").default(false),
+  viewCount: integer("view_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const forumReplies = pgTable("forum_replies", {
+  id: serial("id").primaryKey(),
+  topicId: integer("topic_id").notNull().references(() => forumTopics.id),
+  authorId: varchar("author_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   moduleProgress: many(moduleProgress),
   quizAttempts: many(quizAttempts),
   userBadges: many(userBadges),
   simulationUsage: many(simulationUsage),
+  forumTopics: many(forumTopics),
+  forumReplies: many(forumReplies),
 }));
 
 export const modulesRelations = relations(modules, ({ many }) => ({
@@ -177,6 +211,33 @@ export const userBadgesRelations = relations(userBadges, ({ one }) => ({
   }),
 }));
 
+export const forumCategoriesRelations = relations(forumCategories, ({ many }) => ({
+  topics: many(forumTopics),
+}));
+
+export const forumTopicsRelations = relations(forumTopics, ({ one, many }) => ({
+  category: one(forumCategories, {
+    fields: [forumTopics.categoryId],
+    references: [forumCategories.id],
+  }),
+  author: one(users, {
+    fields: [forumTopics.authorId],
+    references: [users.id],
+  }),
+  replies: many(forumReplies),
+}));
+
+export const forumRepliesRelations = relations(forumReplies, ({ one }) => ({
+  topic: one(forumTopics, {
+    fields: [forumReplies.topicId],
+    references: [forumTopics.id],
+  }),
+  author: one(users, {
+    fields: [forumReplies.authorId],
+    references: [users.id],
+  }),
+}));
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -192,6 +253,12 @@ export type Badge = typeof badges.$inferSelect;
 export type InsertBadge = typeof badges.$inferInsert;
 export type UserBadge = typeof userBadges.$inferSelect;
 export type SimulationUsage = typeof simulationUsage.$inferSelect;
+export type ForumCategory = typeof forumCategories.$inferSelect;
+export type InsertForumCategory = typeof forumCategories.$inferInsert;
+export type ForumTopic = typeof forumTopics.$inferSelect;
+export type InsertForumTopic = typeof forumTopics.$inferInsert;
+export type ForumReply = typeof forumReplies.$inferSelect;
+export type InsertForumReply = typeof forumReplies.$inferInsert;
 
 // Zod schemas
 export const insertModuleSchema = createInsertSchema(modules).omit({
