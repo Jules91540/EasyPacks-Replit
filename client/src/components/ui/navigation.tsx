@@ -53,8 +53,8 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
         
         return (
           <Link key={item.href} href={item.href}>
-            <a 
-              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 group relative ${
+            <div 
+              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 group relative cursor-pointer ${
                 isActive 
                   ? 'bg-primary text-white shadow-lg' 
                   : 'bg-[hsl(var(--sidebar-item-hover))] text-gray-400 hover:text-white hover:bg-[hsl(var(--sidebar-item-active))]'
@@ -66,7 +66,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
               <div className="absolute left-16 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
                 {item.label}
               </div>
-            </a>
+            </div>
           </Link>
         );
       })}

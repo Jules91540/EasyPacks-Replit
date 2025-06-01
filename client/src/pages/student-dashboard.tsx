@@ -133,12 +133,12 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen bg-background flex overflow-hidden">
       {/* Modern Sidebar */}
       <Navigation variant="student" />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header with Search */}
         <header className="bg-background border-b border-border p-4">
           <div className="flex items-center justify-between">
@@ -183,7 +183,7 @@ export default function StudentDashboard() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 overflow-y-auto p-6">
         {/* Welcome Section with XP */}
         <div className="gradient-primary rounded-2xl text-white p-8 mb-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
