@@ -291,38 +291,6 @@ export default function StudentDashboard() {
 
           {/* Sidebar - Compact */}
           <div className="space-y-3">
-            {/* Quick Actions */}
-            <Card className="gradient-card">
-              <CardContent className="p-3">
-                <h4 className="font-semibold text-gray-800 mb-2 text-sm">Actions Rapides</h4>
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => handleSimulation('thumbnail_creator')}
-                    className="w-full simulation-thumbnail text-white hover:opacity-90 transition-opacity text-xs h-8"
-                    disabled={simulationMutation.isPending}
-                  >
-                    <Download className="mr-1 h-3 w-3" />
-                    Miniatures
-                  </Button>
-                  <Button
-                    onClick={() => handleSimulation('post_scheduler')}
-                    className="w-full simulation-scheduler text-white hover:opacity-90 transition-opacity text-xs h-8"
-                    disabled={simulationMutation.isPending}
-                  >
-                    <Calendar className="mr-1 h-3 w-3" />
-                    Planificateur
-                  </Button>
-                  <Button
-                    onClick={() => handleSimulation('performance_analyzer')}
-                    className="w-full simulation-analyzer text-white hover:opacity-90 transition-opacity text-xs h-8"
-                    disabled={simulationMutation.isPending}
-                  >
-                    <BarChart3 className="mr-1 h-3 w-3" />
-                    Analyse
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Recent Badges */}
             <Card className="gradient-card">
