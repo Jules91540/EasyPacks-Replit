@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
+import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import ModulesPage from "@/pages/modules";
@@ -31,7 +32,10 @@ function Router() {
   return (
     <Switch>
       {!isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/login" component={LoginPage} />
+          <Route path="/" component={LoginPage} />
+        </>
       ) : (
         <>
           {(user as any)?.role === 'admin' ? (
