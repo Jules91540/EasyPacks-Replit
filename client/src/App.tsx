@@ -5,7 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import Chatbot, { ChatbotToggle } from "@/components/chatbot";
+import IntelligentChatbot, { ChatbotToggle } from "@/components/intelligent-chatbot";
 import Landing from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
@@ -98,7 +98,7 @@ function App() {
           onClick={() => setIsChatbotOpen(true)} 
           isOpen={isChatbotOpen} 
         />
-        <Chatbot 
+        <IntelligentChatbot 
           isOpen={isChatbotOpen} 
           onToggle={() => setIsChatbotOpen(!isChatbotOpen)} 
         />
