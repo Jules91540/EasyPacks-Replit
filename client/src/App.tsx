@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import Chatbot, { ChatbotToggle } from "@/components/chatbot";
 import Landing from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
@@ -83,11 +85,23 @@ function Router() {
 }
 
 function App() {
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Router />
+        
+        {/* Chatbot global - visible sur toutes les pages */}
+        <ChatbotToggle 
+          onClick={() => setIsChatbotOpen(true)} 
+          isOpen={isChatbotOpen} 
+        />
+        <Chatbot 
+          isOpen={isChatbotOpen} 
+          onToggle={() => setIsChatbotOpen(!isChatbotOpen)} 
+        />
       </TooltipProvider>
     </QueryClientProvider>
   );

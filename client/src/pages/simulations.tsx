@@ -67,7 +67,7 @@ interface SimulationScenario {
 
 interface SimulationSession {
   scenario: SimulationScenario;
-  currentMetrics: typeof SimulationScenario.prototype.metrics;
+  currentMetrics: any;
   timeElapsed: number;
   score: number;
   events: Array<{

@@ -44,7 +44,7 @@ import XPProgress from "@/components/xp-progress";
 import ModuleCard from "@/components/module-card";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import Chatbot, { ChatbotToggle } from "@/components/chatbot";
+
 import type { Module, ModuleProgress, QuizAttempt, UserBadge, User } from "@shared/schema";
 
 interface Quiz {
@@ -613,15 +613,7 @@ export default function StudentDashboard() {
         />
       )}
 
-      {/* Chatbot */}
-      <ChatbotToggle 
-        onClick={() => setIsChatbotOpen(true)} 
-        isOpen={isChatbotOpen} 
-      />
-      <Chatbot 
-        isOpen={isChatbotOpen} 
-        onToggle={() => setIsChatbotOpen(!isChatbotOpen)} 
-      />
+
     </div>
   );
 }
