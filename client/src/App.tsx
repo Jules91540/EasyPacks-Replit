@@ -11,6 +11,8 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AdminModulesPage from "@/pages/admin-modules";
 import AdminQuizzesPage from "@/pages/admin-quizzes";
 import AdminBadgesPage from "@/pages/admin-badges";
+import AdminAnalyticsPage from "@/pages/admin-analytics";
+import AdminSettingsPage from "@/pages/admin-settings";
 import ModulesPage from "@/pages/modules";
 import ProgressPage from "@/pages/progress";
 import BadgesPage from "@/pages/badges";
@@ -50,8 +52,9 @@ function Router() {
               <Route path="/admin/quizzes" component={AdminQuizzesPage} />
               <Route path="/admin/badges" component={AdminBadgesPage} />
               <Route path="/admin/students" component={AdminDashboard} />
-              <Route path="/admin/analytics" component={AdminDashboard} />
-              <Route path="/admin/settings" component={AdminDashboard} />
+              <Route path="/admin/analytics" component={AdminAnalyticsPage} />
+              <Route path="/admin/settings" component={AdminSettingsPage} />
+              <Route path="/profile" component={ProfilePage} />
             </>
           ) : (
             <>

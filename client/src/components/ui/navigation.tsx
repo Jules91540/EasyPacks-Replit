@@ -49,8 +49,8 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
     { href: "/admin/quizzes", label: "Quiz", icon: HelpCircle },
     { href: "/admin/badges", label: "Badges", icon: Award },
     { href: "/profile", label: "Mon Profil", icon: User },
-    { href: "/admin", label: "Analytiques", icon: BarChart3 },
-    { href: "/admin", label: "Paramètres", icon: Settings },
+    { href: "/admin/analytics", label: "Analytiques", icon: BarChart3 },
+    { href: "/admin/settings", label: "Paramètres", icon: Settings },
   ];
 
   const navItems = variant === 'admin' ? adminNavItems : studentNavItems;
