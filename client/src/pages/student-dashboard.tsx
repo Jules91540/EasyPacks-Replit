@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -6,13 +6,14 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Video, LogOut, Award, Calendar, BarChart3, CheckCircle, Play, Lock, Download } from "lucide-react";
+import { Video, LogOut, Award, Calendar, BarChart3, CheckCircle, Play, Lock, Download, Bell, Settings } from "lucide-react";
+import Navigation from "@/components/ui/navigation";
+import SearchBar from "@/components/ui/search-bar";
 import XPProgress from "@/components/xp-progress";
 import StatsCard from "@/components/stats-card";
 import ModuleCard from "@/components/module-card";
 import QuizModal from "@/components/quiz-modal";
 import SimulationModal from "@/components/simulation-modal";
-import { useState } from "react";
 
 export default function StudentDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -132,52 +133,57 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="bg-primary text-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                <Video className="h-5 w-5" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-800 heading-french">Créateur Academy</h1>
+    <div className="min-h-screen bg-background flex">
+      {/* Modern Sidebar */}
+      <Navigation variant="student" />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Header with Search */}
+        <header className="bg-background border-b border-border p-4">
+          <div className="flex items-center justify-between">
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Navigation variant="student" />
             </div>
             
-            <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-primary font-medium border-b-2 border-primary pb-2">Tableau de bord</a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors">Formations</a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors">Progression</a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors">Simulations</a>
-            </nav>
+            {/* Search Bar */}
+            <div className="flex-1 max-w-2xl mx-4">
+              <SearchBar 
+                placeholder="Rechercher des formations, quiz, simulations..."
+                showFilter={true}
+              />
+            </div>
             
+            {/* Right Section */}
             <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-800">
-                    {user?.firstName || 'Étudiant'} {user?.lastName || ''}
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    Niveau {user?.level || 1} - {user?.level === 1 ? 'Débutant' : user?.level === 2 ? 'Novice' : user?.level === 3 ? 'Intermédiaire' : 'Expert'}
-                  </p>
-                </div>
-                {user?.profileImageUrl && (
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <Bell className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <Settings className="h-5 w-5" />
+              </Button>
+              
+              {/* User Avatar */}
+              <div className="flex items-center space-x-3">
+                {(user as any)?.profileImageUrl ? (
                   <img 
-                    src={user.profileImageUrl} 
+                    src={(user as any).profileImageUrl} 
                     alt="Photo de profil" 
-                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-primary"
                   />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
+                    {((user as any)?.firstName?.[0] || 'U').toUpperCase()}
+                  </div>
                 )}
               </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4" />
-              </Button>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Content */}
+        <main className="flex-1 p-6">
         {/* Welcome Section with XP */}
         <div className="gradient-primary rounded-2xl text-white p-8 mb-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
@@ -346,6 +352,7 @@ export default function StudentDashboard() {
             </Card>
           </div>
         </div>
+        </main>
       </div>
 
       {/* Quiz Modal */}
