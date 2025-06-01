@@ -13,6 +13,7 @@ import ProgressPage from "@/pages/progress";
 import BadgesPage from "@/pages/badges";
 import SimulationsPage from "@/pages/simulations";
 import ProfilePage from "@/pages/profile";
+import ForumPage from "@/pages/forum";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -53,6 +54,7 @@ function Router() {
               <Route path="/modules" component={ModulesPage} />
               <Route path="/progress" component={ProgressPage} />
               <Route path="/badges" component={BadgesPage} />
+              <Route path="/forum" component={ForumPage} />
               <Route path="/simulations" component={SimulationsPage} />
               <Route path="/profile" component={ProfilePage} />
             </>
