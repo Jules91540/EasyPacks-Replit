@@ -35,40 +35,48 @@ function Router() {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/login" component={LoginPage} />
+        <Route path="/" component={LoginPage} />
+        <Route component={LoginPage} />
+      </Switch>
+    );
+  }
+
+  const isAdmin = (user as any)?.role === 'admin';
+
   return (
     <Switch>
-      {!isAuthenticated ? (
+      {/* Admin Routes */}
+      {isAdmin && (
         <>
-          <Route path="/login" component={LoginPage} />
-          <Route path="/" component={LoginPage} />
-        </>
-      ) : (
-        <>
-          {(user as any)?.role === 'admin' ? (
-            <>
-              <Route path="/" component={AdminDashboard} />
-              <Route path="/admin" component={AdminDashboard} />
-              <Route path="/admin/modules" component={AdminModulesPage} />
-              <Route path="/admin/quizzes" component={AdminQuizzesPage} />
-              <Route path="/admin/badges" component={AdminBadgesPage} />
-              <Route path="/admin/students" component={AdminDashboard} />
-              <Route path="/admin/analytics" component={AdminAnalyticsPage} />
-              <Route path="/admin/settings" component={AdminSettingsPage} />
-              <Route path="/profile" component={ProfilePage} />
-            </>
-          ) : (
-            <>
-              <Route path="/" component={StudentDashboard} />
-              <Route path="/modules" component={ModulesPage} />
-              <Route path="/progress" component={ProgressPage} />
-              <Route path="/badges" component={BadgesPage} />
-              <Route path="/forum" component={ForumPage} />
-              <Route path="/simulations" component={SimulationsPage} />
-              <Route path="/profile" component={ProfilePage} />
-            </>
-          )}
+          <Route path="/" component={AdminDashboard} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/modules" component={AdminModulesPage} />
+          <Route path="/admin/quizzes" component={AdminQuizzesPage} />
+          <Route path="/admin/badges" component={AdminBadgesPage} />
+          <Route path="/admin/students" component={AdminDashboard} />
+          <Route path="/admin/analytics" component={AdminAnalyticsPage} />
+          <Route path="/admin/settings" component={AdminSettingsPage} />
+          <Route path="/profile" component={ProfilePage} />
         </>
       )}
+      
+      {/* Student Routes */}
+      {!isAdmin && (
+        <>
+          <Route path="/" component={StudentDashboard} />
+          <Route path="/modules" component={ModulesPage} />
+          <Route path="/progress" component={ProgressPage} />
+          <Route path="/badges" component={BadgesPage} />
+          <Route path="/forum" component={ForumPage} />
+          <Route path="/simulations" component={SimulationsPage} />
+          <Route path="/profile" component={ProfilePage} />
+        </>
+      )}
+      
       <Route component={NotFound} />
     </Switch>
   );

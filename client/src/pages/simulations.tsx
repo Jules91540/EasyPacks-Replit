@@ -1,380 +1,703 @@
-import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { apiRequest } from "@/lib/queryClient";
-import Navigation from "@/components/ui/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import SimulationModal from "@/components/simulation-modal";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Slider } from "@/components/ui/slider";
 import { 
   Video, 
-  Palette, 
-  Calendar, 
-  BarChart3, 
-  Camera, 
-  Megaphone,
+  Users, 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  Eye, 
+  TrendingUp, 
+  Play,
+  Pause,
+  RotateCcw,
+  Settings,
+  Mic,
+  Camera,
+  Monitor,
+  Twitch,
+  Youtube,
+  Instagram,
+  Twitter,
+  Zap,
+  Target,
+  Award,
+  BarChart3,
+  Clock,
   Star,
-  Zap
+  Gamepad2,
+  Sparkles,
+  Trophy,
+  Rocket,
+  Brain
 } from "lucide-react";
+import { SiTiktok, SiYoutube, SiTwitch, SiInstagram, SiTwitter } from "react-icons/si";
+import Navigation from "@/components/ui/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
-export default function SimulationsPage() {
-  const { user, isLoading, isAuthenticated } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [selectedSimulation, setSelectedSimulation] = useState<string | null>(null);
+interface SimulationScenario {
+  id: string;
+  title: string;
+  description: string;
+  platform: 'twitch' | 'youtube' | 'instagram' | 'tiktok' | 'twitter';
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  duration: number; // minutes
+  xpReward: number;
+  objectives: string[];
+  metrics: {
+    viewers?: number;
+    likes?: number;
+    comments?: number;
+    shares?: number;
+    followers?: number;
+    engagement?: number;
+  };
+}
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Non autorisé",
-        description: "Vous devez être connecté. Redirection...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
+interface SimulationSession {
+  scenario: SimulationScenario;
+  currentMetrics: typeof SimulationScenario.prototype.metrics;
+  timeElapsed: number;
+  score: number;
+  events: Array<{
+    id: string;
+    type: 'viewer_join' | 'comment' | 'like' | 'share' | 'follow' | 'donation' | 'raid';
+    message: string;
+    impact: 'positive' | 'negative' | 'neutral';
+    timestamp: number;
+  }>;
+}
+
+const SIMULATION_SCENARIOS: SimulationScenario[] = [
+  {
+    id: 'twitch-first-stream',
+    title: 'Premier Stream Twitch',
+    description: 'Démarrez votre premier live et gérez l\'interaction avec les viewers',
+    platform: 'twitch',
+    difficulty: 'beginner',
+    duration: 15,
+    xpReward: 100,
+    objectives: [
+      'Attirer 10 viewers minimum',
+      'Répondre à 5 commentaires',
+      'Maintenir un engagement positif'
+    ],
+    metrics: {
+      viewers: 0,
+      comments: 0,
+      likes: 0,
+      followers: 0
     }
-  }, [isAuthenticated, isLoading, toast]);
+  },
+  {
+    id: 'youtube-viral-video',
+    title: 'Créer un Contenu Viral YouTube',
+    description: 'Optimisez votre contenu pour maximiser les vues et l\'engagement',
+    platform: 'youtube',
+    difficulty: 'intermediate',
+    duration: 20,
+    xpReward: 150,
+    objectives: [
+      'Atteindre 1000 vues',
+      'Obtenir 50 likes',
+      'Générer 20 commentaires'
+    ],
+    metrics: {
+      viewers: 0,
+      likes: 0,
+      comments: 0,
+      shares: 0
+    }
+  },
+  {
+    id: 'instagram-brand-collab',
+    title: 'Collaboration Marque Instagram',
+    description: 'Négociez et exécutez une collaboration avec une marque',
+    platform: 'instagram',
+    difficulty: 'advanced',
+    duration: 25,
+    xpReward: 200,
+    objectives: [
+      'Maintenir l\'authenticité',
+      'Atteindre 500 likes',
+      'Générer 2% d\'engagement'
+    ],
+    metrics: {
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      engagement: 0
+    }
+  },
+  {
+    id: 'tiktok-trend-challenge',
+    title: 'Challenge TikTok Tendance',
+    description: 'Participez à un challenge viral et adaptez-le à votre style',
+    platform: 'tiktok',
+    difficulty: 'intermediate',
+    duration: 10,
+    xpReward: 120,
+    objectives: [
+      'Créer du contenu original',
+      'Atteindre 100 likes',
+      'Être partagé 10 fois'
+    ],
+    metrics: {
+      likes: 0,
+      shares: 0,
+      comments: 0,
+      viewers: 0
+    }
+  },
+  {
+    id: 'twitter-community-building',
+    title: 'Construction Communauté Twitter',
+    description: 'Développez votre présence et engagez votre communauté',
+    platform: 'twitter',
+    difficulty: 'intermediate',
+    duration: 18,
+    xpReward: 130,
+    objectives: [
+      'Publier 5 tweets engageants',
+      'Gagner 20 nouveaux followers',
+      'Obtenir 50 retweets'
+    ],
+    metrics: {
+      likes: 0,
+      shares: 0,
+      comments: 0,
+      followers: 0
+    }
+  }
+];
 
-  // Record simulation usage mutation
-  const simulationMutation = useMutation({
-    mutationFn: async (simulationType: string) => {
-      await apiRequest("POST", `/api/simulations/${simulationType}/use`, {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({
-        title: "Simulation utilisée !",
-        description: "+50 XP gagnés pour l'utilisation de la simulation",
-      });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Non autorisé",
-          description: "Vous devez être connecté. Redirection...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer l'utilisation de la simulation",
-        variant: "destructive",
-      });
-    },
-  });
+function SimulationInterface({ session, onAction, onComplete }: {
+  session: SimulationSession;
+  onAction: (action: string, data?: any) => void;
+  onComplete: (score: number) => void;
+}) {
+  const [isLive, setIsLive] = useState(false);
+  const [currentAction, setCurrentAction] = useState<string | null>(null);
 
-  const handleSimulation = (type: string) => {
-    setSelectedSimulation(type);
-    simulationMutation.mutate(type);
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'twitch': return <SiTwitch className="h-5 w-5" />;
+      case 'youtube': return <SiYoutube className="h-5 w-5" />;
+      case 'instagram': return <SiInstagram className="h-5 w-5" />;
+      case 'tiktok': return <SiTiktok className="h-5 w-5" />;
+      case 'twitter': return <SiTwitter className="h-5 w-5" />;
+      default: return <Video className="h-5 w-5" />;
+    }
   };
 
-  const simulations = [
-    {
-      id: 'thumbnail_creator',
-      name: 'Créateur de Miniatures',
-      description: 'Générez des miniatures YouTube attractives avec des outils de design intuitifs',
-      icon: Palette,
-      color: 'simulation-thumbnail',
-      category: 'Design',
-      difficulty: 'Débutant',
-      duration: '10-15 min',
-      features: [
-        'Templates professionnels',
-        'Éditeur de texte avancé',
-        'Bibliothèque d\'images',
-        'Export haute qualité'
-      ]
-    },
-    {
-      id: 'post_scheduler',
-      name: 'Planificateur de Posts',
-      description: 'Organisez et programmez vos publications sur toutes les plateformes sociales',
-      icon: Calendar,
-      color: 'simulation-scheduler',
-      category: 'Organisation',
-      difficulty: 'Intermédiaire',
-      duration: '15-20 min',
-      features: [
-        'Calendrier multi-plateformes',
-        'Optimisation des heures',
-        'Aperçu des publications',
-        'Analytics intégrées'
-      ]
-    },
-    {
-      id: 'performance_analyzer',
-      name: 'Analyseur de Performance',
-      description: 'Analysez vos métriques et optimisez votre stratégie de contenu',
-      icon: BarChart3,
-      color: 'simulation-analyzer',
-      category: 'Analytics',
-      difficulty: 'Avancé',
-      duration: '20-30 min',
-      features: [
-        'Métriques détaillées',
-        'Rapports personnalisés',
-        'Recommandations IA',
-        'Comparaisons concurrents'
-      ]
-    },
-    {
-      id: 'content_ideas',
-      name: 'Générateur d\'Idées',
-      description: 'Découvrez des idées de contenu basées sur les tendances actuelles',
-      icon: Zap,
-      color: 'bg-gradient-to-r from-yellow-500 to-orange-500',
-      category: 'Créativité',
-      difficulty: 'Débutant',
-      duration: '5-10 min',
-      features: [
-        'Tendances en temps réel',
-        'Suggestions personnalisées',
-        'Hashtags optimisés',
-        'Planning de contenu'
-      ]
-    },
-    {
-      id: 'livestream_setup',
-      name: 'Assistant Live Stream',
-      description: 'Configurez votre setup de streaming avec des recommandations personnalisées',
-      icon: Video,
-      color: 'bg-gradient-to-r from-pink-500 to-red-500',
-      category: 'Streaming',
-      difficulty: 'Intermédiaire',
-      duration: '25-35 min',
-      features: [
-        'Configuration matérielle',
-        'Paramètres logiciels',
-        'Qualité optimale',
-        'Tests de performance'
-      ]
-    },
-    {
-      id: 'brand_builder',
-      name: 'Constructeur de Marque',
-      description: 'Développez votre identité visuelle et votre stratégie de marque',
-      icon: Megaphone,
-      color: 'bg-gradient-to-r from-indigo-500 to-purple-500',
-      category: 'Branding',
-      difficulty: 'Avancé',
-      duration: '30-45 min',
-      features: [
-        'Palette de couleurs',
-        'Guide de style',
-        'Voice & tone',
-        'Stratégie marketing'
-      ]
-    }
-  ];
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des simulations...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleAction = (action: string, data?: any) => {
+    setCurrentAction(action);
+    onAction(action, data);
+    setTimeout(() => setCurrentAction(null), 1000);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Navigation Sidebar */}
-      <Navigation variant="student" />
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Mobile Header */}
-        <header className="md:hidden bg-white shadow-sm border-b border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <Navigation variant="student" />
-            <h1 className="text-lg font-bold text-gray-800">Simulations</h1>
-            <div></div>
+    <div className="space-y-6">
+      {/* Platform Header */}
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white">
+        <div className="flex items-center gap-3">
+          {getPlatformIcon(session.scenario.platform)}
+          <div>
+            <h3 className="font-bold">{session.scenario.title}</h3>
+            <p className="text-sm opacity-90">{session.scenario.platform.toUpperCase()} Simulation</p>
           </div>
-        </header>
+        </div>
+        <div className="flex items-center gap-4">
+          <Badge variant="secondary" className="bg-white/20">
+            {formatTime(session.timeElapsed)}
+          </Badge>
+          <Badge variant="secondary" className="bg-white/20">
+            Score: {session.score}
+          </Badge>
+        </div>
+      </div>
 
-        {/* Page Content */}
-        <main className="flex-1 p-6">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center mb-6">
-              <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mr-4">
-                <Video className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800 heading-french">Simulations Interactives</h1>
-                <p className="text-gray-600 subtitle-french">
-                  Pratiquez avec des outils réels de création de contenu
-                </p>
-              </div>
-            </div>
-
-            {/* Info Banner */}
-            <Card className="bg-blue-50 border-blue-200">
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
-                  <div className="bg-blue-100 text-primary w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Star className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                      Gagnez de l'XP en pratiquant !
-                    </h3>
-                    <p className="text-blue-800 text-sm">
-                      Chaque simulation utilisée vous rapporte <strong>50 XP</strong>. 
-                      Explorez nos outils interactifs pour perfectionner vos compétences de créateur de contenu.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Simulations Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {simulations.map((simulation) => {
-              const Icon = simulation.icon;
-              
-              return (
-                <Card key={simulation.id} className="gradient-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`${simulation.color} text-white w-12 h-12 rounded-lg flex items-center justify-center`}>
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                          {simulation.category}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2 heading-french">
-                      {simulation.name}
-                    </h3>
-                    
-                    <p className="text-gray-600 text-sm mb-4 subtitle-french">
-                      {simulation.description}
-                    </p>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>Difficulté: {simulation.difficulty}</span>
-                        <span>Durée: {simulation.duration}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Fonctionnalités:</h4>
-                      <ul className="text-xs text-gray-600 space-y-1">
-                        {simulation.features.slice(0, 3).map((feature, index) => (
-                          <li key={index} className="flex items-center">
-                            <div className="w-1 h-1 bg-primary rounded-full mr-2"></div>
-                            {feature}
-                          </li>
-                        ))}
-                        {simulation.features.length > 3 && (
-                          <li className="text-primary">+ {simulation.features.length - 3} autres...</li>
-                        )}
-                      </ul>
-                    </div>
-                    
-                    <Button
-                      onClick={() => handleSimulation(simulation.id)}
-                      disabled={simulationMutation.isPending}
-                      className="w-full bg-primary text-white hover:bg-blue-700 transition-colors"
-                    >
-                      {simulationMutation.isPending ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Lancement...
-                        </>
-                      ) : (
-                        <>
-                          <Icon className="mr-2 h-4 w-4" />
-                          Lancer la simulation
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Tips Section */}
-          <Card className="gradient-card mt-8">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">
-                Conseils pour Maximiser votre Apprentissage
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-blue-100 text-primary w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-sm font-bold">1</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Explorez toutes les fonctionnalités</p>
-                      <p className="text-sm text-gray-600">Prenez le temps de découvrir chaque outil disponible</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-sm font-bold">2</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Pratiquez régulièrement</p>
-                      <p className="text-sm text-gray-600">La pratique constante améliore vos compétences</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-purple-100 text-purple-600 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-sm font-bold">3</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Expérimentez librement</p>
-                      <p className="text-sm text-gray-600">N'hésitez pas à tester différentes approches</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-orange-100 text-orange-600 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-sm font-bold">4</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Appliquez vos apprentissages</p>
-                      <p className="text-sm text-gray-600">Utilisez ce que vous apprenez dans vos vrais projets</p>
-                    </div>
-                  </div>
-                </div>
+      {/* Metrics Dashboard */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Object.entries(session.currentMetrics).map(([key, value]) => (
+          <Card key={key}>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-primary">{value}</div>
+              <div className="text-sm text-muted-foreground capitalize">
+                {key === 'viewers' ? 'Spectateurs' :
+                 key === 'likes' ? 'Likes' :
+                 key === 'comments' ? 'Commentaires' :
+                 key === 'shares' ? 'Partages' :
+                 key === 'followers' ? 'Abonnés' :
+                 key === 'engagement' ? 'Engagement %' : key}
               </div>
             </CardContent>
           </Card>
-        </main>
+        ))}
       </div>
 
-      {/* Simulation Modal */}
-      {selectedSimulation && (
-        <SimulationModal
-          type={selectedSimulation}
-          onClose={() => setSelectedSimulation(null)}
-        />
-      )}
+      {/* Control Panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Contrôles de Simulation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button
+              onClick={() => handleAction('interact_audience')}
+              disabled={currentAction === 'interact_audience'}
+              className="h-16 flex-col"
+            >
+              <MessageCircle className="h-6 w-6 mb-2" />
+              Interagir Public
+            </Button>
+            
+            <Button
+              onClick={() => handleAction('create_content')}
+              disabled={currentAction === 'create_content'}
+              variant="outline"
+              className="h-16 flex-col"
+            >
+              <Camera className="h-6 w-6 mb-2" />
+              Créer Contenu
+            </Button>
+            
+            <Button
+              onClick={() => handleAction('promote_content')}
+              disabled={currentAction === 'promote_content'}
+              variant="outline"
+              className="h-16 flex-col"
+            >
+              <TrendingUp className="h-6 w-6 mb-2" />
+              Promouvoir
+            </Button>
+            
+            <Button
+              onClick={() => handleAction('analyze_metrics')}
+              disabled={currentAction === 'analyze_metrics'}
+              variant="outline"
+              className="h-16 flex-col"
+            >
+              <BarChart3 className="h-6 w-6 mb-2" />
+              Analyser
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Events Feed */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5" />
+            Activité en Temps Réel
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-32">
+            <div className="space-y-2">
+              {session.events.slice(-5).map((event) => (
+                <div
+                  key={event.id}
+                  className={`p-2 rounded-lg text-sm ${
+                    event.impact === 'positive' ? 'bg-green-100 text-green-800' :
+                    event.impact === 'negative' ? 'bg-red-100 text-red-800' :
+                    'bg-blue-100 text-blue-800'
+                  }`}
+                >
+                  <span className="font-medium">{event.type.replace('_', ' ').toUpperCase()}:</span> {event.message}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+
+      {/* Objectives Progress */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Objectifs
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {session.scenario.objectives.map((objective, index) => {
+              const progress = Math.min(100, (session.score / session.scenario.objectives.length) * (index + 1));
+              return (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">{objective}</span>
+                    <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+                  </div>
+                  <Progress value={progress} className="w-full" />
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Complete Button */}
+      <Button
+        onClick={() => onComplete(session.score)}
+        className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+        size="lg"
+      >
+        <Trophy className="mr-2 h-5 w-5" />
+        Terminer la Simulation
+      </Button>
+    </div>
+  );
+}
+
+export default function SimulationsPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedScenario, setSelectedScenario] = useState<SimulationScenario | null>(null);
+  const [currentSession, setCurrentSession] = useState<SimulationSession | null>(null);
+  const [sessionTimer, setSessionTimer] = useState(0);
+
+  // Fetch simulation history
+  const { data: simulationHistory = [] } = useQuery({
+    queryKey: ["/api/simulation-usage"],
+  });
+
+  // Record simulation usage
+  const recordUsage = useMutation({
+    mutationFn: async (data: { simulationType: string; score: number; duration: number }) => {
+      return await apiRequest("/api/simulation-usage", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/simulation-usage"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+  });
+
+  // Start simulation session
+  const startSimulation = (scenario: SimulationScenario) => {
+    setSelectedScenario(scenario);
+    setCurrentSession({
+      scenario,
+      currentMetrics: { ...scenario.metrics },
+      timeElapsed: 0,
+      score: 0,
+      events: []
+    });
+    setSessionTimer(0);
+  };
+
+  // Handle simulation actions
+  const handleSimulationAction = (action: string, data?: any) => {
+    if (!currentSession) return;
+
+    const randomEvents = {
+      interact_audience: [
+        { message: "Un viewer a posé une question intéressante", impact: 'positive' as const },
+        { message: "Vous avez répondu avec humour", impact: 'positive' as const },
+        { message: "La conversation devient engageante", impact: 'positive' as const }
+      ],
+      create_content: [
+        { message: "Nouveau contenu créé avec succès", impact: 'positive' as const },
+        { message: "Le contenu résonne avec l'audience", impact: 'positive' as const },
+        { message: "Tendance repérée et exploitée", impact: 'positive' as const }
+      ],
+      promote_content: [
+        { message: "Contenu partagé sur les réseaux", impact: 'positive' as const },
+        { message: "Collaboration croisée réussie", impact: 'positive' as const },
+        { message: "Hashtags optimisés", impact: 'positive' as const }
+      ],
+      analyze_metrics: [
+        { message: "Données analysées - ajustement stratégique", impact: 'positive' as const },
+        { message: "Pic d'engagement identifié", impact: 'positive' as const },
+        { message: "Optimisation des horaires de publication", impact: 'positive' as const }
+      ]
+    };
+
+    const eventPool = randomEvents[action as keyof typeof randomEvents] || [];
+    const event = eventPool[Math.floor(Math.random() * eventPool.length)];
+
+    const newSession = { ...currentSession };
+    
+    // Add event
+    newSession.events.push({
+      id: Date.now().toString(),
+      type: action as any,
+      message: event.message,
+      impact: event.impact,
+      timestamp: Date.now()
+    });
+
+    // Update metrics based on action
+    const metricsIncrease = {
+      interact_audience: { comments: Math.floor(Math.random() * 5) + 1, viewers: Math.floor(Math.random() * 3) + 1 },
+      create_content: { likes: Math.floor(Math.random() * 10) + 2, shares: Math.floor(Math.random() * 3) + 1 },
+      promote_content: { viewers: Math.floor(Math.random() * 15) + 5, followers: Math.floor(Math.random() * 8) + 2 },
+      analyze_metrics: { engagement: Math.floor(Math.random() * 5) + 1 }
+    };
+
+    const increases = metricsIncrease[action as keyof typeof metricsIncrease] || {};
+    
+    Object.entries(increases).forEach(([key, value]) => {
+      if (key in newSession.currentMetrics) {
+        (newSession.currentMetrics as any)[key] += value;
+      }
+    });
+
+    // Update score
+    newSession.score += Math.floor(Math.random() * 20) + 10;
+
+    setCurrentSession(newSession);
+
+    toast({
+      title: "Action réussie !",
+      description: event.message,
+    });
+  };
+
+  // Complete simulation
+  const completeSimulation = (finalScore: number) => {
+    if (!currentSession) return;
+
+    const duration = sessionTimer;
+    recordUsage.mutate({
+      simulationType: currentSession.scenario.id,
+      score: finalScore,
+      duration
+    });
+
+    const xpEarned = Math.floor((finalScore / 100) * currentSession.scenario.xpReward);
+    
+    toast({
+      title: "Simulation terminée !",
+      description: `Score: ${finalScore}% - Vous avez gagné ${xpEarned} XP !`,
+    });
+
+    setCurrentSession(null);
+    setSelectedScenario(null);
+    setSessionTimer(0);
+  };
+
+  // Session timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (currentSession) {
+      interval = setInterval(() => {
+        setSessionTimer(prev => prev + 1);
+        setCurrentSession(prev => prev ? { ...prev, timeElapsed: prev.timeElapsed + 1 } : null);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [currentSession]);
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner': return 'bg-green-100 text-green-800';
+      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
+      case 'advanced': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPlatformColor = (platform: string) => {
+    switch (platform) {
+      case 'twitch': return 'from-purple-500 to-purple-600';
+      case 'youtube': return 'from-red-500 to-red-600';
+      case 'instagram': return 'from-pink-500 to-purple-500';
+      case 'tiktok': return 'from-black to-gray-800';
+      case 'twitter': return 'from-blue-400 to-blue-500';
+      default: return 'from-gray-500 to-gray-600';
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      <Navigation variant="student" />
+      
+      <main className="flex-1 p-6 ml-16 overflow-auto">
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+                <Gamepad2 className="h-8 w-8 text-primary" />
+                Simulations Interactives
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Pratiquez vos compétences de créateur dans des environnements réalistes
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/20 rounded-full">
+                    <Brain className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Simulations Terminées</p>
+                    <p className="text-lg font-bold">{simulationHistory.length}</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          {/* Current Session */}
+          {currentSession && (
+            <Card className="border-2 border-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Play className="h-5 w-5 text-primary" />
+                  Session en Cours
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SimulationInterface
+                  session={currentSession}
+                  onAction={handleSimulationAction}
+                  onComplete={completeSimulation}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Simulation Scenarios */}
+          {!currentSession && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {SIMULATION_SCENARIOS.map((scenario) => (
+                <Card key={scenario.id} className="hover:shadow-lg transition-shadow cursor-pointer group">
+                  <CardContent className="p-6">
+                    <div className={`w-full h-32 rounded-lg bg-gradient-to-r ${getPlatformColor(scenario.platform)} flex items-center justify-center text-white mb-4`}>
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">
+                          {scenario.platform === 'twitch' && <SiTwitch />}
+                          {scenario.platform === 'youtube' && <SiYoutube />}
+                          {scenario.platform === 'instagram' && <SiInstagram />}
+                          {scenario.platform === 'tiktok' && <SiTiktok />}
+                          {scenario.platform === 'twitter' && <SiTwitter />}
+                        </div>
+                        <div className="text-sm font-medium">
+                          {scenario.platform.toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-lg">{scenario.title}</h3>
+                        <Badge className={getDifficultyColor(scenario.difficulty)}>
+                          {scenario.difficulty}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-muted-foreground text-sm">
+                        {scenario.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          {scenario.duration} min
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Star className="h-4 w-4" />
+                          +{scenario.xpReward} XP
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Objectifs:</p>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          {scenario.objectives.map((objective, index) => (
+                            <li key={index} className="flex items-center gap-2">
+                              <Target className="h-3 w-3" />
+                              {objective}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <Button
+                        onClick={() => startSimulation(scenario)}
+                        className="w-full group-hover:bg-primary/90"
+                      >
+                        <Rocket className="mr-2 h-4 w-4" />
+                        Démarrer la Simulation
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Simulation History */}
+          {simulationHistory.length > 0 && !currentSession && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Historique des Simulations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {simulationHistory.slice(-5).map((session: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-primary/20 rounded-full">
+                          <Gamepad2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{session.simulationType}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(session.completedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Badge variant="outline">
+                          Score: {session.score || 0}%
+                        </Badge>
+                        <Badge className="bg-green-100 text-green-800">
+                          +{session.xpEarned || 0} XP
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

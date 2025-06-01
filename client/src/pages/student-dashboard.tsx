@@ -1,358 +1,613 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { apiRequest } from "@/lib/queryClient";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Video, LogOut, Award, Calendar, BarChart3, CheckCircle, Play, Lock, Download, Bell, Settings } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { 
+  BookOpen, 
+  Trophy, 
+  Target, 
+  Clock, 
+  Star, 
+  Play,
+  Award,
+  TrendingUp,
+  Calendar,
+  Users,
+  Video,
+  MessageSquare,
+  Zap,
+  Gift,
+  Medal,
+  CheckCircle,
+  ArrowRight,
+  Timer,
+  Brain,
+  Gamepad2,
+  Sparkles,
+  Flame,
+  Crown,
+  Shield,
+  Rocket,
+  Bolt
+} from "lucide-react";
 import Navigation from "@/components/ui/navigation";
-import SearchBar from "@/components/ui/search-bar";
-import XPProgress from "@/components/xp-progress";
+import { useAuth } from "@/hooks/useAuth";
 import StatsCard from "@/components/stats-card";
-import SimulationModal from "@/components/simulation-modal";
+import XPProgress from "@/components/xp-progress";
+import ModuleCard from "@/components/module-card";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Module, ModuleProgress, QuizAttempt, UserBadge, User } from "@shared/schema";
+
+interface Quiz {
+  id: number;
+  moduleId: number;
+  title: string;
+  description: string;
+  questions: Array<{
+    id: number;
+    question: string;
+    options: string[];
+    correct: number;
+    explanation?: string;
+  }>;
+  passingScore: number;
+  timeLimit: number;
+  xpReward: number;
+  isActive: boolean;
+}
+
+interface Activity {
+  id: string;
+  type: "module_completed" | "quiz_passed" | "badge_earned" | "streak" | "challenge";
+  title: string;
+  timestamp: string;
+  xp: number;
+  description?: string;
+  icon?: string;
+}
+
+interface QuizModalProps {
+  quiz: Quiz;
+  onClose: () => void;
+  onSubmit: (answers: Record<number, number>, timeSpent: number) => void;
+}
+
+function QuizModal({ quiz, onClose, onSubmit }: QuizModalProps) {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [timeRemaining, setTimeRemaining] = useState(quiz.timeLimit * 60);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleSubmit = () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const timeSpent = (quiz.timeLimit * 60) - timeRemaining;
+    onSubmit(selectedAnswers, timeSpent);
+  };
+
+  const currentQuestion = quiz.questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
+            <span>{quiz.title}</span>
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="flex items-center gap-2">
+                <Timer className="h-4 w-4" />
+                {formatTime(timeRemaining)}
+              </Badge>
+              <Badge variant="secondary">
+                Question {currentQuestionIndex + 1} / {quiz.questions.length}
+              </Badge>
+            </div>
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          <Progress value={progress} className="w-full" />
+          
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">{currentQuestion.question}</h3>
+            
+            <div className="space-y-3">
+              {currentQuestion.options.map((option, index) => (
+                <Button
+                  key={index}
+                  variant={selectedAnswers[currentQuestion.id] === index ? "default" : "outline"}
+                  className="w-full justify-start text-left h-auto p-4"
+                  onClick={() => setSelectedAnswers(prev => ({
+                    ...prev,
+                    [currentQuestion.id]: index
+                  }))}
+                >
+                  <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3 text-sm">
+                    {String.fromCharCode(65 + index)}
+                  </span>
+                  {option}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+              disabled={currentQuestionIndex === 0}
+            >
+              Précédent
+            </Button>
+            
+            <div className="flex gap-2">
+              {currentQuestionIndex < quiz.questions.length - 1 ? (
+                <Button
+                  onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
+                  disabled={selectedAnswers[currentQuestion.id] === undefined}
+                >
+                  Suivant
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={selectedAnswers[currentQuestion.id] === undefined || isSubmitting}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {isSubmitting ? "Envoi..." : "Terminer le Quiz"}
+                  <CheckCircle className="ml-2 h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function StudentDashboard() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedQuiz, setSelectedQuiz] = useState(null);
-  const [selectedSimulation, setSelectedSimulation] = useState(null);
-
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Non autorisé",
-        description: "Vous devez être connecté. Redirection...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
-
-  // Fetch modules
-  const { data: modules = [], isLoading: modulesLoading } = useQuery({
-    queryKey: ["/api/modules"],
-    enabled: isAuthenticated,
-  });
+  const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+  const [dailyStreak, setDailyStreak] = useState(0);
 
   // Fetch user progress
-  const { data: progress = [] } = useQuery({
+  const { data: progress = [] } = useQuery<ModuleProgress[]>({
     queryKey: ["/api/progress"],
-    enabled: isAuthenticated,
+  });
+
+  // Fetch modules
+  const { data: modules = [] } = useQuery<Module[]>({
+    queryKey: ["/api/modules"],
+  });
+
+  // Fetch quiz attempts
+  const { data: quizAttempts = [] } = useQuery<QuizAttempt[]>({
+    queryKey: ["/api/quiz-attempts"],
   });
 
   // Fetch user badges
-  const { data: userBadges = [] } = useQuery({
+  const { data: userBadges = [] } = useQuery<UserBadge[]>({
     queryKey: ["/api/user-badges"],
-    enabled: isAuthenticated,
   });
 
-  // Calculate stats
-  const completedModules = progress.filter(p => p.status === 'completed').length;
-  const totalVideos = modules.reduce((sum, module) => sum + (module.videoUrl ? 1 : 0), 0);
+  // Fetch available quizzes
+  const { data: availableQuizzes = [] } = useQuery<Quiz[]>({
+    queryKey: ["/api/admin/quizzes"],
+  });
+
+  // Daily challenge mutation
+  const completeDailyChallenge = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/daily-challenge", "POST");
+    },
+    onSuccess: () => {
+      toast({
+        title: "Défi quotidien terminé !",
+        description: "Vous avez gagné des XP bonus !",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+  });
+
+  // Quiz submission mutation
+  const submitQuiz = useMutation({
+    mutationFn: async (quizData: { quizId: number; answers: Record<number, number>; timeSpent: number }) => {
+      return await apiRequest("/api/quiz-attempts", "POST", quizData);
+    },
+    onSuccess: (result: any) => {
+      toast({
+        title: result.passed ? "Quiz réussi !" : "Quiz échoué",
+        description: result.passed 
+          ? `Vous avez gagné ${result.xpEarned || 0} XP !` 
+          : "Essayez encore pour améliorer votre score.",
+        variant: result.passed ? "default" : "destructive",
+      });
+      setSelectedQuiz(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/quiz-attempts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+  });
+
+  // Generate recent activities with real data
+  const recentActivities: Activity[] = [
+    ...(quizAttempts as any[]).slice(-3).map((attempt: any) => ({
+      id: `quiz-${attempt.id}`,
+      type: "quiz_passed" as const,
+      title: `Quiz terminé - Score: ${attempt.score}%`,
+      timestamp: attempt.completedAt,
+      xp: attempt.xpEarned || 0,
+      description: attempt.score >= 70 ? "Excellent travail !" : "Continuez vos efforts !",
+    })),
+    ...(progress as any[]).filter((p: any) => p.status === 'completed').slice(-2).map((prog: any) => ({
+      id: `module-${prog.id}`,
+      type: "module_completed" as const,
+      title: "Module terminé",
+      timestamp: prog.completedAt || new Date().toISOString(),
+      xp: 50,
+      description: "Formation complétée avec succès",
+    })),
+    {
+      id: "daily-login",
+      type: "streak" as const,
+      title: `Série quotidienne: ${dailyStreak} jours`,
+      timestamp: new Date().toISOString(),
+      xp: dailyStreak * 5,
+      description: "Continuez votre momentum !",
+    }
+  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+
+  // Calculate enhanced stats
+  const completedModules = (progress as any[]).filter((p: any) => p.status === 'completed').length;
+  const totalVideos = (modules as any[]).reduce((sum: number, module: any) => sum + (module.videoUrl ? 1 : 0), 0);
   const overallProgress = modules.length > 0 
     ? Math.round((completedModules / modules.length) * 100) 
     : 0;
 
-  // XP calculation for next level
-  const nextLevelXP = Math.pow(user?.level || 1, 2) * 100;
-  const currentLevelXP = Math.pow((user?.level || 1) - 1, 2) * 100;
-  const xpInCurrentLevel = (user?.xp || 0) - currentLevelXP;
+  // Enhanced XP calculation
+  const userTyped = user as any;
+  const currentLevel = userTyped?.level || 1;
+  const currentXP = userTyped?.xp || 0;
+  const nextLevelXP = Math.pow(currentLevel + 1, 2) * 100;
+  const currentLevelXP = Math.pow(currentLevel, 2) * 100;
+  const xpInCurrentLevel = currentXP - currentLevelXP;
   const xpNeededForCurrentLevel = nextLevelXP - currentLevelXP;
   const xpProgressPercent = Math.round((xpInCurrentLevel / xpNeededForCurrentLevel) * 100);
 
-  // Record simulation usage mutation
-  const simulationMutation = useMutation({
-    mutationFn: async (simulationType: string) => {
-      await apiRequest("POST", `/api/simulations/${simulationType}/use`, {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({
-        title: "Simulation utilisée !",
-        description: "+50 XP gagnés pour l'utilisation de la simulation",
+  const calculateStreak = () => {
+    const today = new Date();
+    const recentDays = 7;
+    let streak = 0;
+    
+    for (let i = 0; i < recentDays; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      
+      const hasActivity = recentActivities.some(activity => {
+        const activityDate = new Date(activity.timestamp);
+        return activityDate.toDateString() === checkDate.toDateString();
       });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Non autorisé",
-          description: "Vous devez être connecté. Redirection...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
+      
+      if (hasActivity) {
+        streak++;
+      } else if (i === 0) {
+        continue;
+      } else {
+        break;
       }
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer l'utilisation de la simulation",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+    }
+    
+    return streak;
   };
 
-  const handleSimulation = (type: string) => {
-    setSelectedSimulation(type);
-    simulationMutation.mutate(type);
+  useEffect(() => {
+    setDailyStreak(calculateStreak());
+  }, [recentActivities]);
+
+  const startQuiz = (quiz: Quiz) => {
+    setSelectedQuiz(quiz);
   };
 
-  const getModuleStatus = (moduleId: number) => {
-    const moduleProgress = progress.find(p => p.moduleId === moduleId);
-    if (!moduleProgress) return 'not_started';
-    return moduleProgress.status;
+  const handleQuizSubmit = (answers: Record<number, number>, timeSpent: number) => {
+    if (!selectedQuiz) return;
+    
+    submitQuiz.mutate({
+      quizId: selectedQuiz.id,
+      answers,
+      timeSpent,
+    });
   };
 
-  const getModuleProgress = (moduleId: number) => {
-    const moduleProgress = progress.find(p => p.moduleId === moduleId);
-    return moduleProgress?.progress || 0;
+  const getActivityIcon = (type: Activity['type']) => {
+    switch (type) {
+      case 'module_completed': return <BookOpen className="h-4 w-4" />;
+      case 'quiz_passed': return <Brain className="h-4 w-4" />;
+      case 'badge_earned': return <Medal className="h-4 w-4" />;
+      case 'streak': return <Flame className="h-4 w-4" />;
+      case 'challenge': return <Target className="h-4 w-4" />;
+      default: return <Star className="h-4 w-4" />;
+    }
   };
-
-  if (isLoading || modulesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du tableau de bord...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
-      {/* Modern Sidebar */}
+    <div className="flex min-h-screen bg-background">
       <Navigation variant="student" />
       
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header with Search */}
-        <header className="bg-background border-b border-border p-4">
+      <main className="flex-1 p-6 ml-16 overflow-auto">
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Header with welcome message */}
           <div className="flex items-center justify-between">
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <Navigation variant="student" />
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                Bonjour {userTyped?.firstName || 'Créateur'} ! 👋
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Continuez votre parcours de formation en création de contenu
+              </p>
             </div>
             
-            {/* Search Bar */}
-            <div className="flex-1 max-w-2xl mx-4">
-              <SearchBar 
-                placeholder="Rechercher des formations, quiz, simulations..."
-                showFilter={true}
-              />
-            </div>
-            
-            {/* Right Section */}
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <Bell className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <Settings className="h-5 w-5" />
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => completeDailyChallenge.mutate()}
+                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+              >
+                <Gift className="mr-2 h-4 w-4" />
+                Défi Quotidien
               </Button>
               
-              {/* User Avatar */}
-              <div className="flex items-center space-x-3">
-                {(user as any)?.profileImageUrl ? (
-                  <img 
-                    src={(user as any).profileImageUrl} 
-                    alt="Photo de profil" 
-                    className="w-8 h-8 rounded-full object-cover border-2 border-primary"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">
-                    {((user as any)?.firstName?.[0] || 'U').toUpperCase()}
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/20 rounded-full">
+                    <Crown className="h-6 w-6 text-primary" />
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main className="flex-1 p-3 space-y-3">
-        {/* Welcome Section with XP - Compact */}
-        <div className="gradient-primary rounded-xl text-white p-4">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
-            <div className="mb-3 lg:mb-0">
-              <h2 className="text-xl font-bold mb-1">
-                Bonjour {(user as any)?.firstName || 'Étudiant'} ! 👋
-              </h2>
-              <p className="text-blue-100 text-sm">
-                Continuez votre parcours vers l'expertise en création de contenu
-              </p>
-              <div className="mt-2">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-white/20 px-3 py-1 rounded-lg">
-                    <span className="text-xs font-medium">Niveau {(user as any)?.level || 1}</span>
-                  </div>
-                  <div className="bg-white/20 px-3 py-1 rounded-lg">
-                    <span className="text-xs font-medium">{(user as any)?.xp || 0} XP</span>
+                  <div>
+                    <p className="text-sm font-medium">Niveau {currentLevel}</p>
+                    <p className="text-xs text-muted-foreground">{currentXP} XP</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
-            
-            <div className="w-full lg:w-64">
-              <XPProgress 
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatsCard
+              icon={BookOpen}
+              value={`${completedModules}/${modules.length}`}
+              label="Modules Terminés"
+              color="blue"
+            />
+            <StatsCard
+              icon={Trophy}
+              value={(userBadges as any[]).length}
+              label="Badges Obtenus"
+              color="green"
+            />
+            <StatsCard
+              icon={Target}
+              value={`${overallProgress}%`}
+              label="Progression Globale"
+              color="purple"
+            />
+            <StatsCard
+              icon={Flame}
+              value={`${dailyStreak} jours`}
+              label="Série Quotidienne"
+              color="orange"
+            />
+          </div>
+
+          {/* XP Progress */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Progression XP
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <XPProgress
                 currentXP={xpInCurrentLevel}
                 totalXP={xpNeededForCurrentLevel}
                 progress={xpProgressPercent}
-                nextLevel={(user as any)?.level ? (user as any).level + 1 : 2}
+                nextLevel={currentLevel + 1}
               />
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Modules Section */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Rocket className="h-5 w-5 text-primary" />
+                    Formations Disponibles
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {modules.slice(0, 3).map((module: any) => {
+                      const moduleProgress = (progress as any[]).find((p: any) => p.moduleId === module.id);
+                      const status = moduleProgress?.status || 'not_started';
+                      const progressPercent = moduleProgress?.progress || 0;
+                      
+                      return (
+                        <ModuleCard
+                          key={module.id}
+                          module={module}
+                          status={status}
+                          progress={progressPercent}
+                          onStartQuiz={(quiz) => startQuiz(quiz)}
+                        />
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Quiz Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-primary" />
+                    Quiz Rapides
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {availableQuizzes.slice(0, 4).map((quiz: any) => (
+                      <Card key={quiz.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <Badge variant="secondary">{quiz.timeLimit} min</Badge>
+                            <Badge className="bg-green-100 text-green-800">
+                              +{quiz.xpReward} XP
+                            </Badge>
+                          </div>
+                          <h4 className="font-semibold mb-2">{quiz.title}</h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {quiz.description}
+                          </p>
+                          <Button
+                            onClick={() => startQuiz(quiz)}
+                            className="w-full"
+                            size="sm"
+                          >
+                            <Play className="mr-2 h-4 w-4" />
+                            Commencer
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lightning className="h-5 w-5 text-primary" />
+                    Activité Récente
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-64">
+                    <div className="space-y-3">
+                      {recentActivities.map((activity) => (
+                        <div key={activity.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <div className="p-1 bg-primary/20 rounded-full">
+                            {getActivityIcon(activity.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{activity.title}</p>
+                            <p className="text-xs text-muted-foreground">{activity.description}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">
+                                +{activity.xp} XP
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(activity.timestamp).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+
+              {/* Latest Badges */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Derniers Badges
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(userBadges as any[]).slice(-4).map((badge: any, index) => (
+                      <div key={badge.id || index} className="text-center p-3 bg-muted/50 rounded-lg">
+                        <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                          <Medal className="h-6 w-6 text-white" />
+                        </div>
+                        <p className="text-xs font-medium truncate">{badge.name || 'Badge'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Learning Streak */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Fire className="h-5 w-5 text-primary" />
+                    Série d'Apprentissage
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary mb-2">{dailyStreak}</div>
+                    <p className="text-sm text-muted-foreground mb-4">jours consécutifs</p>
+                    <Alert>
+                      <Zap className="h-4 w-4" />
+                      <AlertDescription>
+                        Continuez votre série pour débloquer des récompenses spéciales !
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
-
-        {/* Stats Cards - Compact */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatsCard
-            icon={CheckCircle}
-            value={completedModules}
-            label="Modules terminés"
-            color="green"
-          />
-          <StatsCard
-            icon={Play}
-            value={totalVideos}
-            label="Vidéos disponibles"
-            color="blue"
-          />
-          <StatsCard
-            icon={Award}
-            value={userBadges.length}
-            label="Badges obtenus"
-            color="purple"
-          />
-          <StatsCard
-            icon={BarChart3}
-            value={`${overallProgress}%`}
-            label="Progression totale"
-            color="orange"
-          />
-        </div>
-
-        {/* Formations et Actions Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Formation Progress */}
-          <div className="lg:col-span-2">
-            <Card className="gradient-card">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-800 heading-french">Votre Formation</h3>
-                  <Link href="/modules">
-                    <Button variant="default" size="sm" className="text-xs px-3 py-1">
-                      Voir tout
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Progression générale</span>
-                    <span className="text-sm font-bold text-primary">{overallProgress}%</span>
-                  </div>
-                  <div className="bg-gray-200 rounded-full h-3">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${overallProgress}%` }}
-                    ></div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 text-center text-xs">
-                    <div>
-                      <div className="font-bold text-lg text-green-600">{completedModules}</div>
-                      <div className="text-gray-600">Terminés</div>
-                    </div>
-                    <div>
-                      <div className="font-bold text-lg text-blue-600">{(modules as any[]).length - completedModules}</div>
-                      <div className="text-gray-600">Restants</div>
-                    </div>
-                    <div>
-                      <div className="font-bold text-lg text-purple-600">{(modules as any[]).length}</div>
-                      <div className="text-gray-600">Total</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar - Compact */}
-          <div className="space-y-3">
-
-            {/* Recent Badges */}
-            <Card className="gradient-card">
-              <CardContent className="p-3">
-                <h4 className="font-semibold text-gray-800 mb-2 text-sm">Badges Récents</h4>
-                <div className="space-y-2">
-                  {(userBadges as any[]).slice(0, 2).map((userBadge, index) => (
-                    <div key={index} className="flex items-center space-x-2 p-2 bg-yellow-50 rounded-lg">
-                      <div className="bg-yellow-400 text-white w-6 h-6 rounded-full flex items-center justify-center badge-glow">
-                        <Award className="h-3 w-3" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">Nouveau Badge</p>
-                        <p className="text-xs text-gray-600">Obtenu récemment</p>
-                      </div>
-                    </div>
-                  ))}
-                  {userBadges.length === 0 && (
-                    <p className="text-sm text-gray-500 text-center py-4">
-                      Aucun badge obtenu pour le moment
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Weekly Goal - Compact */}
-            <Card className="gradient-card">
-              <CardContent className="p-3">
-                <h4 className="font-semibold text-gray-800 mb-2 text-sm">Objectif Hebdomadaire</h4>
-                <div className="text-center">
-                  <div className="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 animate-pulse-xp">
-                    <span className="text-xs font-bold">{Math.min(completedModules, 5)}/5</span>
-                  </div>
-                  <p className="text-xs text-gray-600 mb-1">Modules cette semaine</p>
-                  <div className="bg-gray-200 rounded-full h-1">
-                    <div 
-                      className="bg-primary h-1 rounded-full transition-all duration-500" 
-                      style={{ width: `${Math.min((completedModules / 5) * 100, 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-        </main>
-      </div>
+      </main>
 
       {/* Quiz Modal */}
       {selectedQuiz && (
         <QuizModal
           quiz={selectedQuiz}
           onClose={() => setSelectedQuiz(null)}
-        />
-      )}
-
-      {/* Simulation Modal */}
-      {selectedSimulation && (
-        <SimulationModal
-          type={selectedSimulation}
-          onClose={() => setSelectedSimulation(null)}
+          onSubmit={handleQuizSubmit}
         />
       )}
     </div>
