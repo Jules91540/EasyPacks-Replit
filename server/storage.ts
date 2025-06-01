@@ -96,16 +96,46 @@ export class DatabaseStorage implements IStorage {
       if (userData.email) {
         const existingUser = await this.getUserByEmail(userData.email);
         if (existingUser) {
-          // Update existing user
-          const [user] = await db
-            .update(users)
-            .set({
-              ...userData,
-              updatedAt: new Date(),
-            })
-            .where(eq(users.email, userData.email))
-            .returning();
-          return user;
+          // Update existing user - only update allowed fields
+          const updateFields: Partial<UpsertUser> = {};
+          if (userData.firstName !== undefined) updateFields.firstName = userData.firstName;
+          if (userData.lastName !== undefined) updateFields.lastName = userData.lastName;
+          if (userData.profileImageUrl !== undefined) updateFields.profileImageUrl = userData.profileImageUrl;
+          
+          if (Object.keys(updateFields).length > 0) {
+            updateFields.updatedAt = new Date();
+            const [user] = await db
+              .update(users)
+              .set(updateFields)
+              .where(eq(users.id, existingUser.id))
+              .returning();
+            return user;
+          }
+          return existingUser;
+        }
+      }
+
+      // Try to find existing user by ID if provided
+      if (userData.id) {
+        const existingUser = await this.getUser(userData.id);
+        if (existingUser) {
+          // Update existing user - only update allowed fields
+          const updateFields: Partial<UpsertUser> = {};
+          if (userData.firstName !== undefined) updateFields.firstName = userData.firstName;
+          if (userData.lastName !== undefined) updateFields.lastName = userData.lastName;
+          if (userData.profileImageUrl !== undefined) updateFields.profileImageUrl = userData.profileImageUrl;
+          if (userData.email !== undefined) updateFields.email = userData.email;
+          
+          if (Object.keys(updateFields).length > 0) {
+            updateFields.updatedAt = new Date();
+            const [user] = await db
+              .update(users)
+              .set(updateFields)
+              .where(eq(users.id, existingUser.id))
+              .returning();
+            return user;
+          }
+          return existingUser;
         }
       }
 
@@ -116,17 +146,27 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return user;
     } catch (error) {
+      console.error("Error in upsertUser:", error);
       // If there's still a conflict, try to update by email
       if (userData.email && error instanceof Error && error.message.includes('duplicate key')) {
-        const [user] = await db
-          .update(users)
-          .set({
-            ...userData,
-            updatedAt: new Date(),
-          })
-          .where(eq(users.email, userData.email))
-          .returning();
-        return user;
+        const existingUser = await this.getUserByEmail(userData.email);
+        if (existingUser) {
+          const updateFields: Partial<UpsertUser> = {};
+          if (userData.firstName !== undefined) updateFields.firstName = userData.firstName;
+          if (userData.lastName !== undefined) updateFields.lastName = userData.lastName;
+          if (userData.profileImageUrl !== undefined) updateFields.profileImageUrl = userData.profileImageUrl;
+          
+          if (Object.keys(updateFields).length > 0) {
+            updateFields.updatedAt = new Date();
+            const [user] = await db
+              .update(users)
+              .set(updateFields)
+              .where(eq(users.id, existingUser.id))
+              .returning();
+            return user;
+          }
+          return existingUser;
+        }
       }
       throw error;
     }
