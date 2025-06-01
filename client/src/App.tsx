@@ -7,6 +7,11 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
 import StudentDashboard from "@/pages/student-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
+import ModulesPage from "@/pages/modules";
+import ProgressPage from "@/pages/progress";
+import BadgesPage from "@/pages/badges";
+import SimulationsPage from "@/pages/simulations";
+import ProfilePage from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,10 +34,24 @@ function Router() {
         <Route path="/" component={Landing} />
       ) : (
         <>
-          {user?.role === 'admin' ? (
-            <Route path="/" component={AdminDashboard} />
+          {(user as any)?.role === 'admin' ? (
+            <>
+              <Route path="/" component={AdminDashboard} />
+              <Route path="/admin" component={AdminDashboard} />
+              <Route path="/admin/modules" component={AdminDashboard} />
+              <Route path="/admin/students" component={AdminDashboard} />
+              <Route path="/admin/analytics" component={AdminDashboard} />
+              <Route path="/admin/settings" component={AdminDashboard} />
+            </>
           ) : (
-            <Route path="/" component={StudentDashboard} />
+            <>
+              <Route path="/" component={StudentDashboard} />
+              <Route path="/modules" component={ModulesPage} />
+              <Route path="/progress" component={ProgressPage} />
+              <Route path="/badges" component={BadgesPage} />
+              <Route path="/simulations" component={SimulationsPage} />
+              <Route path="/profile" component={ProfilePage} />
+            </>
           )}
         </>
       )}
