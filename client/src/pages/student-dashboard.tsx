@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -11,8 +12,6 @@ import Navigation from "@/components/ui/navigation";
 import SearchBar from "@/components/ui/search-bar";
 import XPProgress from "@/components/xp-progress";
 import StatsCard from "@/components/stats-card";
-import ModuleCard from "@/components/module-card";
-import QuizModal from "@/components/quiz-modal";
 import SimulationModal from "@/components/simulation-modal";
 
 export default function StudentDashboard() {
