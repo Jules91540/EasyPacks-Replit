@@ -57,7 +57,7 @@ export default function ForumPage() {
           <div className="max-w-6xl mx-auto">
             {/* Forum Categories */}
             <div className="grid gap-6">
-              {categories.length === 0 ? (
+              {!categories || !Array.isArray(categories) || categories.length === 0 ? (
                 <Card>
                   <CardContent className="p-8 text-center">
                     <MessageSquare className="h-16 w-16 mx-auto text-muted-foreground mb-4" />

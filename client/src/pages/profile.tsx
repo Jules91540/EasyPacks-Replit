@@ -476,7 +476,7 @@ export default function ProfilePage() {
                           <Award className="h-6 w-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold text-gray-800">{userBadges.length}</p>
+                          <p className="text-2xl font-bold text-gray-800">{Array.isArray(userBadges) ? userBadges.length : 0}</p>
                           <p className="text-gray-600 text-sm">Badges obtenus</p>
                         </div>
                       </div>
@@ -536,7 +536,7 @@ export default function ProfilePage() {
                         </div>
                       )}
                       
-                      {userBadges.length > 0 && (
+                      {Array.isArray(userBadges) && userBadges.length > 0 && (
                         <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg">
                           <div className="bg-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
                             <Award className="h-4 w-4" />
