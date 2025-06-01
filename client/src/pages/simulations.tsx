@@ -40,7 +40,7 @@ import {
   Rocket,
   Brain
 } from "lucide-react";
-import { SiTiktok, SiYoutube, SiTwitch, SiInstagram, SiTwitter } from "react-icons/si";
+import { SiTiktok, SiYoutube, SiTwitch, SiInstagram, SiX } from "react-icons/si";
 import Navigation from "@/components/ui/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";

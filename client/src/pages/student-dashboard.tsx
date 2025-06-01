@@ -44,6 +44,7 @@ import XPProgress from "@/components/xp-progress";
 import ModuleCard from "@/components/module-card";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import Chatbot, { ChatbotToggle } from "@/components/chatbot";
 import type { Module, ModuleProgress, QuizAttempt, UserBadge, User } from "@shared/schema";
 
 interface Quiz {
@@ -202,6 +203,7 @@ export default function StudentDashboard() {
   const queryClient = useQueryClient();
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [dailyStreak, setDailyStreak] = useState(0);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   // Fetch user progress
   const { data: progress = [] } = useQuery<ModuleProgress[]>({
@@ -523,7 +525,7 @@ export default function StudentDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Lightning className="h-5 w-5 text-primary" />
+                    <Bolt className="h-5 w-5 text-primary" />
                     Activité Récente
                   </CardTitle>
                 </CardHeader>
@@ -580,7 +582,7 @@ export default function StudentDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Fire className="h-5 w-5 text-primary" />
+                    <Flame className="h-5 w-5 text-primary" />
                     Série d'Apprentissage
                   </CardTitle>
                 </CardHeader>
@@ -610,6 +612,16 @@ export default function StudentDashboard() {
           onSubmit={handleQuizSubmit}
         />
       )}
+
+      {/* Chatbot */}
+      <ChatbotToggle 
+        onClick={() => setIsChatbotOpen(true)} 
+        isOpen={isChatbotOpen} 
+      />
+      <Chatbot 
+        isOpen={isChatbotOpen} 
+        onToggle={() => setIsChatbotOpen(!isChatbotOpen)} 
+      />
     </div>
   );
 }
