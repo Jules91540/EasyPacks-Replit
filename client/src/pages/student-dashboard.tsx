@@ -364,10 +364,10 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       <Navigation variant="student" />
       
-      <main className="flex-1 p-6 ml-16 overflow-auto">
+      <main className="flex-1 p-6 ml-16 overflow-y-auto">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header with welcome message */}
           <div className="flex items-center justify-between">

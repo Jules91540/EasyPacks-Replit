@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Empêcher le scroll global */
+html, body, #root {
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Conteneur principal fixe */
+.app-container {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 :root {
   --background: 240 10% 8%; /* Dark background like mockup */
   --foreground: 0 0% 98%;
