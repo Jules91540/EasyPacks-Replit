@@ -239,7 +239,7 @@ function SimulationInterface({ session, onAction, onComplete }: {
         {Object.entries(session.currentMetrics).map(([key, value]) => (
           <Card key={key}>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">{value}</div>
+              <div className="text-2xl font-bold text-primary">{String(value)}</div>
               <div className="text-sm text-muted-foreground capitalize">
                 {key === 'viewers' ? 'Spectateurs' :
                  key === 'likes' ? 'Likes' :
@@ -388,11 +388,7 @@ export default function SimulationsPage() {
   // Record simulation usage
   const recordUsage = useMutation({
     mutationFn: async (data: { simulationType: string; score: number; duration: number }) => {
-      return await apiRequest("/api/simulation-usage", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      });
+      return await apiRequest("/api/simulation-usage", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/simulation-usage"] });
@@ -562,7 +558,7 @@ export default function SimulationsPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">Simulations Terminées</p>
-                    <p className="text-lg font-bold">{simulationHistory.length}</p>
+                    <p className="text-lg font-bold">{Array.isArray(simulationHistory) ? simulationHistory.length : 0}</p>
                   </div>
                 </div>
               </Card>
@@ -659,7 +655,7 @@ export default function SimulationsPage() {
           )}
 
           {/* Simulation History */}
-          {simulationHistory.length > 0 && !currentSession && (
+          {Array.isArray(simulationHistory) && simulationHistory.length > 0 && !currentSession && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -669,7 +665,7 @@ export default function SimulationsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {simulationHistory.slice(-5).map((session: any, index: number) => (
+                  {Array.isArray(simulationHistory) ? simulationHistory.slice(-5).map((session: any, index: number) => (
                     <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                       <div className="flex items-center gap-4">
                         <div className="p-2 bg-primary/20 rounded-full">
@@ -691,7 +687,7 @@ export default function SimulationsPage() {
                         </Badge>
                       </div>
                     </div>
-                  ))}
+                  )) : []}
                 </div>
               </CardContent>
             </Card>
