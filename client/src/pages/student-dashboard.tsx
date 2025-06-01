@@ -183,40 +183,42 @@ export default function StudentDashboard() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-        {/* Welcome Section with XP */}
-        <div className="gradient-primary rounded-2xl text-white p-8 mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-            <div className="mb-6 md:mb-0">
-              <h2 className="text-3xl font-bold mb-2">
-                Bonjour {user?.firstName || 'Étudiant'} ! 👋
+        <main className="flex-1 p-3 space-y-3">
+        {/* Welcome Section with XP - Compact */}
+        <div className="gradient-primary rounded-xl text-white p-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
+            <div className="mb-3 lg:mb-0">
+              <h2 className="text-xl font-bold mb-1">
+                Bonjour {(user as any)?.firstName || 'Étudiant'} ! 👋
               </h2>
-              <p className="text-blue-100 text-lg">
+              <p className="text-blue-100 text-sm">
                 Continuez votre parcours vers l'expertise en création de contenu
               </p>
-              <div className="mt-4">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-white/20 px-4 py-2 rounded-lg">
-                    <span className="text-sm font-medium">Niveau {user?.level || 1}</span>
+              <div className="mt-2">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white/20 px-3 py-1 rounded-lg">
+                    <span className="text-xs font-medium">Niveau {(user as any)?.level || 1}</span>
                   </div>
-                  <div className="bg-white/20 px-4 py-2 rounded-lg">
-                    <span className="text-sm font-medium">{user?.xp || 0} XP</span>
+                  <div className="bg-white/20 px-3 py-1 rounded-lg">
+                    <span className="text-xs font-medium">{(user as any)?.xp || 0} XP</span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <XPProgress 
-              currentXP={xpInCurrentLevel}
-              totalXP={xpNeededForCurrentLevel}
-              progress={xpProgressPercent}
-              nextLevel={user?.level ? user.level + 1 : 2}
-            />
+            <div className="w-full lg:w-64">
+              <XPProgress 
+                currentXP={xpInCurrentLevel}
+                totalXP={xpNeededForCurrentLevel}
+                progress={xpProgressPercent}
+                nextLevel={(user as any)?.level ? (user as any).level + 1 : 2}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards - Compact */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatsCard
             icon={CheckCircle}
             value={completedModules}
@@ -243,65 +245,81 @@ export default function StudentDashboard() {
           />
         </div>
 
-        {/* Training Modules Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Training Modules List */}
+        {/* Formations et Actions Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Formation Progress */}
           <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-800 heading-french">Modules de Formation</h3>
-              <div className="flex space-x-2">
-                <Button variant="default" size="sm">
-                  Tous
-                </Button>
-                <Button variant="outline" size="sm">
-                  En cours
-                </Button>
-              </div>
-            </div>
+            <Card className="gradient-card">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-800 heading-french">Votre Formation</h3>
+                  <Link href="/modules">
+                    <Button variant="default" size="sm" className="text-xs px-3 py-1">
+                      Voir tout
+                    </Button>
+                  </Link>
+                </div>
 
-            <div className="space-y-4">
-              {modules.map((module) => (
-                <ModuleCard
-                  key={module.id}
-                  module={module}
-                  status={getModuleStatus(module.id)}
-                  progress={getModuleProgress(module.id)}
-                  onStartQuiz={setSelectedQuiz}
-                />
-              ))}
-            </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Progression générale</span>
+                    <span className="text-sm font-bold text-primary">{overallProgress}%</span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-3">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${overallProgress}%` }}
+                    ></div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-center text-xs">
+                    <div>
+                      <div className="font-bold text-lg text-green-600">{completedModules}</div>
+                      <div className="text-gray-600">Terminés</div>
+                    </div>
+                    <div>
+                      <div className="font-bold text-lg text-blue-600">{(modules as any[]).length - completedModules}</div>
+                      <div className="text-gray-600">Restants</div>
+                    </div>
+                    <div>
+                      <div className="font-bold text-lg text-purple-600">{(modules as any[]).length}</div>
+                      <div className="text-gray-600">Total</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar - Compact */}
+          <div className="space-y-3">
             {/* Quick Actions */}
             <Card className="gradient-card">
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-gray-800 mb-4">Actions Rapides</h4>
-                <div className="space-y-3">
+              <CardContent className="p-3">
+                <h4 className="font-semibold text-gray-800 mb-2 text-sm">Actions Rapides</h4>
+                <div className="space-y-2">
                   <Button
                     onClick={() => handleSimulation('thumbnail_creator')}
-                    className="w-full simulation-thumbnail text-white hover:opacity-90 transition-opacity"
+                    className="w-full simulation-thumbnail text-white hover:opacity-90 transition-opacity text-xs h-8"
                     disabled={simulationMutation.isPending}
                   >
-                    <Download className="mr-2 h-4 w-4" />
-                    Créateur de Miniatures
+                    <Download className="mr-1 h-3 w-3" />
+                    Miniatures
                   </Button>
                   <Button
                     onClick={() => handleSimulation('post_scheduler')}
-                    className="w-full simulation-scheduler text-white hover:opacity-90 transition-opacity"
+                    className="w-full simulation-scheduler text-white hover:opacity-90 transition-opacity text-xs h-8"
                     disabled={simulationMutation.isPending}
                   >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Planificateur de Posts
+                    <Calendar className="mr-1 h-3 w-3" />
+                    Planificateur
                   </Button>
                   <Button
                     onClick={() => handleSimulation('performance_analyzer')}
-                    className="w-full simulation-analyzer text-white hover:opacity-90 transition-opacity"
+                    className="w-full simulation-analyzer text-white hover:opacity-90 transition-opacity text-xs h-8"
                     disabled={simulationMutation.isPending}
                   >
-                    <BarChart3 className="mr-2 h-4 w-4" />
-                    Analyseur de Performance
+                    <BarChart3 className="mr-1 h-3 w-3" />
+                    Analyse
                   </Button>
                 </div>
               </CardContent>
@@ -309,13 +327,13 @@ export default function StudentDashboard() {
 
             {/* Recent Badges */}
             <Card className="gradient-card">
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-gray-800 mb-4">Badges Récents</h4>
-                <div className="space-y-3">
-                  {userBadges.slice(0, 2).map((userBadge, index) => (
-                    <div key={index} className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg">
-                      <div className="bg-yellow-400 text-white w-10 h-10 rounded-full flex items-center justify-center badge-glow">
-                        <Award className="h-5 w-5" />
+              <CardContent className="p-3">
+                <h4 className="font-semibold text-gray-800 mb-2 text-sm">Badges Récents</h4>
+                <div className="space-y-2">
+                  {(userBadges as any[]).slice(0, 2).map((userBadge, index) => (
+                    <div key={index} className="flex items-center space-x-2 p-2 bg-yellow-50 rounded-lg">
+                      <div className="bg-yellow-400 text-white w-6 h-6 rounded-full flex items-center justify-center badge-glow">
+                        <Award className="h-3 w-3" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-800">Nouveau Badge</p>
@@ -332,18 +350,18 @@ export default function StudentDashboard() {
               </CardContent>
             </Card>
 
-            {/* Weekly Goal */}
+            {/* Weekly Goal - Compact */}
             <Card className="gradient-card">
-              <CardContent className="p-6">
-                <h4 className="font-semibold text-gray-800 mb-4">Objectif Hebdomadaire</h4>
+              <CardContent className="p-3">
+                <h4 className="font-semibold text-gray-800 mb-2 text-sm">Objectif Hebdomadaire</h4>
                 <div className="text-center">
-                  <div className="bg-primary text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-xp">
-                    <span className="text-xl font-bold">{Math.min(completedModules, 5)}/5</span>
+                  <div className="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 animate-pulse-xp">
+                    <span className="text-xs font-bold">{Math.min(completedModules, 5)}/5</span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">Modules cette semaine</p>
-                  <div className="bg-gray-200 rounded-full h-2">
+                  <p className="text-xs text-gray-600 mb-1">Modules cette semaine</p>
+                  <div className="bg-gray-200 rounded-full h-1">
                     <div 
-                      className="bg-primary h-2 rounded-full transition-all duration-500" 
+                      className="bg-primary h-1 rounded-full transition-all duration-500" 
                       style={{ width: `${Math.min((completedModules / 5) * 100, 100)}%` }}
                     ></div>
                   </div>
