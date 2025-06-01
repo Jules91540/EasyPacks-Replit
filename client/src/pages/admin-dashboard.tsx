@@ -1,242 +1,353 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+import { isUnauthorizedError } from "@/lib/authUtils";
+import Navigation from "@/components/ui/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, LogOut, Users, BookOpen, HelpCircle, TrendingUp, Plus, BarChart3 } from "lucide-react";
-import StatsCard from "@/components/stats-card";
+import { Badge } from "@/components/ui/badge";
+import { Users, BookOpen, HelpCircle, TrendingUp, Plus, BarChart3, Award, Video, ArrowRight } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  // Redirect to home if not authenticated or not admin
+  // Redirect if not authenticated or not admin
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'admin')) {
+    if (!isLoading && (!isAuthenticated || (user as any)?.role !== 'admin')) {
       toast({
         title: "Accès refusé",
         description: "Vous devez être administrateur. Redirection...",
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
+        window.location.href = "/";
+      }, 1000);
       return;
     }
   }, [isAuthenticated, isLoading, user, toast]);
 
   // Fetch admin stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ["/api/admin/stats"],
-    enabled: isAuthenticated && user?.role === 'admin',
+    enabled: isAuthenticated && (user as any)?.role === 'admin',
+    retry: (failureCount, error) => {
+      if (isUnauthorizedError(error as Error)) {
+        return false;
+      }
+      return failureCount < 3;
+    }
   });
 
   // Fetch modules for admin
-  const { data: modules = [] } = useQuery({
-    queryKey: ["/api/modules"],
-    enabled: isAuthenticated && user?.role === 'admin',
+  const { data: modules = [], isLoading: modulesLoading } = useQuery({
+    queryKey: ["/api/admin/modules"],
+    enabled: isAuthenticated && (user as any)?.role === 'admin',
+    retry: (failureCount, error) => {
+      if (isUnauthorizedError(error as Error)) {
+        return false;
+      }
+      return failureCount < 3;
+    }
   });
-
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
-  };
 
   if (isLoading || statsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du panneau d'administration...</p>
+      <div className="h-screen bg-background flex overflow-hidden">
+        <Navigation variant="admin" />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-lg text-muted-foreground">Chargement du panneau d'administration...</p>
+          </div>
         </div>
       </div>
     );
   }
 
+  const defaultStats = {
+    totalStudents: 0,
+    totalModules: modules.length || 0,
+    totalQuizzes: 0,
+    averageProgress: 0
+  };
+
+  const displayStats = stats || defaultStats;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin Navigation */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="bg-red-600 text-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                <Settings className="h-5 w-5" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-800 heading-french">Administration</h1>
+    <div className="h-screen bg-background flex overflow-hidden">
+      <Navigation variant="admin" />
+      
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="bg-background border-b border-border p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Tableau de Bord Administrateur</h1>
+              <p className="text-muted-foreground mt-1">
+                Bienvenue, {(user as any)?.firstName || (user as any)?.email || 'Admin'}
+              </p>
             </div>
+            <Badge variant="outline" className="px-3 py-1">
+              <Users className="h-4 w-4 mr-1" />
+              Administrateur
+            </Badge>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
             
-            <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-red-600 font-medium border-b-2 border-red-600 pb-2">Tableau de bord</a>
-              <a href="#" className="text-gray-600 hover:text-red-600 transition-colors">Modules</a>
-              <a href="#" className="text-gray-600 hover:text-red-600 transition-colors">Quiz</a>
-              <a href="#" className="text-gray-600 hover:text-red-600 transition-colors">Élèves</a>
-            </nav>
-            
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Admin</span>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4" />
-              </Button>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Étudiants Inscrits</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">
+                    {typeof displayStats.totalStudents === 'number' ? displayStats.totalStudents : 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Total des apprenants
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Modules Actifs</CardTitle>
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">
+                    {displayStats.totalModules}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Formations disponibles
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Quiz Créés</CardTitle>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {displayStats.totalQuizzes}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Évaluations actives
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Progression Moyenne</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {Math.round(displayStats.averageProgress || 0)}%
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Taux de completion
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+                <Link href="/admin/modules">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <BookOpen className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">Gérer les Modules</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Créer et modifier les formations
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+                <Link href="/admin/quizzes">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                          <HelpCircle className="h-6 w-6 text-green-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">Créer des Quiz</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Évaluations et questionnaires
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+                <Link href="/admin/badges">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                          <Award className="h-6 w-6 text-yellow-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">Gérer les Badges</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Récompenses et achievements
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </CardHeader>
+                </Link>
+              </Card>
+            </div>
+
+            {/* Recent Modules */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl">Modules Récents</CardTitle>
+                  <Link href="/admin/modules">
+                    <Button variant="outline" size="sm">
+                      Voir tout
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {modulesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : modules.length === 0 ? (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Aucun module créé</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Commencez par créer votre premier module de formation.
+                    </p>
+                    <Link href="/admin/modules">
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Créer un module
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {modules.slice(0, 5).map((module: any) => (
+                      <div key={module.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <BookOpen className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{module.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {module.platform} • {module.difficulty}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={module.isPublished ? "default" : "secondary"}>
+                            {module.isPublished ? "Publié" : "Brouillon"}
+                          </Badge>
+                          <Link href="/admin/modules">
+                            <Button variant="outline" size="sm">
+                              Modifier
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* System Status */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">État du Système</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Base de données</span>
+                      <Badge variant="default" className="bg-green-500">En ligne</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Authentification</span>
+                      <Badge variant="default" className="bg-green-500">Fonctionnelle</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Upload de fichiers</span>
+                      <Badge variant="default" className="bg-green-500">Opérationnel</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Actions Rapides</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <Link href="/admin/modules">
+                      <Button className="w-full justify-start" variant="outline">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Créer un nouveau module
+                      </Button>
+                    </Link>
+                    <Link href="/admin/quizzes">
+                      <Button className="w-full justify-start" variant="outline">
+                        <HelpCircle className="h-4 w-4 mr-2" />
+                        Ajouter un quiz
+                      </Button>
+                    </Link>
+                    <Link href="/admin/badges">
+                      <Button className="w-full justify-start" variant="outline">
+                        <Award className="h-4 w-4 mr-2" />
+                        Créer un badge
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Admin Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <StatsCard
-            icon={Users}
-            value={stats?.totalStudents || 0}
-            label="Élèves inscrits"
-            color="blue"
-          />
-          <StatsCard
-            icon={BookOpen}
-            value={stats?.totalModules || 0}
-            label="Modules créés"
-            color="green"
-          />
-          <StatsCard
-            icon={HelpCircle}
-            value={stats?.totalQuizzes || 0}
-            label="Quiz actifs"
-            color="purple"
-          />
-          <StatsCard
-            icon={TrendingUp}
-            value={`${stats?.averageProgress || 0}%`}
-            label="Taux de progression"
-            color="orange"
-          />
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="gradient-card mb-8">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">Actions Rapides</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button className="bg-primary text-white p-4 hover:bg-blue-700 transition-colors">
-                <Plus className="mr-2 h-4 w-4" />
-                Nouveau Module
-              </Button>
-              <Button className="bg-green-600 text-white p-4 hover:bg-green-700 transition-colors">
-                <HelpCircle className="mr-2 h-4 w-4" />
-                Créer un Quiz
-              </Button>
-              <Button className="bg-purple-600 text-white p-4 hover:bg-purple-700 transition-colors">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Voir les Statistiques
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity & Management */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Activity */}
-          <Card className="gradient-card">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">Activité Récente</h3>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-                    <Users className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">Nouvel élève inscrit</p>
-                    <p className="text-xs text-gray-600">Utilisateur récent - il y a 2h</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-                    <BookOpen className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">Module terminé</p>
-                    <p className="text-xs text-gray-600">Formation Twitch - il y a 4h</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="bg-purple-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">Nouveau record de progression</p>
-                    <p className="text-xs text-gray-600">Niveau expert atteint</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Module Management */}
-          <Card className="gradient-card">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">Gestion des Modules</h3>
-              <div className="space-y-4">
-                {modules.slice(0, 3).map((module, index) => (
-                  <div key={module.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{module.title}</p>
-                      <p className="text-xs text-gray-600">
-                        {module.platform} • {module.isPublished ? 'Publié' : 'Brouillon'}
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
-                        Éditer
-                      </Button>
-                      <Button size="sm" variant={module.isPublished ? "destructive" : "default"}>
-                        {module.isPublished ? 'Masquer' : 'Publier'}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                {modules.length === 0 && (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    Aucun module créé pour le moment
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Performance Overview */}
-        <Card className="gradient-card mt-8">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">Vue d'ensemble des Performances</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="bg-blue-100 text-primary w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <TrendingUp className="h-8 w-8" />
-                </div>
-                <p className="text-2xl font-bold text-gray-800">{stats?.averageProgress || 0}%</p>
-                <p className="text-sm text-gray-600">Progression moyenne</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Users className="h-8 w-8" />
-                </div>
-                <p className="text-2xl font-bold text-gray-800">{stats?.totalStudents || 0}</p>
-                <p className="text-sm text-gray-600">Élèves actifs</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="bg-purple-100 text-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <BookOpen className="h-8 w-8" />
-                </div>
-                <p className="text-2xl font-bold text-gray-800">{modules.filter(m => m.isPublished).length}</p>
-                <p className="text-sm text-gray-600">Modules publiés</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        </main>
       </div>
     </div>
   );
