@@ -9,6 +9,8 @@ import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminModulesPage from "@/pages/admin-modules";
+import AdminQuizzesPage from "@/pages/admin-quizzes";
+import AdminBadgesPage from "@/pages/admin-badges";
 import ModulesPage from "@/pages/modules";
 import ProgressPage from "@/pages/progress";
 import BadgesPage from "@/pages/badges";
@@ -45,6 +47,8 @@ function Router() {
               <Route path="/" component={AdminDashboard} />
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/modules" component={AdminModulesPage} />
+              <Route path="/admin/quizzes" component={AdminQuizzesPage} />
+              <Route path="/admin/badges" component={AdminBadgesPage} />
               <Route path="/admin/students" component={AdminDashboard} />
               <Route path="/admin/analytics" component={AdminDashboard} />
               <Route path="/admin/settings" component={AdminDashboard} />

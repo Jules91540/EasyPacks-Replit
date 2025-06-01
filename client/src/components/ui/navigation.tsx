@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Video, Home, BookOpen, Award, BarChart3, Settings, LogOut, User, Package, Search, MessageSquare } from "lucide-react";
+import { Menu, Video, Home, BookOpen, Award, BarChart3, Settings, LogOut, User, Package, Search, MessageSquare, HelpCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import boxIcon from "@assets/Capture d'écran 2025-06-01 215731.png";
 
@@ -46,6 +46,8 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
   const adminNavItems = [
     { href: "/admin", label: "Tableau de bord", icon: Home },
     { href: "/admin/modules", label: "Gestion Modules", icon: BookOpen },
+    { href: "/admin/quizzes", label: "Quiz", icon: HelpCircle },
+    { href: "/admin/badges", label: "Badges", icon: Award },
     { href: "/admin/students", label: "Élèves", icon: User },
     { href: "/admin/analytics", label: "Analytiques", icon: BarChart3 },
     { href: "/admin/settings", label: "Paramètres", icon: Settings },
