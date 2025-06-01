@@ -196,7 +196,7 @@ function SimulationInterface({ session, onAction, onComplete }: {
       case 'youtube': return <SiYoutube className="h-5 w-5" />;
       case 'instagram': return <SiInstagram className="h-5 w-5" />;
       case 'tiktok': return <SiTiktok className="h-5 w-5" />;
-      case 'twitter': return <SiTwitter className="h-5 w-5" />;
+      case 'twitter': return <SiX className="h-5 w-5" />;
       default: return <Video className="h-5 w-5" />;
     }
   };
@@ -601,7 +601,7 @@ export default function SimulationsPage() {
                           {scenario.platform === 'youtube' && <SiYoutube />}
                           {scenario.platform === 'instagram' && <SiInstagram />}
                           {scenario.platform === 'tiktok' && <SiTiktok />}
-                          {scenario.platform === 'twitter' && <SiTwitter />}
+                          {scenario.platform === 'twitter' && <SiX />}
                         </div>
                         <div className="text-sm font-medium">
                           {scenario.platform.toUpperCase()}
