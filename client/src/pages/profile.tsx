@@ -218,7 +218,7 @@ export default function ProfilePage() {
   const xpNeededForCurrentLevel = nextLevelXP - currentLevelXP;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Navigation Sidebar */}
       <Navigation variant="student" />
       
@@ -234,7 +234,7 @@ export default function ProfilePage() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 overflow-y-auto">
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">

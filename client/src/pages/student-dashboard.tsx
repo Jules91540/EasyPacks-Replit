@@ -367,8 +367,8 @@ export default function StudentDashboard() {
     <div className="flex h-screen bg-background overflow-hidden">
       <Navigation variant="student" />
       
-      <main className="flex-1 p-6 ml-16 overflow-y-auto">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <main className="flex-1 p-4 ml-16 overflow-y-auto">
+        <div className="max-w-7xl mx-auto space-y-4">
           {/* Header with welcome message */}
           <div className="flex items-center justify-between">
             <div>

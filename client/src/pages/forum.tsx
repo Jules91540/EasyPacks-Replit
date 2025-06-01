@@ -15,7 +15,7 @@ export default function ForumPage() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const { data: categories = [], isLoading } = useQuery({
+  const { data: categories, isLoading } = useQuery({
     queryKey: ["/api/forum/categories"],
   });
 
