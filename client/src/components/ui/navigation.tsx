@@ -15,8 +15,22 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
   const [location] = useLocation();
   const { user } = useAuth();
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", { 
+        method: "POST",
+        credentials: "include"
+      });
+      if (response.ok) {
+        window.location.href = "/login";
+      } else {
+        throw new Error("Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Force refresh to clear session
+      window.location.href = "/login";
+    }
   };
 
   const studentNavItems = [

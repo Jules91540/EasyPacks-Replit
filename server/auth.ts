@@ -151,15 +151,25 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  // Logout route
-  app.post("/api/auth/logout", (req, res) => {
-    req.logout((err) => {
+  // Logout routes (both GET and POST for compatibility)
+  const logoutHandler = (req: any, res: any) => {
+    req.logout((err: any) => {
       if (err) {
         return res.status(500).json({ message: "Erreur lors de la déconnexion" });
       }
-      res.json({ success: true });
+      // Clear session
+      req.session.destroy((sessionErr: any) => {
+        if (sessionErr) {
+          console.error("Session destruction error:", sessionErr);
+        }
+        res.clearCookie('connect.sid');
+        res.json({ success: true });
+      });
     });
-  });
+  };
+
+  app.post("/api/auth/logout", logoutHandler);
+  app.get("/api/logout", logoutHandler);
 }
 
 export const isAuthenticated: RequestHandler = (req, res, next) => {
