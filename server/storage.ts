@@ -7,6 +7,7 @@ import {
   badges,
   userBadges,
   simulationUsage,
+  emailLogs,
   type User,
   type UpsertUser,
   type Module,
@@ -21,6 +22,8 @@ import {
   type InsertBadge,
   type UserBadge,
   type SimulationUsage,
+  type EmailLog,
+  type InsertEmailLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";

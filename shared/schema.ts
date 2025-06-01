@@ -36,8 +36,23 @@ export const users = pgTable("users", {
   role: varchar("role").notNull().default("student"), // student or admin
   level: integer("level").notNull().default(1),
   xp: integer("xp").notNull().default(0),
+  emailPreferences: jsonb("email_preferences").default('{"marketing": false, "notifications": true, "weeklyDigest": true}'),
+  privacySettings: jsonb("privacy_settings").default('{"profileVisible": true, "showBadges": true, "showProgress": false}'),
+  lastPasswordChange: timestamp("last_password_change"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Email logs table
+export const emailLogs = pgTable("email_logs", {
+  id: varchar("id").primaryKey().notNull(),
+  userId: varchar("user_id").references(() => users.id),
+  type: varchar("type").notNull(), // 'welcome', 'password_change', 'notification', etc.
+  recipient: varchar("recipient").notNull(),
+  subject: varchar("subject").notNull(),
+  content: text("content").notNull(),
+  status: varchar("status").notNull().default("sent"), // 'sent', 'failed', 'pending'
+  sentAt: timestamp("sent_at").defaultNow(),
 });
 
 // Training modules
@@ -159,6 +174,14 @@ export const usersRelations = relations(users, ({ many }) => ({
   simulationUsage: many(simulationUsage),
   forumTopics: many(forumTopics),
   forumReplies: many(forumReplies),
+  emailLogs: many(emailLogs),
+}));
+
+export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [emailLogs.userId],
+    references: [users.id],
+  }),
 }));
 
 export const modulesRelations = relations(modules, ({ many }) => ({
@@ -259,6 +282,8 @@ export type ForumTopic = typeof forumTopics.$inferSelect;
 export type InsertForumTopic = typeof forumTopics.$inferInsert;
 export type ForumReply = typeof forumReplies.$inferSelect;
 export type InsertForumReply = typeof forumReplies.$inferInsert;
+export type EmailLog = typeof emailLogs.$inferSelect;
+export type InsertEmailLog = typeof emailLogs.$inferInsert;
 
 // Zod schemas
 export const insertModuleSchema = createInsertSchema(modules).omit({
