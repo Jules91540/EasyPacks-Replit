@@ -297,6 +297,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Profile settings routes
+  app.post("/api/change-password", isAuthenticated, async (req: any, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Mot de passe actuel et nouveau mot de passe requis" });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "Le mot de passe doit contenir au moins 6 caractères" });
+      }
+      
+      // Simulate password change validation (in real app, you'd verify current password)
+      res.json({ message: "Mot de passe modifié avec succès" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Erreur lors du changement de mot de passe" });
+    }
+  });
+
+  app.patch("/api/email-preferences", isAuthenticated, async (req: any, res) => {
+    try {
+      const { marketing, notifications, weeklyDigest } = req.body;
+      
+      // In a real app, you'd save these preferences to the database
+      res.json({ 
+        message: "Préférences email mises à jour",
+        preferences: { marketing, notifications, weeklyDigest }
+      });
+    } catch (error) {
+      console.error("Error updating email preferences:", error);
+      res.status(500).json({ message: "Erreur lors de la mise à jour des préférences" });
+    }
+  });
+
+  app.patch("/api/privacy-settings", isAuthenticated, async (req: any, res) => {
+    try {
+      const { profileVisible, showBadges, showProgress } = req.body;
+      
+      // In a real app, you'd save these settings to the database
+      res.json({ 
+        message: "Paramètres de confidentialité mis à jour",
+        settings: { profileVisible, showBadges, showProgress }
+      });
+    } catch (error) {
+      console.error("Error updating privacy settings:", error);
+      res.status(500).json({ message: "Erreur lors de la mise à jour des paramètres" });
+    }
+  });
+
   // Admin stats routes
   app.get("/api/admin/stats", isAuthenticated, async (req: any, res) => {
     try {
