@@ -64,6 +64,22 @@ class IntelligentContentChatbot {
   private static analyzeIntent(message: string): string {
     const msg = message.toLowerCase();
     
+    // Salutations et politesse
+    if (msg.includes('bonjour') || msg.includes('salut') || msg.includes('hello') || msg.includes('bonsoir') || msg.includes('coucou')) return 'greeting';
+    if (msg.includes('ça va') || msg.includes('comment tu vas') || msg.includes('comment ça va') || msg.includes('ca va')) return 'how_are_you';
+    if (msg.includes('merci') || msg.includes('thank') || msg.includes('super') || msg.includes('génial')) return 'thanks';
+    if (msg.includes('au revoir') || msg.includes('bye') || msg.includes('à bientôt') || msg.includes('salut')) return 'goodbye';
+    
+    // Motivation et encouragement
+    if (msg.includes('motivé') || msg.includes('motivation') || msg.includes('encourage') || msg.includes('démotivé') || msg.includes('découragé')) return 'motivation';
+    if (msg.includes('difficile') || msg.includes('dur') || msg.includes('galère') || msg.includes('problème')) return 'support';
+    if (msg.includes('fier') || msg.includes('réussi') || msg.includes('content') || msg.includes('heureux')) return 'celebration';
+    
+    // Questions personnelles sympathiques
+    if (msg.includes('comment tu fais') || msg.includes('qui es-tu') || msg.includes('présente-toi')) return 'about_me';
+    if (msg.includes('ton nom') || msg.includes('appelles')) return 'name';
+    
+    // Contenu création
     if (msg.includes('idée') || msg.includes('video') || msg.includes('contenu')) return 'video_ideas';
     if (msg.includes('thumbnail') || msg.includes('miniature')) return 'thumbnails';
     if (msg.includes('viral') || msg.includes('tendance')) return 'viral_tips';
@@ -88,6 +104,150 @@ class IntelligentContentChatbot {
     const userName = userContext?.firstName || userContext?.email?.split('@')[0] || 'créateur';
     
     switch (intent) {
+      case 'greeting':
+        const greetings = [
+          `Salut ${userName} ! 🌟 Je suis ravi de te voir ! Alors, prêt à créer du contenu de fou aujourd'hui ?`,
+          `Coucou ${userName} ! 😄 Quelle belle journée pour faire exploser les compteurs ! Comment ça va ?`,
+          `Hey ${userName} ! 🚀 J'espère que tu vas bien ! Tu as des projets créatifs en tête ?`,
+          `Bonjour ${userName} ! ✨ Super de te retrouver ! On va faire quoi d'incroyable ensemble ?`
+        ];
+        return {
+          content: greetings[Math.floor(Math.random() * greetings.length)],
+          type: 'text',
+          suggestions: [
+            "Ça va super bien !",
+            "J'ai besoin d'idées de vidéos",
+            "Comment motiver mon audience ?",
+            "Quelles sont les tendances ?"
+          ]
+        };
+
+      case 'how_are_you':
+        const howAreYouResponses = [
+          `Moi ça va au top ${userName} ! 🔥 Je suis plein d'énergie et d'idées pour t'aider ! Et toi comment tu te sens ?`,
+          `Je pète la forme ${userName} ! 💪 Toujours motivé à 100% pour t'accompagner ! Raconte-moi ta journée !`,
+          `Ça roule ma poule ${userName} ! 😎 Je suis là, prêt à booster ta créativité ! Toi ça va ?`,
+          `Je suis au max de ma forme ${userName} ! ⚡ Hyper motivé pour t'aider à cartonner ! Et de ton côté ?`
+        ];
+        return {
+          content: howAreYouResponses[Math.floor(Math.random() * howAreYouResponses.length)],
+          type: 'text',
+          suggestions: [
+            "Ça va bien merci !",
+            "Un peu fatigué aujourd'hui",
+            "Super motivé !",
+            "J'ai des questions"
+          ]
+        };
+
+      case 'thanks':
+        const thanksResponses = [
+          `Avec plaisir ${userName} ! 🤗 C'est ça l'esprit ! Tu vas cartonner j'en suis sûr !`,
+          `De rien ${userName} ! 😊 Je suis là pour ça ! Continue comme ça, tu es sur la bonne voie !`,
+          `Mais non voyons ${userName} ! 💕 C'est normal ! Je crois en toi à fond !`,
+          `Tout le plaisir est pour moi ${userName} ! 🌟 Ensemble on va faire des miracles !`
+        ];
+        return {
+          content: thanksResponses[Math.floor(Math.random() * thanksResponses.length)],
+          type: 'text',
+          suggestions: [
+            "Tu es le meilleur !",
+            "Donne-moi d'autres conseils",
+            "Comment progresser encore ?",
+            "Merci pour ta motivation !"
+          ]
+        };
+
+      case 'goodbye':
+        const goodbyes = [
+          `À bientôt ${userName} ! 👋 N'oublie pas : tu as tout pour réussir ! Reviens quand tu veux !`,
+          `Salut ${userName} ! 🌈 Continue à créer du contenu incroyable ! Je serai là quand tu auras besoin !`,
+          `À plus ${userName} ! ✨ Tu vas déchirer ! J'ai hâte de voir tes prochaines créations !`,
+          `Ciao ${userName} ! 🚀 Garde cette motivation ! Tu es un créateur extraordinaire !`
+        ];
+        return {
+          content: goodbyes[Math.floor(Math.random() * goodbyes.length)],
+          type: 'text'
+        };
+
+      case 'motivation':
+        const motivationalResponses = [
+          `Écoute-moi bien ${userName} ! 💪 Tu as un talent unique ! Chaque créateur de succès a eu des moments de doute. Ce qui compte c'est de CONTINUER ! Tu es plus fort que tu ne le penses !`,
+          `Hey ${userName} ! 🔥 Je vais te dire un secret : TOUS les grands créateurs ont voulu abandonner un jour ! Mais regarde où ils sont maintenant ! Tu as la même flamme en toi !`,
+          `${userName}, tu sais quoi ? 🌟 Chaque vue, chaque like, chaque commentaire que tu obtiens, c'est parce que tu MÉRITES d'être vu ! Continue, le monde a besoin de ton contenu !`,
+          `Motivation mode ON ${userName} ! ⚡ Rappelle-toi pourquoi tu as commencé ! Cette passion en toi, elle est réelle ! Un jour tu regarderas en arrière et tu seras FIER du chemin parcouru !`
+        ];
+        return {
+          content: motivationalResponses[Math.floor(Math.random() * motivationalResponses.length)],
+          type: 'tip',
+          suggestions: [
+            "Comment garder la motivation ?",
+            "Conseils pour les mauvais jours",
+            "Comment célébrer mes réussites ?",
+            "Merci pour ces mots !"
+          ]
+        };
+
+      case 'support':
+        const supportResponses = [
+          `Je te comprends ${userName} 🤗 C'est normal d'avoir des moments difficiles ! Mais tu sais quoi ? Chaque problème est une opportunité d'apprendre ! Tu n'es pas seul, je suis là pour t'aider !`,
+          `Hey ${userName} ! 💙 Les moments difficiles font partie du voyage ! Même les plus grands créateurs galèrent parfois ! L'important c'est de ne pas baisser les bras ! Dis-moi ce qui te pose problème !`,
+          `${userName}, écoute-moi ! 🌈 Après la pluie vient le beau temps ! Ces difficultés vont te rendre plus fort ! Chaque obstacle surmonté est une victoire ! Allez, on va trouver des solutions ensemble !`,
+          `Courage ${userName} ! 💪 Les difficultés c'est temporaire, mais ton talent c'est pour la vie ! Prends une pause si tu en as besoin, mais reviens toujours ! Je crois en toi !`
+        ];
+        return {
+          content: supportResponses[Math.floor(Math.random() * supportResponses.length)],
+          type: 'tip',
+          suggestions: [
+            "Comment surmonter les blocages ?",
+            "Techniques pour rester positif",
+            "J'ai besoin d'aide concrète",
+            "Merci pour ton soutien"
+          ]
+        };
+
+      case 'celebration':
+        const celebrationResponses = [
+          `OUAAAAAIS ${userName} ! 🎉🎉🎉 Je suis trop fier de toi ! Tu vois que tu peux le faire ! C'est juste le début, tu vas aller encore plus loin !`,
+          `BRAVO ${userName} ! 🏆 Tu es en feu ! Cette réussite c'est grâce à ton travail et ta persévérance ! Savoure ce moment, tu le mérites !`,
+          `INCREDIBLE ${userName} ! ✨ Je le savais que tu allais y arriver ! Tu as prouvé que tu es un VRAI créateur ! Continue sur cette lancée !`,
+          `YES YES YES ${userName} ! 🚀 Tu viens de prouver que rien ne peut t'arrêter ! Cette énergie positive, garde-la ! Tu es unstoppable !`
+        ];
+        return {
+          content: celebrationResponses[Math.floor(Math.random() * celebrationResponses.length)],
+          type: 'suggestion',
+          suggestions: [
+            "Comment capitaliser sur ce succès ?",
+            "Prochaine étape à franchir ?",
+            "Merci pour ta joie !",
+            "Comment reproduire ce succès ?"
+          ]
+        };
+
+      case 'about_me':
+        return {
+          content: `Salut ${userName} ! 😄 Moi c'est ton assistant IA spécialisé en création de contenu ! Je suis là 24h/24 pour t'aider à devenir le créateur que tu rêves d'être !\n\n💡 J'ai une base de connaissances ÉNORME sur YouTube, Twitch, Instagram, TikTok...\n🔥 Je connais toutes les tendances 2024\n💪 Je suis hyper motivant (c'est ma spécialité !)\n🎯 Mon but : t'aider à créer du contenu qui cartonne !\n\nJe suis toujours de bonne humeur et prêt à t'encourager ! Alors, qu'est-ce qu'on crée ensemble ?`,
+          type: 'text',
+          suggestions: [
+            "Tu es vraiment sympa !",
+            "Aide-moi avec YouTube",
+            "Donne-moi des idées",
+            "Comment tu fais pour être si motivant ?"
+          ]
+        };
+
+      case 'name':
+        return {
+          content: `Tu peux m'appeler ton Coach IA ${userName} ! 😎 Ou juste "Coach" si tu veux ! L'important c'est qu'on soit potes et qu'on crée du contenu de folie ensemble !\n\nMoi ce qui me rend heureux c'est de voir mes créateurs réussir ! Chaque fois que tu progresses, moi aussi je suis content ! On forme une équipe de choc ! 🚀`,
+          type: 'text',
+          suggestions: [
+            "Salut Coach !",
+            "Tu es mon coach préféré",
+            "Aide-moi à progresser",
+            "On va cartonner ensemble !"
+          ]
+        };
+
       case 'video_ideas':
         const randomIdeas = this.videoIdeas
           .sort(() => Math.random() - 0.5)
@@ -231,19 +391,20 @@ class IntelligentContentChatbot {
 
       default:
         const greetingMessages = [
-          `Salut ${userName} ! Alors, tu as des idées de vidéos pour aujourd'hui ? 🎬`,
-          `Hey ${userName} ! Prêt à créer du contenu incroyable ? Dis-moi tes idées !`,
-          `Bonjour ${userName} ! Qu'est-ce qu'on crée aujourd'hui ? J'ai plein de conseils pour toi !`
+          `Hey ${userName} ! 🚀 Alors, tu as des idées de vidéos pour aujourd'hui ? J'ai plein d'inspiration à partager avec toi !`,
+          `Salut mon créateur préféré ${userName} ! ✨ Prêt à faire exploser les compteurs ? Qu'est-ce qu'on crée ensemble ?`,
+          `Coucou ${userName} ! 🔥 J'espère que tu vas bien ! Tu sais quoi ? Je sens que tu vas faire quelque chose d'incroyable aujourd'hui !`,
+          `Bonjour ${userName} ! 🌟 Super de te retrouver ! Alors, on fait quoi d'extraordinaire ? J'ai hâte de t'aider !`
         ];
         
         return {
           content: greetingMessages[Math.floor(Math.random() * greetingMessages.length)],
           type: 'text',
           suggestions: [
-            "J'ai besoin d'idées de vidéos",
-            "Comment améliorer mes thumbnails ?",
-            "Conseils pour être viral",
-            "Stratégies d'engagement"
+            "Ça va super bien !",
+            "J'ai besoin d'idées créatives",
+            "Comment motiver mon audience ?",
+            "Quelles sont les tendances actuelles ?"
           ]
         };
     }
