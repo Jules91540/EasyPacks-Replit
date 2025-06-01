@@ -95,11 +95,11 @@ export default function ProfilePage() {
     mutationFn: async (data: { firstName: string; lastName: string }) => {
       const response = await fetch("/api/profile", {
         method: "PATCH",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('token') || ''}`
         },
         body: JSON.stringify(data),
+        credentials: 'include',
       });
       
       if (!response.ok) {
@@ -254,19 +254,41 @@ export default function ProfilePage() {
               <Card className="gradient-card">
                 <CardContent className="p-6">
                   <div className="text-center mb-6">
-                    {(user as any)?.profileImageUrl ? (
-                      <img 
-                        src={(user as any).profileImageUrl} 
-                        alt="Photo de profil" 
-                        className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg mx-auto mb-4"
+                    <div className="relative inline-block">
+                      {(user as any)?.profileImageUrl ? (
+                        <img 
+                          src={(user as any).profileImageUrl} 
+                          alt="Photo de profil" 
+                          className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold">
+                          {((user as any)?.firstName?.[0] || 'U').toUpperCase()}
+                        </div>
+                      )}
+                      
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/80 transition-colors shadow-lg"
+                        disabled={uploadPhotoMutation.isPending}
+                      >
+                        {uploadPhotoMutation.isPending ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Camera className="h-4 w-4" />
+                        )}
+                      </button>
+                      
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
                       />
-                    ) : (
-                      <div className="w-24 h-24 rounded-full bg-primary text-white flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                        {((user as any)?.firstName?.[0] || 'U').toUpperCase()}
-                      </div>
-                    )}
+                    </div>
                     
-                    <div className="mb-4">
+                    <div className="mt-4">
                       <Badge className="level-badge text-white px-3 py-1">
                         Niveau {currentLevel} - {getLevelName(currentLevel)}
                       </Badge>
@@ -350,6 +372,13 @@ export default function ProfilePage() {
                               : 'Récemment'
                             }
                           </p>
+                        </div>
+                        
+                        <div className="pt-4">
+                          <Button onClick={() => setIsEditing(true)} className="w-full">
+                            <Edit2 className="mr-2 h-4 w-4" />
+                            Modifier le Profil
+                          </Button>
                         </div>
                       </div>
                     )}
