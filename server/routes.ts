@@ -312,6 +312,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin module management routes
+  app.get("/api/admin/modules", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const modules = await storage.getModules();
+      res.json(modules);
+    } catch (error) {
+      console.error("Error fetching modules:", error);
+      res.status(500).json({ message: "Failed to fetch modules" });
+    }
+  });
+
+  app.post("/api/admin/modules", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const moduleData = insertModuleSchema.parse(req.body);
+      const module = await storage.createModule(moduleData);
+      res.status(201).json(module);
+    } catch (error) {
+      console.error("Error creating module:", error);
+      res.status(500).json({ message: "Failed to create module" });
+    }
+  });
+
+  app.patch("/api/admin/modules/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const updateData = req.body;
+      const module = await storage.updateModule(id, updateData);
+      res.json(module);
+    } catch (error) {
+      console.error("Error updating module:", error);
+      res.status(500).json({ message: "Failed to update module" });
+    }
+  });
+
+  app.delete("/api/admin/modules/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const id = parseInt(req.params.id);
+      await storage.deleteModule(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting module:", error);
+      res.status(500).json({ message: "Failed to delete module" });
+    }
+  });
+
   // Profile photo upload route
   app.post("/api/profile/upload-photo", isAuthenticated, upload.single('photo'), async (req: any, res) => {
     try {

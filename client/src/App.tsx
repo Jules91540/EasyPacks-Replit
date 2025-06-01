@@ -8,6 +8,7 @@ import Landing from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminModulesPage from "@/pages/admin-modules";
 import ModulesPage from "@/pages/modules";
 import ProgressPage from "@/pages/progress";
 import BadgesPage from "@/pages/badges";
