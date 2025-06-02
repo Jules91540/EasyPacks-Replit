@@ -238,6 +238,13 @@ export default function ForumTopicPage() {
                     ))}
                   </div>
                 )}
+                
+                {/* Réactions pour le sujet principal */}
+                <MessageReactions 
+                  messageId={topicId!} 
+                  messageType="topic" 
+                  className="mt-3" 
+                />
               </div>
             </div>
           </div>
@@ -299,25 +306,13 @@ export default function ForumTopicPage() {
                       </div>
                     )}
                   </div>
-                  {/* Reactions */}
-                  <div className="flex items-center gap-2 mt-1 px-3">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-6 p-0 text-white/50 hover:text-red-400 hover:bg-transparent transition-colors"
-                      onClick={() => {
-                        // Simple reaction toggle
-                        toast({
-                          title: "❤️ Réaction ajoutée !",
-                          description: "Votre réaction a été enregistrée.",
-                          duration: 2000,
-                        });
-                      }}
-                    >
-                      <Heart className="h-4 w-4" />
-                    </Button>
-                    <span className="text-xs text-white/40">Réagir</span>
-                  </div>
+                  
+                  {/* Réactions pour chaque réponse */}
+                  <MessageReactions 
+                    messageId={reply.id.toString()} 
+                    messageType="reply" 
+                    className="mt-2 px-3" 
+                  />
                 </div>
                 {isCurrentUser && (
                   <Avatar className="h-8 w-8 ring-2 ring-pink-500/50">

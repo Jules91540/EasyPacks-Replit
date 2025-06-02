@@ -610,6 +610,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Detect mentions in content and send notifications
+  const detectMentionsAndNotify = async (content: string, authorId: string, topicId: string) => {
+    const mentionRegex = /@(\w+)/g;
+    const mentions = [];
+    let match;
+    
+    while ((match = mentionRegex.exec(content)) !== null) {
+      const mentionedName = match[1];
+      // Chercher l'utilisateur par prénom
+      const allUsers = [
+        { id: "43311594", firstName: "Easy", lastName: "Packs", email: "easy.packs0@gmail.com" },
+        { id: "109791419912459995702", firstName: "Gameli", lastName: "SENYO", email: "gamelisenyo@gmail.com" }
+      ];
+      
+      const mentionedUser = allUsers.find(user => 
+        user.firstName.toLowerCase() === mentionedName.toLowerCase()
+      );
+      
+      if (mentionedUser && mentionedUser.id !== authorId) {
+        mentions.push({
+          userId: mentionedUser.id,
+          userName: mentionedUser.firstName,
+          content: content,
+          topicId: topicId
+        });
+      }
+    }
+    
+    return mentions;
+  };
+
   // Create forum reply with file upload
   app.post("/api/forum/replies", isAuthenticated, upload.array('files', 5), async (req: any, res) => {
     try {
@@ -638,6 +669,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       forumReplies.push(reply);
+
+      // Détecter les mentions et créer des notifications ciblées
+      const mentions = await detectMentionsAndNotify(content, userId, topicId);
+      
+      // Créer des notifications pour les utilisateurs mentionnés
+      for (const mention of mentions) {
+        if (!userNotifications[mention.userId]) {
+          userNotifications[mention.userId] = [];
+        }
+        userNotifications[mention.userId].push({
+          id: Date.now() + Math.random(),
+          type: 'mention',
+          message: `${user?.firstName || 'Un utilisateur'} vous a mentionné dans le forum`,
+          content: mention.content,
+          topicId: mention.topicId,
+          authorName: user?.firstName || 'Utilisateur',
+          isRead: false,
+          createdAt: new Date()
+        });
+      }
 
       // Update topic reply count
       const topic = forumTopics.find(t => t.id === parseInt(topicId));
