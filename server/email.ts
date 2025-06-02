@@ -2,12 +2,13 @@ import { createTransport } from 'nodemailer';
 import { storage } from './storage';
 import { InsertEmailLog } from '@shared/schema';
 
-// Configuration du transport email pour les tests
+// Configuration du transport email avec Gmail
 const transporter = createTransport({
-  // En mode développement, on simule l'envoi et on log les emails
-  streamTransport: true,
-  newline: 'unix',
-  buffer: true
+  service: 'gmail',
+  auth: {
+    user: 'no.reply.easypacks@gmail.com',
+    pass: 'qakg fsnn zxpj mrxu'
+  }
 });
 
 interface EmailTemplate {
@@ -159,21 +160,18 @@ export class EmailService {
           throw new Error(`Type d'email non supporté: ${type}`);
       }
 
-      // En mode développement, on simule l'envoi
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`📧 Email simulé envoyé à ${recipient}`);
-        console.log(`Sujet: ${template.subject}`);
-        console.log(`Contenu: ${template.text.substring(0, 100)}...`);
-      } else {
-        // En production, on enverrait réellement l'email
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM || 'noreply@formation-francaise.fr',
-          to: recipient,
-          subject: template.subject,
-          text: template.text,
-          html: template.html
-        });
-      }
+      // Envoi réel de l'email via Gmail
+      const result = await transporter.sendMail({
+        from: '"EasyPacks Formation" <no.reply.easypacks@gmail.com>',
+        to: recipient,
+        subject: template.subject,
+        text: template.text,
+        html: template.html
+      });
+      
+      console.log(`✅ Email envoyé avec succès à ${recipient}`);
+      console.log(`Sujet: ${template.subject}`);
+      console.log(`Message ID: ${result.messageId}`);
 
       // Enregistrer dans les logs
       if (userId) {
