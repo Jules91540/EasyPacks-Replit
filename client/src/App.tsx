@@ -5,8 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import IntelligentChatbot, { ChatbotToggle } from "@/components/intelligent-chatbot";
-import FloatingChatbot from "@/components/floating-chatbot";
+import SidebarChatbot, { ChatbotToggle } from "@/components/sidebar-chatbot";
 import SplashScreen from "@/components/splash-screen";
 import WelcomeTutorial from "@/components/welcome-tutorial";
 import InAppGuide, { GuideButton } from "@/components/in-app-guide";
@@ -96,6 +95,7 @@ function Router() {
 function AppContent() {
   const [showWelcomeTutorial, setShowWelcomeTutorial] = useState(false);
   const [showInAppGuide, setShowInAppGuide] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -125,8 +125,15 @@ function AppContent() {
       <Toaster />
       <Router />
       
-      {/* Chatbot flottant global */}
-      <FloatingChatbot />
+      {/* Nouveau chatbot sidebar */}
+      <SidebarChatbot 
+        isOpen={showChatbot}
+        onToggle={() => setShowChatbot(!showChatbot)}
+      />
+      <ChatbotToggle 
+        onClick={() => setShowChatbot(!showChatbot)}
+        isOpen={showChatbot}
+      />
 
 
 
