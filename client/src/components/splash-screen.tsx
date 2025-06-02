@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import boxIcon from "@assets/Capture d'écran 2025-06-01 215731.png";
+import newLogo from "@assets/Design_sans_titre__22_-removebg-preview.png";
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -43,9 +43,9 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             >
               <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary to-purple-600 shadow-2xl flex items-center justify-center ring-4 ring-white/20 backdrop-blur-sm">
                 <img 
-                  src={boxIcon} 
+                  src={newLogo} 
                   alt="Easy Packs Logo" 
-                  className="w-20 h-20 rounded-xl object-cover shadow-lg"
+                  className="w-16 h-16 object-contain filter brightness-0 invert"
                 />
               </div>
             </motion.div>
