@@ -386,12 +386,12 @@ export default function ProfilePage() {
   const navigationVariant = (user as any)?.role === 'admin' ? 'admin' : 'student';
 
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
+    <div className="min-h-screen bg-background">
       {/* Navigation Sidebar */}
       <Navigation variant={navigationVariant} />
       
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Content with left margin for desktop sidebar */}
+      <div className="md:ml-20 flex flex-col min-h-screen">
         {/* Mobile Header */}
         <header className="md:hidden bg-background shadow-sm border-b border-border p-4">
           <div className="flex items-center justify-between">
