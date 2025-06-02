@@ -26,7 +26,7 @@ import {
   type InsertEmailLog,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, ne } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -34,6 +34,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  deleteNonAdminUsers(): Promise<number>;
   
   // Module operations
   getModules(): Promise<Module[]>;
@@ -186,6 +187,14 @@ export class DatabaseStorage implements IStorage {
       }
       throw error;
     }
+  }
+
+  async deleteNonAdminUsers(): Promise<number> {
+    const result = await db
+      .delete(users)
+      .where(ne(users.role, 'admin'))
+      .returning();
+    return result.length;
   }
 
   // Module operations

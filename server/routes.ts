@@ -672,6 +672,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin user management - Delete all non-admin users
+  app.delete("/api/admin/users/non-admin", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const deletedCount = await storage.deleteNonAdminUsers();
+      res.json({ 
+        message: `${deletedCount} comptes non-administrateurs supprimés avec succès`,
+        deletedCount 
+      });
+    } catch (error) {
+      console.error("Error deleting non-admin users:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression des comptes utilisateurs" });
+    }
+  });
+
   // Admin module management routes
   app.get("/api/admin/modules", isAuthenticated, async (req: any, res) => {
     try {

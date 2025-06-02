@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -8,7 +8,7 @@ import Navigation from "@/components/ui/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, BookOpen, HelpCircle, TrendingUp, Plus, BarChart3, Award, Video, ArrowRight } from "lucide-react";
+import { Users, BookOpen, HelpCircle, TrendingUp, Plus, BarChart3, Award, Video, ArrowRight, Trash2, AlertTriangle } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
