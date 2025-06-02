@@ -528,8 +528,8 @@ export default function ProfilePage() {
                     ) : (
                       <div className="space-y-3">
                         <div>
-                          <p className="text-sm font-medium text-gray-700">Nom complet</p>
-                          <p className="text-gray-900">
+                          <p className="text-sm font-medium text-white">Nom complet</p>
+                          <p className="text-gray-300">
                             {(user as any)?.firstName || ''} {(user as any)?.lastName || ''}
                           </p>
                         </div>
@@ -537,15 +537,15 @@ export default function ProfilePage() {
                         <Separator />
                         
                         <div>
-                          <p className="text-sm font-medium text-gray-700">Email</p>
-                          <p className="text-gray-900">{(user as any)?.email || 'Non renseigné'}</p>
+                          <p className="text-sm font-medium text-white">Email</p>
+                          <p className="text-gray-300">{(user as any)?.email || 'Non renseigné'}</p>
                         </div>
                         
                         <Separator />
                         
                         <div>
-                          <p className="text-sm font-medium text-gray-700">Membre depuis</p>
-                          <p className="text-gray-900">
+                          <p className="text-sm font-medium text-white">Membre depuis</p>
+                          <p className="text-gray-300">
                             {(user as any)?.createdAt 
                               ? new Date((user as any).createdAt).toLocaleDateString('fr-FR')
                               : 'Récemment'
@@ -566,15 +566,15 @@ export default function ProfilePage() {
               </Card>
 
               {/* XP Progress */}
-              <Card className="gradient-card mt-6">
+              <Card className="gradient-blue-card mt-6">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">
+                  <h3 className="text-lg font-semibold text-white mb-4 heading-french">
                     Progression XP
                   </h3>
                   
                   <div className="text-center mb-4">
-                    <div className="text-2xl font-bold text-primary">{currentXP} XP</div>
-                    <p className="text-sm text-gray-600">
+                    <div className="text-2xl font-bold text-blue-400">{currentXP} XP</div>
+                    <p className="text-sm text-gray-300">
                       {Math.max(xpNeededForCurrentLevel - xpInCurrentLevel, 0)} XP pour le niveau {currentLevel + 1}
                     </p>
                   </div>
@@ -588,11 +588,11 @@ export default function ProfilePage() {
                   
                   <div className="grid grid-cols-2 gap-4 text-center text-sm">
                     <div>
-                      <p className="font-medium text-gray-800">Niveau Actuel</p>
-                      <p className="text-primary">{currentLevel}</p>
+                      <p className="font-medium text-white">Niveau Actuel</p>
+                      <p className="text-blue-400">{currentLevel}</p>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">Prochain Niveau</p>
+                      <p className="font-medium text-white">Prochain Niveau</p>
                       <p className="text-primary">{currentLevel + 1}</p>
                     </div>
                   </div>

@@ -29,7 +29,7 @@ export default function ModuleCard({ module, status, progress, onStartQuiz }: Mo
       default:
         return {
           icon: Lock,
-          badge: { text: 'Verrouillé', variant: 'secondary' as const, className: 'bg-gray-100 text-gray-600' },
+          badge: { text: 'Verrouillé', variant: 'secondary' as const, className: 'bg-red-100 text-red-700' },
           button: { text: 'Verrouillé', variant: 'secondary' as const, disabled: true }
         };
     }
@@ -61,27 +61,27 @@ export default function ModuleCard({ module, status, progress, onStartQuiz }: Mo
   };
 
   return (
-    <Card className="gradient-card module-card">
+    <Card className="gradient-blue-card module-card">
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center mb-3">
               <div className={`${statusInfo.badge.className} w-8 h-8 rounded-full flex items-center justify-center mr-3`}>
-                <Icon className="h-4 w-4" />
+                <Icon className={`h-4 w-4 ${status === 'not_started' ? 'text-red-600' : ''}`} />
               </div>
               <Badge className={statusInfo.badge.className}>
                 {statusInfo.badge.text}
               </Badge>
             </div>
             
-            <h4 className="text-lg font-semibold text-gray-800 mb-2 heading-french">
+            <h4 className="text-lg font-semibold text-white mb-2 heading-french">
               {module.title}
             </h4>
-            <p className="text-gray-600 text-sm mb-4 subtitle-french">
+            <p className="text-gray-300 text-sm mb-4 subtitle-french">
               {module.description}
             </p>
             
-            <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+            <div className="flex items-center space-x-4 text-sm text-gray-300 mb-3">
               {module.videoUrl && (
                 <span className="flex items-center">
                   <PlayCircle className="mr-1 h-4 w-4" /> 1 vidéo
@@ -105,7 +105,7 @@ export default function ModuleCard({ module, status, progress, onStartQuiz }: Mo
                     style={{ width: `${progress}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-500">{progress}% terminé</p>
+                <p className="text-xs text-gray-300">{progress}% terminé</p>
               </div>
             )}
           </div>
