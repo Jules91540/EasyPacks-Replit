@@ -1226,7 +1226,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/friends/request", isAuthenticated, async (req: any, res) => {
     try {
       const { receiverId } = req.body;
-      const senderId = req.user.claims.sub;
+      const senderId = req.user?.claims?.sub;
+      
+      if (!senderId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
       
       const friendship = await storage.sendFriendRequest(senderId, receiverId);
       
