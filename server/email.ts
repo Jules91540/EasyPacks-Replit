@@ -8,8 +8,8 @@ const transporter = createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: `postmaster@${process.env.MAILGUN_DOMAIN}`,
-    pass: 'f00d7b7b40b7d0522a0efcd6024316ed-08c79601-fbc409d2'
+    user: 'postmaster@sandboxfaec35d0c8c741e49bb3c9c736fced2b.mailgun.org',
+    pass: process.env.MAILGUN_API_KEY || 'f00d7b7b40b7d0522a0efcd6024316ed-08c79601-fbc409d2'
   }
 });
 
