@@ -722,7 +722,7 @@ export default function ProfilePage() {
                     <div className="text-center py-8">
                       <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-300">Aucune activité récente</p>
-                      <p className="text-sm text-gray-400 mt-2">
+                      <p className="text-sm text-gray-300 mt-2">
                         Commencez un module pour voir votre activité ici
                       </p>
                     </div>
@@ -740,11 +740,11 @@ export default function ProfilePage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
                       <div>
-                        <p className="font-medium text-card-foreground flex items-center gap-2">
+                        <p className="font-medium text-white flex items-center gap-2">
                           <Mail className="h-4 w-4" />
                           Notifications par email
                         </p>
-                        <p className="text-sm text-muted-foreground">Recevez des mises à jour sur votre progression</p>
+                        <p className="text-sm text-gray-300">Recevez des mises à jour sur votre progression</p>
                       </div>
                       <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
                         <DialogTrigger asChild>
@@ -802,11 +802,11 @@ export default function ProfilePage() {
                     
                     <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
                       <div>
-                        <p className="font-medium text-card-foreground flex items-center gap-2">
+                        <p className="font-medium text-white flex items-center gap-2">
                           <Shield className="h-4 w-4" />
                           Confidentialité
                         </p>
-                        <p className="text-sm text-muted-foreground">Gérez vos préférences de confidentialité</p>
+                        <p className="text-sm text-gray-300">Gérez vos préférences de confidentialité</p>
                       </div>
                       <Dialog open={privacyModalOpen} onOpenChange={setPrivacyModalOpen}>
                         <DialogTrigger asChild>
@@ -864,11 +864,11 @@ export default function ProfilePage() {
                     
                     <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
                       <div>
-                        <p className="font-medium text-card-foreground flex items-center gap-2">
+                        <p className="font-medium text-white flex items-center gap-2">
                           <Key className="h-4 w-4" />
                           Mot de passe
                         </p>
-                        <p className="text-sm text-muted-foreground">Modifiez votre mot de passe</p>
+                        <p className="text-sm text-gray-300">Modifiez votre mot de passe</p>
                       </div>
                       <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
                         <DialogTrigger asChild>
