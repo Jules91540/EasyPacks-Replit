@@ -59,12 +59,8 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
   const ModernSidebar = () => (
     <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl p-3 flex flex-col items-center space-y-3">
       {/* Logo/Brand at top */}
-      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-2 shadow-lg p-1">
-        <img 
-          src={boxIcon} 
-          alt="EasyPacks Logo" 
-          className="w-full h-full object-contain"
-        />
+      <div className="w-12 h-12 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center mb-2 shadow-lg">
+        <Package className="h-6 w-6 text-white" />
       </div>
       
       {/* Navigation icons */}
