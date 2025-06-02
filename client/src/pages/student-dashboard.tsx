@@ -447,31 +447,65 @@ export default function StudentDashboard() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-200px)] overflow-y-auto">
             {/* Modules Section */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4">
               <Card className="gradient-blue-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Rocket className="h-5 w-5 text-blue-400" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-white text-lg">
+                    <Rocket className="h-4 w-4 text-blue-400" />
                     Formations Disponibles
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    {modules.slice(0, 3).map((module: any) => {
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    {modules.slice(0, 2).map((module: any) => {
                       const moduleProgress = (progress as any[]).find((p: any) => p.moduleId === module.id);
                       const status = moduleProgress?.status || 'not_started';
                       const progressPercent = moduleProgress?.progress || 0;
                       
                       return (
-                        <ModuleCard
-                          key={module.id}
-                          module={module}
-                          status={status}
-                          progress={progressPercent}
-                          onStartQuiz={(quiz) => startQuiz(quiz)}
-                        />
+                        <div key={module.id} className="bg-white/10 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-white text-sm mb-1">{module.title}</h3>
+                              <p className="text-white/80 text-xs line-clamp-2">{module.description}</p>
+                            </div>
+                            <Badge variant="outline" className="text-xs ml-2">
+                              {module.platform || 'Général'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="mb-3">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs text-white/80">Progression</span>
+                              <span className="text-xs text-white">{progressPercent}%</span>
+                            </div>
+                            <div className="w-full bg-white/20 rounded-full h-1">
+                              <div 
+                                className="bg-blue-500 h-1 rounded-full transition-all duration-300" 
+                                style={{ width: `${progressPercent}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <Badge variant={
+                              status === 'completed' ? 'default' : 
+                              status === 'in_progress' ? 'secondary' : 
+                              'outline'
+                            } className="text-xs">
+                              {status === 'completed' ? 'Terminé' :
+                               status === 'in_progress' ? 'En cours' :
+                               'Nouveau'}
+                            </Badge>
+                            
+                            <Button size="sm" className="text-xs h-7">
+                              <Play className="mr-1 h-3 w-3" />
+                              {status === 'not_started' ? 'Commencer' : 'Continuer'}
+                            </Button>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -480,14 +514,14 @@ export default function StudentDashboard() {
 
               {/* Quick Quiz Section */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-primary" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Brain className="h-4 w-4 text-primary" />
                     Quiz Rapides
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {availableQuizzes.slice(0, 4).map((quiz: any) => (
                       <Card key={quiz.id} className="hover:shadow-lg transition-shadow cursor-pointer">
                         <CardContent className="p-4">
@@ -518,52 +552,46 @@ export default function StudentDashboard() {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Recent Activity */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bolt className="h-5 w-5 text-primary" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Bolt className="h-4 w-4 text-primary" />
                     Activité Récente
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-64">
-                    <div className="space-y-3">
-                      {recentActivities.map((activity) => (
-                        <div key={activity.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                          <div className="p-1 bg-primary/20 rounded-full">
-                            {getActivityIcon(activity.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{activity.title}</p>
-                            <p className="text-xs text-white/80">{activity.description}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline" className="text-xs">
-                                +{activity.xp} XP
-                              </Badge>
-                              <span className="text-xs text-white/60">
-                                {new Date(activity.timestamp).toLocaleDateString()}
-                              </span>
-                            </div>
+                <CardContent className="pt-0">
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {recentActivities.slice(0, 4).map((activity) => (
+                      <div key={activity.id} className="flex items-start gap-2 p-2 bg-muted/50 rounded-lg">
+                        <div className="p-1 bg-primary/20 rounded-full">
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium truncate">{activity.title}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              +{activity.xp} XP
+                            </Badge>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Latest Badges */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Shield className="h-4 w-4 text-primary" />
                     Derniers Badges
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-2 gap-2">
                     {(userBadges as any[]).slice(-4).map((badge: any, index) => (
                       <div key={badge.id || index} className="text-center p-3 bg-muted/50 rounded-lg">
                         <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
