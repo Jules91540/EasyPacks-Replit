@@ -491,10 +491,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Increment view count
       topic.viewCount = (topic.viewCount || 0) + 1;
 
+      // Get real author info from database
+      const author = await storage.getUser(topic.authorId);
+
       // Add author info
       const enrichedTopic = {
         ...topic,
-        author: { firstName: 'Utilisateur' }
+        author: {
+          firstName: author?.firstName || 'Utilisateur',
+          lastName: author?.lastName || '',
+          email: author?.email || '',
+          profileImageUrl: author?.profileImageUrl || ''
+        }
       };
 
       res.json(enrichedTopic);
@@ -510,13 +518,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const topicId = parseInt(req.params.id);
       const replies = forumReplies
         .filter(r => r.topicId === topicId)
-        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-        .map(reply => ({
-          ...reply,
-          author: { firstName: 'Utilisateur' }
-        }));
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-      res.json(replies);
+      // Enrich replies with real author info
+      const enrichedReplies = await Promise.all(
+        replies.map(async (reply) => {
+          const author = await storage.getUser(reply.authorId);
+          return {
+            ...reply,
+            author: {
+              firstName: author?.firstName || 'Utilisateur',
+              lastName: author?.lastName || '',
+              email: author?.email || '',
+              profileImageUrl: author?.profileImageUrl || ''
+            }
+          };
+        })
+      );
+
+      res.json(enrichedReplies);
     } catch (error) {
       console.error("Error fetching forum replies:", error);
       res.status(500).json({ message: "Erreur lors du chargement des réponses" });
