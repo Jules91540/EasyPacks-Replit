@@ -382,17 +382,20 @@ export default function ProfilePage() {
   const xpInCurrentLevel = currentXP - currentLevelXP;
   const xpNeededForCurrentLevel = nextLevelXP - currentLevelXP;
 
+  // Determine navigation variant based on user role
+  const navigationVariant = (user as any)?.role === 'admin' ? 'admin' : 'student';
+
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Navigation Sidebar */}
-      <Navigation variant="student" />
+      <Navigation variant={navigationVariant} />
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Mobile Header */}
         <header className="md:hidden bg-background shadow-sm border-b border-border p-4">
           <div className="flex items-center justify-between">
-            <Navigation variant="student" />
+            <Navigation variant={navigationVariant} />
             <h1 className="text-lg font-bold text-foreground">Mon Profil</h1>
             <div></div>
           </div>
