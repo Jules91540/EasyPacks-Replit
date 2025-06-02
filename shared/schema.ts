@@ -175,6 +175,87 @@ export const forumReactions = pgTable("forum_reactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Social Features Tables
+export const friendships = pgTable("friendships", {
+  id: serial("id").primaryKey(),
+  senderId: varchar("sender_id").notNull().references(() => users.id),
+  receiverId: varchar("receiver_id").notNull().references(() => users.id),
+  status: varchar("status").notNull().default("pending"), // pending, accepted, blocked
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const socialPosts = pgTable("social_posts", {
+  id: serial("id").primaryKey(),
+  authorId: varchar("author_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  imageUrl: varchar("image_url"),
+  visibility: varchar("visibility").notNull().default("public"), // public, friends, private
+  likesCount: integer("likes_count").notNull().default(0),
+  commentsCount: integer("comments_count").notNull().default(0),
+  sharesCount: integer("shares_count").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const postLikes = pgTable("post_likes", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  postId: integer("post_id").notNull().references(() => socialPosts.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const postComments = pgTable("post_comments", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  postId: integer("post_id").notNull().references(() => socialPosts.id),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const privateMessages = pgTable("private_messages", {
+  id: serial("id").primaryKey(),
+  senderId: varchar("sender_id").notNull().references(() => users.id),
+  receiverId: varchar("receiver_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  messageType: varchar("message_type").notNull().default("text"), // text, image, file, call_invite
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  participant1Id: varchar("participant1_id").notNull().references(() => users.id),
+  participant2Id: varchar("participant2_id").notNull().references(() => users.id),
+  lastMessageId: integer("last_message_id").references(() => privateMessages.id),
+  lastActivityAt: timestamp("last_activity_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const callSessions = pgTable("call_sessions", {
+  id: serial("id").primaryKey(),
+  callerId: varchar("caller_id").notNull().references(() => users.id),
+  receiverId: varchar("receiver_id").notNull().references(() => users.id),
+  status: varchar("status").notNull().default("initiated"), // initiated, ringing, active, ended, missed
+  callType: varchar("call_type").notNull().default("voice"), // voice, video
+  startedAt: timestamp("started_at"),
+  endedAt: timestamp("ended_at"),
+  duration: integer("duration"), // in seconds
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const notificationsTable = pgTable("notifications_table", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: varchar("type").notNull(), // friend_request, message, call, post_like, post_comment
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  relatedUserId: varchar("related_user_id").references(() => users.id),
+  relatedPostId: integer("related_post_id").references(() => socialPosts.id),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   moduleProgress: many(moduleProgress),
@@ -184,6 +265,118 @@ export const usersRelations = relations(users, ({ many }) => ({
   forumTopics: many(forumTopics),
   forumReplies: many(forumReplies),
   emailLogs: many(emailLogs),
+  sentFriendRequests: many(friendships, { relationName: "sender" }),
+  receivedFriendRequests: many(friendships, { relationName: "receiver" }),
+  socialPosts: many(socialPosts),
+  postLikes: many(postLikes),
+  postComments: many(postComments),
+  sentMessages: many(privateMessages, { relationName: "sender" }),
+  receivedMessages: many(privateMessages, { relationName: "receiver" }),
+  initiatedCalls: many(callSessions, { relationName: "caller" }),
+  receivedCalls: many(callSessions, { relationName: "receiver" }),
+  notifications: many(notificationsTable),
+}));
+
+export const friendshipsRelations = relations(friendships, ({ one }) => ({
+  sender: one(users, {
+    fields: [friendships.senderId],
+    references: [users.id],
+    relationName: "sender",
+  }),
+  receiver: one(users, {
+    fields: [friendships.receiverId],
+    references: [users.id],
+    relationName: "receiver",
+  }),
+}));
+
+export const socialPostsRelations = relations(socialPosts, ({ one, many }) => ({
+  author: one(users, {
+    fields: [socialPosts.authorId],
+    references: [users.id],
+  }),
+  likes: many(postLikes),
+  comments: many(postComments),
+}));
+
+export const postLikesRelations = relations(postLikes, ({ one }) => ({
+  user: one(users, {
+    fields: [postLikes.userId],
+    references: [users.id],
+  }),
+  post: one(socialPosts, {
+    fields: [postLikes.postId],
+    references: [socialPosts.id],
+  }),
+}));
+
+export const postCommentsRelations = relations(postComments, ({ one }) => ({
+  user: one(users, {
+    fields: [postComments.userId],
+    references: [users.id],
+  }),
+  post: one(socialPosts, {
+    fields: [postComments.postId],
+    references: [socialPosts.id],
+  }),
+}));
+
+export const privateMessagesRelations = relations(privateMessages, ({ one }) => ({
+  sender: one(users, {
+    fields: [privateMessages.senderId],
+    references: [users.id],
+    relationName: "sender",
+  }),
+  receiver: one(users, {
+    fields: [privateMessages.receiverId],
+    references: [users.id],
+    relationName: "receiver",
+  }),
+}));
+
+export const conversationsRelations = relations(conversations, ({ one }) => ({
+  participant1: one(users, {
+    fields: [conversations.participant1Id],
+    references: [users.id],
+    relationName: "participant1",
+  }),
+  participant2: one(users, {
+    fields: [conversations.participant2Id],
+    references: [users.id],
+    relationName: "participant2",
+  }),
+  lastMessage: one(privateMessages, {
+    fields: [conversations.lastMessageId],
+    references: [privateMessages.id],
+  }),
+}));
+
+export const callSessionsRelations = relations(callSessions, ({ one }) => ({
+  caller: one(users, {
+    fields: [callSessions.callerId],
+    references: [users.id],
+    relationName: "caller",
+  }),
+  receiver: one(users, {
+    fields: [callSessions.receiverId],
+    references: [users.id],
+    relationName: "receiver",
+  }),
+}));
+
+export const notificationsTableRelations = relations(notificationsTable, ({ one }) => ({
+  user: one(users, {
+    fields: [notificationsTable.userId],
+    references: [users.id],
+  }),
+  relatedUser: one(users, {
+    fields: [notificationsTable.relatedUserId],
+    references: [users.id],
+  }),
+  relatedPost: one(socialPosts, {
+    fields: [notificationsTable.relatedPostId],
+    references: [socialPosts.id],
+  }),
 }));
 
 export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
@@ -295,6 +488,24 @@ export type ForumReaction = typeof forumReactions.$inferSelect;
 export type InsertForumReaction = typeof forumReactions.$inferInsert;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type InsertEmailLog = typeof emailLogs.$inferInsert;
+
+// Social types
+export type Friendship = typeof friendships.$inferSelect;
+export type InsertFriendship = typeof friendships.$inferInsert;
+export type SocialPost = typeof socialPosts.$inferSelect;
+export type InsertSocialPost = typeof socialPosts.$inferInsert;
+export type PostLike = typeof postLikes.$inferSelect;
+export type InsertPostLike = typeof postLikes.$inferInsert;
+export type PostComment = typeof postComments.$inferSelect;
+export type InsertPostComment = typeof postComments.$inferInsert;
+export type PrivateMessage = typeof privateMessages.$inferSelect;
+export type InsertPrivateMessage = typeof privateMessages.$inferInsert;
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = typeof conversations.$inferInsert;
+export type CallSession = typeof callSessions.$inferSelect;
+export type InsertCallSession = typeof callSessions.$inferInsert;
+export type NotificationTable = typeof notificationsTable.$inferSelect;
+export type InsertNotificationTable = typeof notificationsTable.$inferInsert;
 
 // Zod schemas
 export const insertModuleSchema = createInsertSchema(modules).omit({

@@ -8,6 +8,14 @@ import {
   userBadges,
   simulationUsage,
   emailLogs,
+  friendships,
+  socialPosts,
+  postLikes,
+  postComments,
+  privateMessages,
+  conversations,
+  callSessions,
+  notificationsTable,
   type User,
   type UpsertUser,
   type Module,
@@ -24,6 +32,22 @@ import {
   type SimulationUsage,
   type EmailLog,
   type InsertEmailLog,
+  type Friendship,
+  type InsertFriendship,
+  type SocialPost,
+  type InsertSocialPost,
+  type PostLike,
+  type InsertPostLike,
+  type PostComment,
+  type InsertPostComment,
+  type PrivateMessage,
+  type InsertPrivateMessage,
+  type Conversation,
+  type InsertConversation,
+  type CallSession,
+  type InsertCallSession,
+  type NotificationTable,
+  type InsertNotificationTable,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, ne } from "drizzle-orm";
@@ -93,6 +117,46 @@ export interface IStorage {
     totalQuizzes: number;
     averageProgress: number;
   }>;
+
+  // Social operations - Friends
+  sendFriendRequest(senderId: string, receiverId: string): Promise<Friendship>;
+  acceptFriendRequest(friendshipId: number): Promise<Friendship>;
+  rejectFriendRequest(friendshipId: number): Promise<void>;
+  blockUser(senderId: string, receiverId: string): Promise<Friendship>;
+  getUserFriends(userId: string): Promise<User[]>;
+  getPendingFriendRequests(userId: string): Promise<Friendship[]>;
+  getSentFriendRequests(userId: string): Promise<Friendship[]>;
+  
+  // Social operations - Posts
+  createPost(post: InsertSocialPost): Promise<SocialPost>;
+  getPosts(userId?: string, visibility?: string): Promise<SocialPost[]>;
+  getUserPosts(userId: string): Promise<SocialPost[]>;
+  likePost(userId: string, postId: number): Promise<PostLike>;
+  unlikePost(userId: string, postId: number): Promise<void>;
+  commentOnPost(comment: InsertPostComment): Promise<PostComment>;
+  getPostComments(postId: number): Promise<PostComment[]>;
+  deletePost(postId: number, userId: string): Promise<void>;
+  
+  // Social operations - Messages
+  sendMessage(message: InsertPrivateMessage): Promise<PrivateMessage>;
+  getConversation(userId1: string, userId2: string): Promise<PrivateMessage[]>;
+  getUserConversations(userId: string): Promise<Conversation[]>;
+  markMessageAsRead(messageId: number): Promise<void>;
+  getUnreadMessageCount(userId: string): Promise<number>;
+  
+  // Social operations - Calls
+  initiateCall(call: InsertCallSession): Promise<CallSession>;
+  updateCallStatus(callId: number, status: string, duration?: number): Promise<CallSession>;
+  getUserCallHistory(userId: string): Promise<CallSession[]>;
+  
+  // Social operations - Notifications
+  createNotification(notification: InsertNotificationTable): Promise<NotificationTable>;
+  getUserNotifications(userId: string): Promise<NotificationTable[]>;
+  markNotificationAsRead(notificationId: number): Promise<void>;
+  getUnreadNotificationCount(userId: string): Promise<number>;
+  
+  // Search operations
+  searchUsers(query: string, excludeUserId?: string): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
