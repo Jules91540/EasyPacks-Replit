@@ -286,12 +286,20 @@ export default function InstagramMessaging() {
     conv.participant?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Add friends who don't have conversations yet
-  const friendsWithoutConversations = friends.filter((friend: any) => 
-    !conversations.find((conv: any) => 
+  // Add friends who don't have conversations yet - filter by search query and ensure unique IDs
+  const friendsWithoutConversations = friends.filter((friend: any) => {
+    // Check if friend already has a conversation
+    const hasConversation = conversations.some((conv: any) => 
       conv.participant?.id === friend.id
-    )
-  );
+    );
+    
+    // Check if friend matches search query
+    const matchesSearch = searchQuery === "" || 
+      friend.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      friend.lastName?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return !hasConversation && matchesSearch;
+  });
 
   const emojis = ["❤️", "😂", "😮", "😢", "😡", "👍", "👎", "🔥"];
 
@@ -372,7 +380,7 @@ export default function InstagramMessaging() {
             {/* Friends without conversations */}
             {friendsWithoutConversations.map((friend: any) => (
               <div
-                key={`friend-${friend.id}`}
+                key={`friend-no-conv-${friend.id}`}
                 onClick={() => {
                   // Create a mock conversation for this friend
                   const mockConversation = {
