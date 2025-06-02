@@ -9,37 +9,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Phone, Video } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  profileImageUrl?: string;
-}
-
-interface Message {
-  id: number;
-  senderId: string;
-  receiverId: string;
-  content: string;
-  createdAt: string;
-  sender?: User;
-}
-
-interface Conversation {
-  id: number;
-  participant1Id: string;
-  participant2Id: string;
-  lastMessage: string;
-  lastMessageAt: string;
-  unreadCount: number;
-  participant?: User;
-}
-
-export default function SimpleMessaging() {
+export default function FixedMessaging() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
 
   // Fetch conversations
@@ -99,9 +72,8 @@ export default function SimpleMessaging() {
     });
   };
 
-  const startConversationWithFriend = (friend: User) => {
-    // Create a temporary conversation object
-    const tempConversation: Conversation = {
+  const startConversationWithFriend = (friend: any) => {
+    const tempConversation = {
       id: 0,
       participant1Id: user?.id || "",
       participant2Id: friend.id,
@@ -123,9 +95,9 @@ export default function SimpleMessaging() {
         
         <ScrollArea className="h-full">
           {/* Existing conversations */}
-          {conversations && Array.isArray(conversations) && conversations.map((conv: any) => (
+          {conversations && Array.isArray(conversations) && conversations.map((conv: any, convIndex: number) => (
             <div
-              key={`conv-${conv.id}`}
+              key={`conversation-${conv.id}-${convIndex}`}
               onClick={() => setSelectedConversation(conv)}
               className={`flex items-center p-3 cursor-pointer hover:bg-gray-700 ${
                 selectedConversation?.id === conv.id ? 'bg-gray-700' : ''
@@ -134,16 +106,16 @@ export default function SimpleMessaging() {
               <Avatar className="w-12 h-12 mr-3">
                 <AvatarImage src={conv.participant?.profileImageUrl} />
                 <AvatarFallback className="bg-blue-600 text-white">
-                  {conv.participant?.firstName?.[0]}{conv.participant?.lastName?.[0]}
+                  {conv.participant?.firstName?.[0] || '?'}{conv.participant?.lastName?.[0] || '?'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex justify-between items-center">
                   <h3 className="font-medium text-white">
-                    {conv.participant?.firstName} {conv.participant?.lastName}
+                    {conv.participant?.firstName || 'Utilisateur'} {conv.participant?.lastName || ''}
                   </h3>
                   <span className="text-xs text-gray-400">
-                    {formatTime(conv.lastMessageAt)}
+                    {conv.lastMessageAt ? formatTime(conv.lastMessageAt) : ''}
                   </span>
                 </div>
                 <p className="text-sm text-gray-400 truncate">
@@ -156,25 +128,25 @@ export default function SimpleMessaging() {
           {/* Friends without conversations */}
           {friends && Array.isArray(friends) && friends
             .filter((friend: any) => 
-              !conversations || !conversations.some((conv: any) => 
+              !conversations || !Array.isArray(conversations) || !conversations.some((conv: any) => 
                 conv.participant?.id === friend.id
               )
             )
-            .map((friend: any, index: number) => (
+            .map((friend: any, friendIndex: number) => (
               <div
-                key={`friend-${friend.id}-${index}`}
+                key={`available-friend-${friend.id}-${friendIndex}`}
                 onClick={() => startConversationWithFriend(friend)}
                 className="flex items-center p-3 cursor-pointer hover:bg-gray-700"
               >
                 <Avatar className="w-12 h-12 mr-3">
                   <AvatarImage src={friend.profileImageUrl} />
                   <AvatarFallback className="bg-green-600 text-white">
-                    {friend.firstName?.[0]}{friend.lastName?.[0]}
+                    {friend.firstName?.[0] || '?'}{friend.lastName?.[0] || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <h3 className="font-medium text-white">
-                    {friend.firstName} {friend.lastName}
+                    {friend.firstName || 'Utilisateur'} {friend.lastName || ''}
                   </h3>
                   <p className="text-sm text-green-400">Démarrer une conversation</p>
                 </div>
@@ -193,15 +165,15 @@ export default function SimpleMessaging() {
                 <Avatar className="w-10 h-10 mr-3">
                   <AvatarImage src={selectedConversation.participant?.profileImageUrl} />
                   <AvatarFallback className="bg-blue-600 text-white">
-                    {selectedConversation.participant?.firstName?.[0]}{selectedConversation.participant?.lastName?.[0]}
+                    {selectedConversation.participant?.firstName?.[0] || '?'}{selectedConversation.participant?.lastName?.[0] || '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="text-white font-semibold">
-                    {selectedConversation.participant?.firstName} {selectedConversation.participant?.lastName}
+                    {selectedConversation.participant?.firstName || 'Utilisateur'} {selectedConversation.participant?.lastName || ''}
                   </h3>
                   <p className="text-gray-400 text-sm">
-                    {selectedConversation.lastMessageAt && messages.length > 0 ? 
+                    {selectedConversation.lastMessageAt && messages && Array.isArray(messages) && messages.length > 0 ? 
                       `Dernier message: ${formatTime(selectedConversation.lastMessageAt)}` : 
                       'En ligne'
                     }
@@ -223,12 +195,12 @@ export default function SimpleMessaging() {
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
                 {messages && Array.isArray(messages) && messages.length > 0 ? (
-                  messages.map((message: any) => {
+                  messages.map((message: any, messageIndex: number) => {
                     const isOwnMessage = message.senderId === user?.id;
                     
                     return (
                       <div
-                        key={`msg-${message.id}`}
+                        key={`message-${message.id}-${messageIndex}`}
                         className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
                       >
                         <div

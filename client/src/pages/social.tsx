@@ -13,7 +13,7 @@ import Navigation from "@/components/ui/navigation";
 import { IncomingCallPopup } from "@/components/IncomingCallPopup";
 import { MessageWithReactions } from "@/components/MessageWithReactions";
 import { UserProfile } from "@/components/UserProfile";
-import SimpleMessaging from "@/components/SimpleMessaging";
+import FixedMessaging from "@/components/FixedMessaging";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -887,7 +887,7 @@ export default function SocialPage() {
 
               <TabsContent value="messages" className="h-full overflow-hidden">
                 <div className="h-[calc(100vh-160px)]">
-                  <SimpleMessaging />
+                  <FixedMessaging />
                 </div>
               </TabsContent>
 
