@@ -25,6 +25,7 @@ import SimulationsPage from "@/pages/simulations";
 import ProfilePage from "@/pages/profile";
 import ForumPage from "@/pages/forum";
 import ForumTopicPage from "@/pages/forum-topic";
+import SocialPage from "@/pages/social";
 import UserProfile from "@/pages/user-profile";
 import NotFound from "@/pages/not-found";
 

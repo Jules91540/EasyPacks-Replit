@@ -1220,6 +1220,332 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Social Features Routes
+
+  // Friends routes
+  app.post("/api/friends/request", isAuthenticated, async (req: any, res) => {
+    try {
+      const { receiverId } = req.body;
+      const senderId = req.user.claims.sub;
+      
+      const friendship = await storage.sendFriendRequest(senderId, receiverId);
+      
+      // Create notification
+      await storage.createNotification({
+        userId: receiverId,
+        type: "friend_request",
+        title: "Nouvelle demande d'ami",
+        content: `${req.user.claims.first_name || 'Un utilisateur'} vous a envoyé une demande d'ami`,
+        relatedUserId: senderId
+      });
+      
+      res.json(friendship);
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+      res.status(500).json({ message: "Failed to send friend request" });
+    }
+  });
+
+  app.put("/api/friends/accept/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = parseInt(req.params.id);
+      const friendship = await storage.acceptFriendRequest(friendshipId);
+      res.json(friendship);
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+      res.status(500).json({ message: "Failed to accept friend request" });
+    }
+  });
+
+  app.delete("/api/friends/reject/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = parseInt(req.params.id);
+      await storage.rejectFriendRequest(friendshipId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error rejecting friend request:", error);
+      res.status(500).json({ message: "Failed to reject friend request" });
+    }
+  });
+
+  app.get("/api/friends", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const friends = await storage.getUserFriends(userId);
+      res.json(friends);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+      res.status(500).json({ message: "Failed to fetch friends" });
+    }
+  });
+
+  app.get("/api/friends/requests/pending", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const requests = await storage.getPendingFriendRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching pending requests:", error);
+      res.status(500).json({ message: "Failed to fetch pending requests" });
+    }
+  });
+
+  // Posts routes
+  app.post("/api/posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const { content, imageUrl, visibility = "public" } = req.body;
+      const authorId = req.user.claims.sub;
+      
+      const post = await storage.createPost({
+        authorId,
+        content,
+        imageUrl,
+        visibility
+      });
+      
+      res.json(post);
+    } catch (error) {
+      console.error("Error creating post:", error);
+      res.status(500).json({ message: "Failed to create post" });
+    }
+  });
+
+  app.get("/api/posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId, visibility } = req.query;
+      const posts = await storage.getPosts(userId, visibility);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      res.status(500).json({ message: "Failed to fetch posts" });
+    }
+  });
+
+  app.post("/api/posts/:id/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const like = await storage.likePost(userId, postId);
+      res.json(like);
+    } catch (error) {
+      console.error("Error liking post:", error);
+      res.status(500).json({ message: "Failed to like post" });
+    }
+  });
+
+  app.delete("/api/posts/:id/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      await storage.unlikePost(userId, postId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error unliking post:", error);
+      res.status(500).json({ message: "Failed to unlike post" });
+    }
+  });
+
+  app.post("/api/posts/:id/comment", isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const { content } = req.body;
+      const userId = req.user.claims.sub;
+      
+      const comment = await storage.commentOnPost({
+        userId,
+        postId,
+        content
+      });
+      
+      res.json(comment);
+    } catch (error) {
+      console.error("Error commenting on post:", error);
+      res.status(500).json({ message: "Failed to comment on post" });
+    }
+  });
+
+  app.get("/api/posts/:id/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const comments = await storage.getPostComments(postId);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // Messages routes
+  app.post("/api/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const { receiverId, content, messageType = "text" } = req.body;
+      const senderId = req.user.claims.sub;
+      
+      const message = await storage.sendMessage({
+        senderId,
+        receiverId,
+        content,
+        messageType
+      });
+      
+      // Create notification
+      await storage.createNotification({
+        userId: receiverId,
+        type: "message",
+        title: "Nouveau message",
+        content: `${req.user.claims.first_name || 'Un utilisateur'} vous a envoyé un message`,
+        relatedUserId: senderId
+      });
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  app.get("/api/conversations", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversations = await storage.getUserConversations(userId);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  app.get("/api/conversations/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      const otherUserId = req.params.userId;
+      
+      const messages = await storage.getConversation(currentUserId, otherUserId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ message: "Failed to fetch conversation" });
+    }
+  });
+
+  app.get("/api/messages/unread-count", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const count = await storage.getUnreadMessageCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      res.status(500).json({ message: "Failed to fetch unread count" });
+    }
+  });
+
+  // Calls routes
+  app.post("/api/calls", isAuthenticated, async (req: any, res) => {
+    try {
+      const { receiverId, callType = "voice" } = req.body;
+      const callerId = req.user.claims.sub;
+      
+      const call = await storage.initiateCall({
+        callerId,
+        receiverId,
+        callType,
+        status: "initiated"
+      });
+      
+      // Create notification
+      await storage.createNotification({
+        userId: receiverId,
+        type: "call",
+        title: "Appel entrant",
+        content: `${req.user.claims.first_name || 'Un utilisateur'} vous appelle`,
+        relatedUserId: callerId
+      });
+      
+      res.json(call);
+    } catch (error) {
+      console.error("Error initiating call:", error);
+      res.status(500).json({ message: "Failed to initiate call" });
+    }
+  });
+
+  app.put("/api/calls/:id/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const callId = parseInt(req.params.id);
+      const { status, duration } = req.body;
+      
+      const call = await storage.updateCallStatus(callId, status, duration);
+      res.json(call);
+    } catch (error) {
+      console.error("Error updating call status:", error);
+      res.status(500).json({ message: "Failed to update call status" });
+    }
+  });
+
+  app.get("/api/calls/history", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const history = await storage.getUserCallHistory(userId);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching call history:", error);
+      res.status(500).json({ message: "Failed to fetch call history" });
+    }
+  });
+
+  // Search routes for social features
+  app.get("/api/search/users", isAuthenticated, async (req: any, res) => {
+    try {
+      const { q } = req.query;
+      const userId = req.user.claims.sub;
+      
+      if (!q || q.length < 2) {
+        return res.json([]);
+      }
+      
+      const users = await storage.searchUsers(q, userId);
+      res.json(users);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
+  // Social notifications routes
+  app.get("/api/notifications/social", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const notifications = await storage.getUserNotifications(userId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching social notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.put("/api/notifications/:id/read", isAuthenticated, async (req: any, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      await storage.markNotificationAsRead(notificationId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  app.get("/api/notifications/unread-count", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const count = await storage.getUnreadNotificationCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread notifications count:", error);
+      res.status(500).json({ message: "Failed to fetch unread count" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

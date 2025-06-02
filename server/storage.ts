@@ -50,7 +50,7 @@ import {
   type InsertNotificationTable,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, ne } from "drizzle-orm";
+import { eq, desc, and, ne, or, sql, like } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -556,6 +556,362 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  // Social operations - Friends
+  async sendFriendRequest(senderId: string, receiverId: string): Promise<Friendship> {
+    const [friendship] = await db
+      .insert(friendships)
+      .values({
+        senderId,
+        receiverId,
+        status: "pending"
+      })
+      .returning();
+    return friendship;
+  }
+
+  async acceptFriendRequest(friendshipId: number): Promise<Friendship> {
+    const [friendship] = await db
+      .update(friendships)
+      .set({ 
+        status: "accepted",
+        updatedAt: new Date()
+      })
+      .where(eq(friendships.id, friendshipId))
+      .returning();
+    return friendship;
+  }
+
+  async rejectFriendRequest(friendshipId: number): Promise<void> {
+    await db
+      .delete(friendships)
+      .where(eq(friendships.id, friendshipId));
+  }
+
+  async blockUser(senderId: string, receiverId: string): Promise<Friendship> {
+    const [friendship] = await db
+      .insert(friendships)
+      .values({
+        senderId,
+        receiverId,
+        status: "blocked"
+      })
+      .onConflictDoUpdate({
+        target: [friendships.senderId, friendships.receiverId],
+        set: { 
+          status: "blocked",
+          updatedAt: new Date()
+        }
+      })
+      .returning();
+    return friendship;
+  }
+
+  async getUserFriends(userId: string): Promise<User[]> {
+    const friendshipsResult = await db
+      .select({
+        user: users
+      })
+      .from(friendships)
+      .innerJoin(users, or(
+        and(eq(friendships.senderId, userId), eq(users.id, friendships.receiverId)),
+        and(eq(friendships.receiverId, userId), eq(users.id, friendships.senderId))
+      ))
+      .where(eq(friendships.status, "accepted"));
+    
+    return friendshipsResult.map(result => result.user);
+  }
+
+  async getPendingFriendRequests(userId: string): Promise<Friendship[]> {
+    return await db
+      .select()
+      .from(friendships)
+      .where(and(
+        eq(friendships.receiverId, userId),
+        eq(friendships.status, "pending")
+      ))
+      .orderBy(desc(friendships.createdAt));
+  }
+
+  async getSentFriendRequests(userId: string): Promise<Friendship[]> {
+    return await db
+      .select()
+      .from(friendships)
+      .where(and(
+        eq(friendships.senderId, userId),
+        eq(friendships.status, "pending")
+      ))
+      .orderBy(desc(friendships.createdAt));
+  }
+
+  // Social operations - Posts
+  async createPost(post: InsertSocialPost): Promise<SocialPost> {
+    const [newPost] = await db
+      .insert(socialPosts)
+      .values(post)
+      .returning();
+    return newPost;
+  }
+
+  async getPosts(userId?: string, visibility?: string): Promise<SocialPost[]> {
+    let query = db.select().from(socialPosts);
+    
+    if (userId && visibility) {
+      query = query.where(and(
+        eq(socialPosts.authorId, userId),
+        eq(socialPosts.visibility, visibility)
+      ));
+    } else if (userId) {
+      query = query.where(eq(socialPosts.authorId, userId));
+    } else if (visibility) {
+      query = query.where(eq(socialPosts.visibility, visibility));
+    }
+    
+    return await query.orderBy(desc(socialPosts.createdAt));
+  }
+
+  async getUserPosts(userId: string): Promise<SocialPost[]> {
+    return await db
+      .select()
+      .from(socialPosts)
+      .where(eq(socialPosts.authorId, userId))
+      .orderBy(desc(socialPosts.createdAt));
+  }
+
+  async likePost(userId: string, postId: number): Promise<PostLike> {
+    const [like] = await db
+      .insert(postLikes)
+      .values({ userId, postId })
+      .returning();
+    
+    // Update likes count
+    await db
+      .update(socialPosts)
+      .set({ 
+        likesCount: sql`${socialPosts.likesCount} + 1` 
+      })
+      .where(eq(socialPosts.id, postId));
+    
+    return like;
+  }
+
+  async unlikePost(userId: string, postId: number): Promise<void> {
+    await db
+      .delete(postLikes)
+      .where(and(
+        eq(postLikes.userId, userId),
+        eq(postLikes.postId, postId)
+      ));
+    
+    // Update likes count
+    await db
+      .update(socialPosts)
+      .set({ 
+        likesCount: sql`${socialPosts.likesCount} - 1` 
+      })
+      .where(eq(socialPosts.id, postId));
+  }
+
+  async commentOnPost(comment: InsertPostComment): Promise<PostComment> {
+    const [newComment] = await db
+      .insert(postComments)
+      .values(comment)
+      .returning();
+    
+    // Update comments count
+    await db
+      .update(socialPosts)
+      .set({ 
+        commentsCount: sql`${socialPosts.commentsCount} + 1` 
+      })
+      .where(eq(socialPosts.id, comment.postId));
+    
+    return newComment;
+  }
+
+  async getPostComments(postId: number): Promise<PostComment[]> {
+    return await db
+      .select()
+      .from(postComments)
+      .where(eq(postComments.postId, postId))
+      .orderBy(desc(postComments.createdAt));
+  }
+
+  async deletePost(postId: number, userId: string): Promise<void> {
+    await db
+      .delete(socialPosts)
+      .where(and(
+        eq(socialPosts.id, postId),
+        eq(socialPosts.authorId, userId)
+      ));
+  }
+
+  // Social operations - Messages
+  async sendMessage(message: InsertPrivateMessage): Promise<PrivateMessage> {
+    const [newMessage] = await db
+      .insert(privateMessages)
+      .values(message)
+      .returning();
+    
+    // Update or create conversation
+    await db
+      .insert(conversations)
+      .values({
+        participant1Id: message.senderId,
+        participant2Id: message.receiverId,
+        lastMessageId: newMessage.id,
+        lastActivityAt: new Date()
+      })
+      .onConflictDoUpdate({
+        target: [conversations.participant1Id, conversations.participant2Id],
+        set: {
+          lastMessageId: newMessage.id,
+          lastActivityAt: new Date()
+        }
+      });
+    
+    return newMessage;
+  }
+
+  async getConversation(userId1: string, userId2: string): Promise<PrivateMessage[]> {
+    return await db
+      .select()
+      .from(privateMessages)
+      .where(or(
+        and(
+          eq(privateMessages.senderId, userId1),
+          eq(privateMessages.receiverId, userId2)
+        ),
+        and(
+          eq(privateMessages.senderId, userId2),
+          eq(privateMessages.receiverId, userId1)
+        )
+      ))
+      .orderBy(desc(privateMessages.createdAt));
+  }
+
+  async getUserConversations(userId: string): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(or(
+        eq(conversations.participant1Id, userId),
+        eq(conversations.participant2Id, userId)
+      ))
+      .orderBy(desc(conversations.lastActivityAt));
+  }
+
+  async markMessageAsRead(messageId: number): Promise<void> {
+    await db
+      .update(privateMessages)
+      .set({ isRead: true })
+      .where(eq(privateMessages.id, messageId));
+  }
+
+  async getUnreadMessageCount(userId: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(privateMessages)
+      .where(and(
+        eq(privateMessages.receiverId, userId),
+        eq(privateMessages.isRead, false)
+      ));
+    
+    return result[0]?.count || 0;
+  }
+
+  // Social operations - Calls
+  async initiateCall(call: InsertCallSession): Promise<CallSession> {
+    const [newCall] = await db
+      .insert(callSessions)
+      .values(call)
+      .returning();
+    return newCall;
+  }
+
+  async updateCallStatus(callId: number, status: string, duration?: number): Promise<CallSession> {
+    const updateData: any = { status };
+    
+    if (status === "active" && !duration) {
+      updateData.startedAt = new Date();
+    } else if (status === "ended" && duration) {
+      updateData.endedAt = new Date();
+      updateData.duration = duration;
+    }
+    
+    const [updatedCall] = await db
+      .update(callSessions)
+      .set(updateData)
+      .where(eq(callSessions.id, callId))
+      .returning();
+    
+    return updatedCall;
+  }
+
+  async getUserCallHistory(userId: string): Promise<CallSession[]> {
+    return await db
+      .select()
+      .from(callSessions)
+      .where(or(
+        eq(callSessions.callerId, userId),
+        eq(callSessions.receiverId, userId)
+      ))
+      .orderBy(desc(callSessions.createdAt));
+  }
+
+  // Social operations - Notifications
+  async createNotification(notification: InsertNotificationTable): Promise<NotificationTable> {
+    const [newNotification] = await db
+      .insert(notificationsTable)
+      .values(notification)
+      .returning();
+    return newNotification;
+  }
+
+  async getUserNotifications(userId: string): Promise<NotificationTable[]> {
+    return await db
+      .select()
+      .from(notificationsTable)
+      .where(eq(notificationsTable.userId, userId))
+      .orderBy(desc(notificationsTable.createdAt));
+  }
+
+  async markNotificationAsRead(notificationId: number): Promise<void> {
+    await db
+      .update(notificationsTable)
+      .set({ isRead: true })
+      .where(eq(notificationsTable.id, notificationId));
+  }
+
+  async getUnreadNotificationCount(userId: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notificationsTable)
+      .where(and(
+        eq(notificationsTable.userId, userId),
+        eq(notificationsTable.isRead, false)
+      ));
+    
+    return result[0]?.count || 0;
+  }
+
+  // Search operations
+  async searchUsers(query: string, excludeUserId?: string): Promise<User[]> {
+    let searchQuery = db
+      .select()
+      .from(users)
+      .where(or(
+        like(users.firstName, `%${query}%`),
+        like(users.lastName, `%${query}%`),
+        like(users.email, `%${query}%`)
+      ));
+    
+    if (excludeUserId) {
+      searchQuery = searchQuery.where(ne(users.id, excludeUserId));
+    }
+    
+    return await searchQuery.limit(20);
   }
 }
 
