@@ -202,9 +202,14 @@ export default function SocialPage() {
   // Accept friend request mutation
   const acceptFriendRequest = useMutation({
     mutationFn: async (friendshipId: number) => {
-      return apiRequest(`/api/friends/accept/${friendshipId}`, {
+      const response = await fetch(`/api/friends/accept/${friendshipId}`, {
         method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/friends"] });
@@ -219,9 +224,14 @@ export default function SocialPage() {
   // Reject friend request mutation
   const rejectFriendRequest = useMutation({
     mutationFn: async (friendshipId: number) => {
-      return apiRequest(`/api/friends/reject/${friendshipId}`, {
+      const response = await fetch(`/api/friends/reject/${friendshipId}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/friends/requests/pending"] });
