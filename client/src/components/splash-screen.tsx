@@ -41,11 +41,12 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               }}
               className="mb-8 flex justify-center"
             >
-              <div className="w-28 h-28 flex items-center justify-center">
+              <div className="w-40 h-40 flex items-center justify-center">
                 <img 
                   src={newLogo} 
                   alt="Easy Packs Logo" 
-                  className="w-20 h-20 object-contain drop-shadow-2xl"
+                  className="w-32 h-32 object-contain drop-shadow-2xl"
+                  style={{ filter: 'drop-shadow(0 25px 50px rgba(139, 92, 246, 0.5))' }}
                 />
               </div>
             </motion.div>
