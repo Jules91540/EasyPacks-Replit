@@ -587,11 +587,11 @@ export default function SocialPage() {
   );
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex min-h-screen bg-background">
       <Navigation variant="student" />
       
-      <main className="flex-1 p-4 md:ml-20 h-screen overflow-hidden">
-        <div className="h-full flex flex-col max-h-screen">
+      <main className="flex-1 p-4 md:ml-20 min-h-screen">
+        <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-white">Réseau Social</h1>
