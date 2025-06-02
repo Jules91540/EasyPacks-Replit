@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
+import MentionInput from "@/components/mention-input";
 import { Input } from "@/components/ui/input";
 import { 
   ArrowLeft, 
@@ -376,7 +377,7 @@ export default function ForumTopicPage() {
                 )}
                 <div className="flex items-end gap-2">
                   <Textarea
-                    placeholder="Tapez votre message..."
+                    placeholder="Tapez votre message... (utilisez @ pour mentionner quelqu'un)"
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
                     className="flex-1 min-h-[44px] max-h-32 resize-none bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 rounded-2xl"

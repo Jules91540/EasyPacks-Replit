@@ -555,7 +555,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Simuler la recherche d'utilisateurs (à remplacer par une vraie recherche en base)
       const allUsers = [
         { id: "43311594", firstName: "Easy", lastName: "Packs", email: "easy.packs0@gmail.com" },
-        { id: "109791419912459995702", firstName: "Gameli", lastName: "SENYO", email: "gamelisenyo@gmail.com" }
+        { id: "109791419912459995702", firstName: "Gameli", lastName: "SENYO", email: "gamelisenyo@gmail.com" },
+        { id: "105806234081112158042", firstName: "Julien", lastName: "Pariès", email: "julparinova@gmail.com" }
       ];
 
       const filteredUsers = allUsers.filter(user => 
@@ -670,6 +671,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       forumReplies.push(reply);
 
+      // Récupérer les informations de l'utilisateur qui poste
+      const currentUser = await storage.getUser(userId);
+      
       // Détecter les mentions et créer des notifications ciblées
       const mentions = await detectMentionsAndNotify(content, userId, topicId);
       
@@ -681,10 +685,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userNotifications[mention.userId].push({
           id: Date.now() + Math.random(),
           type: 'mention',
-          message: `${user?.firstName || 'Un utilisateur'} vous a mentionné dans le forum`,
+          message: `${currentUser?.firstName || 'Un utilisateur'} vous a mentionné dans le forum`,
           content: mention.content,
           topicId: mention.topicId,
-          authorName: user?.firstName || 'Utilisateur',
+          authorName: currentUser?.firstName || 'Utilisateur',
           isRead: false,
           createdAt: new Date()
         });
