@@ -45,7 +45,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                 <img 
                   src={newLogo} 
                   alt="Easy Packs Logo" 
-                  className="w-32 h-32 object-contain drop-shadow-2xl rounded-2xl"
+                  className="w-32 h-32 object-contain drop-shadow-2xl rounded-2xl border-2 border-black"
                   style={{ filter: 'drop-shadow(0 25px 50px rgba(139, 92, 246, 0.5))' }}
                 />
               </div>
