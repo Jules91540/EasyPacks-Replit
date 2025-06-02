@@ -727,7 +727,7 @@ export default function SocialPage() {
                       <CardContent>
                         <div className="space-y-3">
                           {friends.slice(0, 5).map((friend: User) => (
-                            <div key={friend.id} className="flex items-center space-x-3">
+                            <div key={`friend-list-${friend.id}`} className="flex items-center space-x-3">
                               <Avatar className="w-8 h-8">
                                 <AvatarImage src={friend.profileImageUrl} />
                                 <AvatarFallback>
