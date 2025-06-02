@@ -45,7 +45,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                 <img 
                   src={newLogo} 
                   alt="Easy Packs Logo" 
-                  className="w-20 h-20 object-contain filter brightness-0 invert drop-shadow-2xl"
+                  className="w-20 h-20 object-contain drop-shadow-2xl"
                 />
               </div>
             </motion.div>
