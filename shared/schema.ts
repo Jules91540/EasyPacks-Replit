@@ -8,6 +8,7 @@ import {
   integer,
   boolean,
   serial,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -265,6 +266,16 @@ export const notificationsTable = pgTable("notifications_table", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const messageReactions = pgTable("message_reactions", {
+  id: serial("id").primaryKey(),
+  messageId: integer("message_id").notNull().references(() => privateMessages.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  emoji: varchar("emoji").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  uniqueReaction: unique("unique_message_user_emoji").on(table.messageId, table.userId, table.emoji),
+}));
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   moduleProgress: many(moduleProgress),
@@ -284,6 +295,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   initiatedCalls: many(callSessions, { relationName: "caller" }),
   receivedCalls: many(callSessions, { relationName: "receiver" }),
   notifications: many(notificationsTable),
+  messageReactions: many(messageReactions),
 }));
 
 export const friendshipsRelations = relations(friendships, ({ one }) => ({
@@ -330,7 +342,7 @@ export const postCommentsRelations = relations(postComments, ({ one }) => ({
   }),
 }));
 
-export const privateMessagesRelations = relations(privateMessages, ({ one }) => ({
+export const privateMessagesRelations = relations(privateMessages, ({ one, many }) => ({
   sender: one(users, {
     fields: [privateMessages.senderId],
     references: [users.id],
@@ -341,6 +353,7 @@ export const privateMessagesRelations = relations(privateMessages, ({ one }) => 
     references: [users.id],
     relationName: "receiver",
   }),
+  reactions: many(messageReactions),
 }));
 
 export const conversationsRelations = relations(conversations, ({ one }) => ({
@@ -385,6 +398,17 @@ export const notificationsTableRelations = relations(notificationsTable, ({ one 
   relatedPost: one(socialPosts, {
     fields: [notificationsTable.relatedPostId],
     references: [socialPosts.id],
+  }),
+}));
+
+export const messageReactionsRelations = relations(messageReactions, ({ one }) => ({
+  message: one(privateMessages, {
+    fields: [messageReactions.messageId],
+    references: [privateMessages.id],
+  }),
+  user: one(users, {
+    fields: [messageReactions.userId],
+    references: [users.id],
   }),
 }));
 
@@ -519,6 +543,9 @@ export type NotificationTable = typeof notificationsTable.$inferSelect;
 export type InsertNotificationTable = typeof notificationsTable.$inferInsert;
 
 // Custom conversation type with participant info
+export type MessageReaction = typeof messageReactions.$inferSelect;
+export type InsertMessageReaction = typeof messageReactions.$inferInsert;
+
 export type ConversationWithParticipant = {
   id: number;
   participant1Id: string;
