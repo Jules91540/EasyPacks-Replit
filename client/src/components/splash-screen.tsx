@@ -29,7 +29,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
           className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"
         >
           <div className="text-center">
-            {/* Logo avec animation */}
+            {/* Logo avec animation - même style que la sidebar */}
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -41,21 +41,25 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               }}
               className="mb-8 flex justify-center"
             >
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/80 to-primary shadow-2xl flex items-center justify-center ring-4 ring-white/20">
+              <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary to-purple-600 shadow-2xl flex items-center justify-center ring-4 ring-white/20 backdrop-blur-sm">
                 <img 
                   src={boxIcon} 
                   alt="Easy Packs Logo" 
-                  className="w-16 h-16 rounded-xl object-cover"
+                  className="w-20 h-20 rounded-xl object-cover shadow-lg"
                 />
               </div>
             </motion.div>
 
-            {/* Nom de l'application */}
+            {/* Nom de l'application avec police Poppins */}
             <motion.h1
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.8 }}
-              className="text-4xl font-bold text-white mb-4 tracking-wide"
+              className="text-5xl text-white mb-4 tracking-wide"
+              style={{ 
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: 600
+              }}
             >
               Easy Packs
             </motion.h1>
