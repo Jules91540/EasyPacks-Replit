@@ -161,6 +161,9 @@ export class EmailService {
       }
 
       // Envoi réel de l'email via Gmail
+      console.log(`📧 Tentative d'envoi d'email à ${recipient}`);
+      console.log(`Sujet: ${template.subject}`);
+      
       const result = await transporter.sendMail({
         from: '"EasyPacks Formation" <no.reply.easypacks@gmail.com>',
         to: recipient,
@@ -170,7 +173,6 @@ export class EmailService {
       });
       
       console.log(`✅ Email envoyé avec succès à ${recipient}`);
-      console.log(`Sujet: ${template.subject}`);
       console.log(`Message ID: ${result.messageId}`);
 
       // Enregistrer dans les logs
