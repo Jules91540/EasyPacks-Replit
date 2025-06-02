@@ -80,6 +80,7 @@ function Router() {
           <Route path="/modules" component={ModulesPage} />
           <Route path="/progress" component={ProgressPage} />
           <Route path="/badges" component={BadgesPage} />
+          <Route path="/social" component={SocialPage} />
           <Route path="/forum" component={ForumPage} />
           <Route path="/forum/topic/:id" component={ForumTopicPage} />
           <Route path="/profile/:userId" component={UserProfile} />

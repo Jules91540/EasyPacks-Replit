@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Navigation } from "@/components/ui/navigation";
+import Navigation from "@/components/ui/navigation";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -151,10 +151,15 @@ export default function SocialPage() {
   // Create post mutation
   const createPost = useMutation({
     mutationFn: async (data: { content: string; visibility: string }) => {
-      return apiRequest("/api/posts", {
+      const response = await fetch("/api/posts", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
@@ -169,10 +174,15 @@ export default function SocialPage() {
   // Send friend request mutation
   const sendFriendRequest = useMutation({
     mutationFn: async (receiverId: string) => {
-      return apiRequest("/api/friends/request", {
+      const response = await fetch("/api/friends/request", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ receiverId }),
       });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/friends"] });

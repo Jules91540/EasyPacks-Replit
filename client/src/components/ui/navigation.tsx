@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Video, Home, BookOpen, Award, BarChart3, Settings, LogOut, User, Package, Search, MessageSquare, HelpCircle } from "lucide-react";
+import { Menu, Video, Home, BookOpen, Award, BarChart3, Settings, LogOut, User, Package, Search, MessageSquare, HelpCircle, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import FloatingChatbot from "@/components/floating-chatbot";
 import boxIcon from "@assets/Capture d'écran 2025-06-01 215731.png";
