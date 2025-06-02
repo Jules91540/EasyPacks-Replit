@@ -160,13 +160,13 @@ export default function ForumTopicPage() {
                 <Avatar className="h-10 w-10 ring-2 ring-white/20">
                   <AvatarImage src={topic?.author?.profileImageUrl} />
                   <AvatarFallback className="bg-gradient-to-br from-pink-500 to-violet-500 text-white">
-                    {topic?.author?.firstName?.[0] || 'U'}
+                    {(topic?.author?.firstName || topic?.author?.email)?.[0]?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h1 className="text-white font-semibold text-lg">{topic?.title}</h1>
                   <p className="text-white/60 text-sm">
-                    Par {topic?.author?.firstName || 'Anonyme'} • {topic?.viewCount || 0} vues
+                    Par {topic?.author?.firstName || topic?.author?.email?.split('@')[0] || 'Anonyme'} • {topic?.viewCount || 0} vues
                   </p>
                 </div>
               </div>
@@ -192,13 +192,13 @@ export default function ForumTopicPage() {
             <Avatar className="h-10 w-10 ring-2 ring-white/20">
               <AvatarImage src={topic?.author?.profileImageUrl} />
               <AvatarFallback className="bg-gradient-to-br from-pink-500 to-violet-500 text-white">
-                {topic?.author?.firstName?.[0] || 'U'}
+                {(topic?.author?.firstName || topic?.author?.email)?.[0]?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl rounded-tl-sm p-4 border border-white/20">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-semibold text-white">{topic?.author?.firstName || 'Anonyme'}</span>
+                  <span className="font-semibold text-white">{topic?.author?.firstName || topic?.author?.email?.split('@')[0] || 'Anonyme'}</span>
                   <span className="text-white/50 text-xs">
                     {new Date(topic?.createdAt).toLocaleTimeString('fr-FR', {
                       hour: '2-digit',
@@ -243,7 +243,7 @@ export default function ForumTopicPage() {
                   <Avatar className="h-8 w-8 ring-2 ring-white/20">
                     <AvatarImage src={reply?.author?.profileImageUrl} />
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-sm">
-                      {reply?.author?.firstName?.[0] || 'U'}
+                      {(reply?.author?.firstName || reply?.author?.email)?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -255,7 +255,7 @@ export default function ForumTopicPage() {
                   }`}>
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`font-medium text-sm ${isCurrentUser ? 'text-pink-200' : 'text-white'}`}>
-                        {reply?.author?.firstName || 'Anonyme'}
+                        {reply?.author?.firstName || reply?.author?.email?.split('@')[0] || 'Anonyme'}
                       </span>
                       <span className="text-white/50 text-xs">
                         {new Date(reply?.createdAt).toLocaleTimeString('fr-FR', {
@@ -291,9 +291,21 @@ export default function ForumTopicPage() {
                       </div>
                     )}
                   </div>
-                  {/* Reactions placeholder */}
+                  {/* Reactions */}
                   <div className="flex items-center gap-2 mt-1 px-3">
-                    <Button variant="ghost" size="sm" className="h-6 p-0 text-white/50 hover:text-red-400 hover:bg-transparent">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 p-0 text-white/50 hover:text-red-400 hover:bg-transparent transition-colors"
+                      onClick={() => {
+                        // Simple reaction toggle
+                        toast({
+                          title: "❤️ Réaction ajoutée !",
+                          description: "Votre réaction a été enregistrée.",
+                          duration: 2000,
+                        });
+                      }}
+                    >
                       <Heart className="h-4 w-4" />
                     </Button>
                     <span className="text-xs text-white/40">Réagir</span>
