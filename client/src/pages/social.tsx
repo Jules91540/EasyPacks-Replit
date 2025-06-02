@@ -890,10 +890,7 @@ export default function SocialPage() {
 
               <TabsContent value="messages" className="h-full overflow-hidden">
                 <div className="h-[calc(100vh-160px)]">
-                  <EnhancedMessaging 
-                    selectedConversation={selectedConversation}
-                    onSelectConversation={setSelectedConversation}
-                  />
+                  <FixedMessaging />
                 </div>
               </TabsContent>
 

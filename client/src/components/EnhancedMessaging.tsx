@@ -60,8 +60,24 @@ export default function EnhancedMessaging({ selectedConversation, onSelectConver
 
   // Fetch messages for selected conversation
   const { data: messages = [] } = useQuery({
-    queryKey: ["/api/messages", selectedConversation?.participant.id],
+    queryKey: selectedConversation 
+      ? ['/api/messages', { 
+          participant1Id: selectedConversation.participant1Id, 
+          participant2Id: selectedConversation.participant2Id 
+        }]
+      : ['no-conversation'],
+    queryFn: async () => {
+      if (!selectedConversation) return [];
+      const params = new URLSearchParams({
+        participant1Id: selectedConversation.participant1Id,
+        participant2Id: selectedConversation.participant2Id
+      });
+      const response = await fetch(`/api/messages?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      return response.json();
+    },
     enabled: !!selectedConversation,
+    refetchInterval: 2000,
   });
 
   // Send message mutation
