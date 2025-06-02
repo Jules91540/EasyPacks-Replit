@@ -2,12 +2,14 @@ import { createTransport } from 'nodemailer';
 import { storage } from './storage';
 import { InsertEmailLog } from '@shared/schema';
 
-// Configuration du transport email avec Gmail
+// Configuration du transport email avec Mailgun
 const transporter = createTransport({
-  service: 'gmail',
+  host: 'smtp.mailgun.org',
+  port: 587,
+  secure: false,
   auth: {
-    user: 'no.reply.easypacks@gmail.com',
-    pass: 'qakg fsnn zxpj mrxu'
+    user: `postmaster@${process.env.MAILGUN_DOMAIN}`,
+    pass: process.env.MAILGUN_API_KEY
   }
 });
 
@@ -165,7 +167,7 @@ export class EmailService {
       console.log(`Sujet: ${template.subject}`);
       
       const result = await transporter.sendMail({
-        from: '"EasyPacks Formation" <no.reply.easypacks@gmail.com>',
+        from: `"EasyPacks Formation" <postmaster@${process.env.MAILGUN_DOMAIN}>`,
         to: recipient,
         subject: template.subject,
         text: template.text,
