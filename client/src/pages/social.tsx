@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AutoRefresh } from "@/components/AutoRefresh";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -588,6 +589,7 @@ export default function SocialPage() {
 
   return (
     <div className="flex min-h-screen bg-background">
+      <AutoRefresh enabled={true} interval={1000} />
       <Navigation variant="student" />
       
       <main className="flex-1 p-4 md:ml-20 min-h-screen">
