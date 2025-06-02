@@ -122,13 +122,21 @@ export default function InstagramMessaging() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       if (selectedConversation) {
-        queryClient.refetchQueries({ 
-          queryKey: ["/api/conversations", selectedConversation.participant?.id] 
+        queryClient.invalidateQueries({ 
+          queryKey: ["/api/conversations", selectedConversation.id, "messages"] 
         });
       }
       setMessageContent("");
       setReplyingTo(null);
       scrollToBottom();
+    },
+    onError: (error) => {
+      console.error("Erreur envoi message:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le message. Veuillez réessayer.",
+        variant: "destructive",
+      });
     },
   });
 
