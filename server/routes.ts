@@ -1436,7 +1436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isAuthenticated, async (req: any, res) => {
     try {
       const { receiverId, content, messageType = "text" } = req.body;
-      const senderId = req.user.claims.sub;
+      const senderId = req.user?.id;
       
       const message = await storage.sendMessage({
         senderId,
@@ -1450,7 +1450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: receiverId,
         type: "message",
         title: "Nouveau message",
-        content: `${req.user.claims.first_name || 'Un utilisateur'} vous a envoyé un message`,
+        content: `${req.user?.firstName || 'Un utilisateur'} vous a envoyé un message`,
         relatedUserId: senderId
       });
       
@@ -1481,7 +1481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/conversations/:userId", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.user?.id;
       const otherUserId = req.params.userId;
       
       const messages = await storage.getConversation(currentUserId, otherUserId);

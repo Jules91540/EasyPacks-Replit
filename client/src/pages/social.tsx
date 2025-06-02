@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Navigation from "@/components/ui/navigation";
+import { IncomingCallPopup } from "@/components/IncomingCallPopup";
+import { MessageWithReactions } from "@/components/MessageWithReactions";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -112,6 +114,20 @@ export default function SocialPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messageContent, setMessageContent] = useState("");
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  
+  // Call states
+  const [incomingCall, setIncomingCall] = useState<{
+    visible: boolean;
+    caller?: User;
+    callId?: number;
+  }>({ visible: false });
+  const [activeCall, setActiveCall] = useState<{
+    active: boolean;
+    participant?: User;
+    isScreenSharing: boolean;
+    isMuted: boolean;
+    isVideoOn: boolean;
+  }>({ active: false, isScreenSharing: false, isMuted: false, isVideoOn: true });
 
   // Fetch posts
   const { data: posts = [], isLoading: postsLoading } = useQuery({
