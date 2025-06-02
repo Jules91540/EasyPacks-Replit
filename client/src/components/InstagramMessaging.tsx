@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -70,6 +70,7 @@ interface Conversation {
 export default function InstagramMessaging() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messageContent, setMessageContent] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,15 +128,17 @@ export default function InstagramMessaging() {
       return response.json();
     },
     onSuccess: () => {
+      // Rafraîchir les conversations et les messages
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      if (selectedConversation) {
+      if (selectedConversation && selectedConversation.id > 0) {
         queryClient.invalidateQueries({ 
           queryKey: ["/api/conversations", selectedConversation.id, "messages"] 
         });
       }
       setMessageContent("");
       setReplyingTo(null);
-      scrollToBottom();
+      // Attendre un peu avant de faire défiler pour laisser le temps aux données de se mettre à jour
+      setTimeout(scrollToBottom, 100);
     },
     onError: (error) => {
       console.error("Erreur envoi message:", error);
