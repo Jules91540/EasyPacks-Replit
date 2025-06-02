@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/ui/navigation";
 import MentionNotificationPopup, { useMentionNotifications } from "@/components/mention-notification";
+import MessageReactions from "@/components/message-reactions";
 
 export default function ForumTopicPage() {
   const { user } = useAuth();
@@ -34,6 +35,9 @@ export default function ForumTopicPage() {
   
   // Système de mentions
   const { notifications, addNotification, dismissNotification } = useMentionNotifications();
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionSuggestions, setMentionSuggestions] = useState<any[]>([]);
 
   const topicId = params?.id;
 

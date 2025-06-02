@@ -543,6 +543,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get users for mentions
+  app.get("/api/users/search", isAuthenticated, async (req: any, res) => {
+    try {
+      const query = req.query.q as string;
+      
+      if (!query || query.length < 2) {
+        return res.json([]);
+      }
+
+      // Simuler la recherche d'utilisateurs (à remplacer par une vraie recherche en base)
+      const allUsers = [
+        { id: "43311594", firstName: "Easy", lastName: "Packs", email: "easy.packs0@gmail.com" },
+        { id: "109791419912459995702", firstName: "Gameli", lastName: "SENYO", email: "gamelisenyo@gmail.com" }
+      ];
+
+      const filteredUsers = allUsers.filter(user => 
+        user.firstName.toLowerCase().includes(query.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(query.toLowerCase())
+      );
+
+      res.json(filteredUsers.slice(0, 5)); // Limiter à 5 résultats
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Erreur lors de la recherche d'utilisateurs" });
+    }
+  });
+
+  // Get reactions for a message
+  app.get("/api/forum/reactions/:messageId", isAuthenticated, async (req: any, res) => {
+    try {
+      const messageId = req.params.messageId;
+      
+      // Simuler les réactions (à remplacer par une vraie base de données)
+      const reactions = [
+        { emoji: "❤️", count: Math.floor(Math.random() * 5) + 1, userReacted: Math.random() > 0.5 },
+        { emoji: "👍", count: Math.floor(Math.random() * 3) + 1, userReacted: Math.random() > 0.5 },
+        { emoji: "😂", count: Math.floor(Math.random() * 2) + 1, userReacted: Math.random() > 0.5 }
+      ].filter(r => r.count > 0);
+
+      res.json(reactions);
+    } catch (error) {
+      console.error("Error fetching reactions:", error);
+      res.status(500).json({ message: "Erreur lors du chargement des réactions" });
+    }
+  });
+
+  // Add or remove reaction
+  app.post("/api/forum/reactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const { messageId, messageType, emoji } = req.body;
+      const userId = req.user.id;
+
+      // Simuler l'ajout/suppression de réaction
+      const reactionAdded = Math.random() > 0.5;
+      
+      res.json({ 
+        success: true, 
+        action: reactionAdded ? "added" : "removed",
+        emoji,
+        messageId 
+      });
+    } catch (error) {
+      console.error("Error managing reaction:", error);
+      res.status(500).json({ message: "Erreur lors de la gestion de la réaction" });
+    }
+  });
+
   // Create forum reply with file upload
   app.post("/api/forum/replies", isAuthenticated, upload.array('files', 5), async (req: any, res) => {
     try {

@@ -166,6 +166,15 @@ export const forumReplies = pgTable("forum_replies", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const forumReactions = pgTable("forum_reactions", {
+  id: serial("id").primaryKey(),
+  messageId: varchar("message_id").notNull(), // peut être topic ou reply ID
+  messageType: varchar("message_type").notNull(), // "topic" ou "reply"
+  userId: varchar("user_id").notNull().references(() => users.id),
+  emoji: varchar("emoji").notNull(), // "❤️", "👍", "😂", etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   moduleProgress: many(moduleProgress),
@@ -282,6 +291,8 @@ export type ForumTopic = typeof forumTopics.$inferSelect;
 export type InsertForumTopic = typeof forumTopics.$inferInsert;
 export type ForumReply = typeof forumReplies.$inferSelect;
 export type InsertForumReply = typeof forumReplies.$inferInsert;
+export type ForumReaction = typeof forumReactions.$inferSelect;
+export type InsertForumReaction = typeof forumReactions.$inferInsert;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type InsertEmailLog = typeof emailLogs.$inferInsert;
 
