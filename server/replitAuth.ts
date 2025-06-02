@@ -69,17 +69,22 @@ async function upsertUser(
   });
   
   // Send welcome email to new users
+  console.log(`Checking welcome email: isNewUser=${isNewUser}, email=${user.email}, firstName=${user.firstName}`);
   if (isNewUser && user.email && user.firstName) {
     try {
+      console.log("Sending welcome email...");
       const { EmailService } = await import('./email');
       await EmailService.sendWelcomeEmail({
         id: user.id,
         email: user.email,
         firstName: user.firstName
       });
+      console.log("Welcome email sent successfully");
     } catch (error) {
       console.error("Failed to send welcome email:", error);
     }
+  } else {
+    console.log("Welcome email not sent - user already exists or missing data");
   }
 }
 
