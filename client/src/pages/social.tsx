@@ -726,8 +726,8 @@ export default function SocialPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
-                          {friends.slice(0, 5).map((friend: User) => (
-                            <div key={`friend-list-${friend.id}`} className="flex items-center space-x-3">
+                          {friends.slice(0, 5).map((friend: User, index: number) => (
+                            <div key={`dashboard-friend-${friend.id}-${index}`} className="flex items-center space-x-3">
                               <Avatar className="w-8 h-8">
                                 <AvatarImage src={friend.profileImageUrl} />
                                 <AvatarFallback>
@@ -787,8 +787,8 @@ export default function SocialPage() {
 
               <TabsContent value="friends" className="overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-                  {friends.map((friend: User) => (
-                    <Card key={`friends-tab-${friend.id}`}>
+                  {friends.map((friend: User, index: number) => (
+                    <Card key={`friends-tab-${friend.id}-${index}`}>
                       <CardContent className="p-6 text-center">
                         <Avatar className="w-16 h-16 mx-auto mb-4">
                           <AvatarImage src={friend.profileImageUrl} />
@@ -924,8 +924,8 @@ export default function SocialPage() {
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-white mb-4">Découvrir des utilisateurs</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {allUsers.map((user: any) => (
-                          <Card key={`discover-user-${user.id}`}>
+                        {allUsers.map((user: any, index: number) => (
+                          <Card key={`discover-user-${user.id}-${index}`}>
                             <CardContent className="p-6">
                               <div className="text-center mb-4">
                                 <Avatar className="w-16 h-16 mx-auto mb-3">
