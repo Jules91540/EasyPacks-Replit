@@ -10,7 +10,9 @@ const transporter = createTransport({
   auth: {
     user: `postmaster@${process.env.MAILGUN_DOMAIN}`,
     pass: process.env.MAILGUN_API_KEY
-  }
+  },
+  logger: true,
+  debug: true
 });
 
 interface EmailTemplate {
