@@ -429,9 +429,9 @@ export default function SocialPage() {
               <TabsTrigger value="search">Découvrir</TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 mt-4 overflow-y-auto">
-              <TabsContent value="feed" className="h-full space-y-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-full">
+            <div className="flex-1 mt-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+              <TabsContent value="feed" className="space-y-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Create Post */}
                   <div className="lg:col-span-2">
                     <Card className="mb-6">
@@ -554,7 +554,7 @@ export default function SocialPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="friends" className="h-full overflow-y-auto">
+              <TabsContent value="friends" className="overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
                   {friends.map((friend: User) => (
                     <Card key={friend.id}>
@@ -771,8 +771,8 @@ export default function SocialPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="search" className="h-full overflow-y-auto">
-                <div className="space-y-6 pb-4">
+              <TabsContent value="search" className="overflow-y-auto">
+                <div className="space-y-6 pb-16">
                   {searchQuery.length >= 2 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {searchResults.map((user: User) => (
