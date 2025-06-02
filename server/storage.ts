@@ -412,9 +412,9 @@ export class DatabaseStorage implements IStorage {
       : 0;
 
     return {
-      totalStudents: studentsCount?.count || 0,
-      totalModules: modulesCount?.count || 0,
-      totalQuizzes: quizzesCount?.count || 0,
+      totalStudents: totalStudents,
+      totalModules: totalModules,
+      totalQuizzes: totalQuizzes,
       averageProgress: Math.round(averageProgress),
     };
   }

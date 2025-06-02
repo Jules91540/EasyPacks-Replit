@@ -57,13 +57,30 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  await storage.upsertUser({
+  const existingUser = await storage.getUser(claims["sub"]);
+  const isNewUser = !existingUser;
+  
+  const user = await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
   });
+  
+  // Send welcome email to new users
+  if (isNewUser && user.email && user.firstName) {
+    try {
+      const { EmailService } = await import('./email');
+      await EmailService.sendWelcomeEmail({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName
+      });
+    } catch (error) {
+      console.error("Failed to send welcome email:", error);
+    }
+  }
 }
 
 export async function setupAuth(app: Express) {
