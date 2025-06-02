@@ -24,8 +24,8 @@ export default function StatsCard({ icon: Icon, value, label, color }: StatsCard
             <Icon className="h-6 w-6" />
           </div>
           <div className="ml-4">
-            <p className="text-2xl font-bold text-gray-800">{value}</p>
-            <p className="text-gray-600 text-sm">{label}</p>
+            <p className="text-2xl font-bold text-white">{value}</p>
+            <p className="text-white/80 text-sm">{label}</p>
           </div>
         </div>
       </CardContent>
