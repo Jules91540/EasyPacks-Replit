@@ -170,8 +170,8 @@ export default function BadgesPage() {
                   <div className="bg-green-100 text-green-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <Trophy className="h-6 w-6" />
                   </div>
-                  <div className="text-2xl font-bold text-gray-800 mb-1">{earnedBadges.length}</div>
-                  <p className="text-gray-600 text-sm">Badges obtenus</p>
+                  <div className="text-2xl font-bold text-white mb-1">{earnedBadges.length}</div>
+                  <p className="text-white/80 text-sm">Badges obtenus</p>
                 </CardContent>
               </Card>
 
@@ -180,8 +180,8 @@ export default function BadgesPage() {
                   <div className="bg-blue-100 text-primary w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <Target className="h-6 w-6" />
                   </div>
-                  <div className="text-2xl font-bold text-gray-800 mb-1">{unearnedBadges.length}</div>
-                  <p className="text-gray-600 text-sm">Objectifs restants</p>
+                  <div className="text-2xl font-bold text-white mb-1">{unearnedBadges.length}</div>
+                  <p className="text-white/80 text-sm">Objectifs restants</p>
                 </CardContent>
               </Card>
 
@@ -190,10 +190,10 @@ export default function BadgesPage() {
                   <div className="bg-purple-100 text-purple-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <Star className="h-6 w-6" />
                   </div>
-                  <div className="text-2xl font-bold text-gray-800 mb-1">
+                  <div className="text-2xl font-bold text-white mb-1">
                     {Math.round((earnedBadges.length / achievementBadges.length) * 100)}%
                   </div>
-                  <p className="text-gray-600 text-sm">Progression totale</p>
+                  <p className="text-white/80 text-sm">Progression totale</p>
                 </CardContent>
               </Card>
             </div>
@@ -202,7 +202,7 @@ export default function BadgesPage() {
           {/* Earned Badges */}
           {earnedBadges.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 heading-french">
+              <h2 className="text-2xl font-bold text-white mb-6 heading-french">
                 Badges Obtenus ({earnedBadges.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -214,9 +214,9 @@ export default function BadgesPage() {
                         <div className={`${badge.color} text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 badge-glow`}>
                           <Icon className="h-8 w-8" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">{badge.name}</h3>
-                        <p className="text-gray-600 text-sm mb-3">{badge.description}</p>
-                        <Badge className="bg-green-100 text-green-700">
+                        <h3 className="text-lg font-semibold text-white mb-2">{badge.name}</h3>
+                        <p className="text-white/80 text-sm mb-3">{badge.description}</p>
+                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                           ✓ Obtenu
                         </Badge>
                       </CardContent>
@@ -230,7 +230,7 @@ export default function BadgesPage() {
           {/* Progress Towards Badges */}
           {unearnedBadges.length > 0 && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 heading-french">
+              <h2 className="text-2xl font-bold text-white mb-6 heading-french">
                 Objectifs en Cours ({unearnedBadges.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -244,22 +244,22 @@ export default function BadgesPage() {
                         <div className="bg-gray-300 text-gray-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Icon className="h-8 w-8" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">{badge.name}</h3>
-                        <p className="text-gray-600 text-sm mb-3">{badge.description}</p>
+                        <h3 className="text-lg font-semibold text-white mb-2">{badge.name}</h3>
+                        <p className="text-white/80 text-sm mb-3">{badge.description}</p>
                         
                         <div className="mb-3">
-                          <div className="bg-gray-200 rounded-full h-3 mb-2">
+                          <div className="bg-white/20 rounded-full h-3 mb-2">
                             <div 
-                              className="bg-primary h-3 rounded-full transition-all duration-500" 
+                              className="bg-blue-500 h-3 rounded-full transition-all duration-500" 
                               style={{ width: `${progressPercent}%` }}
                             ></div>
                           </div>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-white/60">
                             {badge.progress} / {badge.total} ({progressPercent}%)
                           </p>
                         </div>
                         
-                        <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                        <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
                           En cours...
                         </Badge>
                       </CardContent>
@@ -274,11 +274,11 @@ export default function BadgesPage() {
           {earnedBadges.length === 0 && (
             <Card className="gradient-card">
               <CardContent className="p-12 text-center">
-                <Award className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                <Award className="h-16 w-16 text-white/40 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Aucun badge obtenu pour le moment
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-white/80 mb-6">
                   Commencez votre parcours de formation pour débloquer vos premiers badges !
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
