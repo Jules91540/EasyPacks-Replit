@@ -1578,6 +1578,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Message reactions routes
+  app.post("/api/messages/:messageId/reactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+      const userId = req.user?.claims?.sub || req.user?.id;
+      const { emoji } = req.body;
+
+      if (!emoji) {
+        return res.status(400).json({ message: "Emoji requis" });
+      }
+
+      const reaction = await storage.addMessageReaction({
+        messageId,
+        userId,
+        emoji
+      });
+
+      res.json(reaction);
+    } catch (error) {
+      console.error("Error adding message reaction:", error);
+      res.status(500).json({ message: "Erreur lors de l'ajout de la réaction" });
+    }
+  });
+
+  app.delete("/api/messages/:messageId/reactions/:emoji", isAuthenticated, async (req: any, res) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+      const userId = req.user?.claims?.sub || req.user?.id;
+      const emoji = decodeURIComponent(req.params.emoji);
+
+      await storage.removeMessageReaction(messageId, userId, emoji);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing message reaction:", error);
+      res.status(500).json({ message: "Erreur lors de la suppression de la réaction" });
+    }
+  });
+
+  app.get("/api/messages/:messageId/reactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+      const reactions = await storage.getMessageReactions(messageId);
+      res.json(reactions);
+    } catch (error) {
+      console.error("Error fetching message reactions:", error);
+      res.status(500).json({ message: "Erreur lors du chargement des réactions" });
+    }
+  });
+
   // Calls routes
   app.post("/api/calls", isAuthenticated, async (req: any, res) => {
     try {

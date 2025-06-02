@@ -16,6 +16,7 @@ import {
   conversations,
   callSessions,
   notificationsTable,
+  messageReactions,
   type User,
   type UpsertUser,
   type Module,
@@ -48,6 +49,8 @@ import {
   type InsertCallSession,
   type NotificationTable,
   type InsertNotificationTable,
+  type MessageReaction,
+  type InsertMessageReaction,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, ne, or, sql, like } from "drizzle-orm";
@@ -140,9 +143,14 @@ export interface IStorage {
   // Social operations - Messages
   sendMessage(message: InsertPrivateMessage): Promise<PrivateMessage>;
   getConversation(userId1: string, userId2: string): Promise<PrivateMessage[]>;
-  getUserConversations(userId: string): Promise<Conversation[]>;
+  getUserConversations(userId: string): Promise<ConversationWithParticipant[]>;
   markMessageAsRead(messageId: number): Promise<void>;
   getUnreadMessageCount(userId: string): Promise<number>;
+  
+  // Message reactions
+  addMessageReaction(reaction: InsertMessageReaction): Promise<MessageReaction>;
+  removeMessageReaction(messageId: number, userId: string, emoji: string): Promise<void>;
+  getMessageReactions(messageId: number): Promise<MessageReaction[]>;
   
   // Social operations - Calls
   initiateCall(call: InsertCallSession): Promise<CallSession>;
@@ -1034,6 +1042,42 @@ export class DatabaseStorage implements IStorage {
           and(eq(friendships.senderId, friendId), eq(friendships.receiverId, userId))
         )
       );
+  }
+
+  // Message reactions operations
+  async addMessageReaction(reaction: InsertMessageReaction): Promise<MessageReaction> {
+    const [newReaction] = await db
+      .insert(messageReactions)
+      .values(reaction)
+      .onConflictDoUpdate({
+        target: [messageReactions.messageId, messageReactions.userId, messageReactions.emoji],
+        set: {
+          createdAt: new Date()
+        }
+      })
+      .returning();
+    
+    return newReaction;
+  }
+
+  async removeMessageReaction(messageId: number, userId: string, emoji: string): Promise<void> {
+    await db
+      .delete(messageReactions)
+      .where(
+        and(
+          eq(messageReactions.messageId, messageId),
+          eq(messageReactions.userId, userId),
+          eq(messageReactions.emoji, emoji)
+        )
+      );
+  }
+
+  async getMessageReactions(messageId: number): Promise<MessageReaction[]> {
+    return await db
+      .select()
+      .from(messageReactions)
+      .where(eq(messageReactions.messageId, messageId))
+      .orderBy(messageReactions.createdAt);
   }
 }
 
