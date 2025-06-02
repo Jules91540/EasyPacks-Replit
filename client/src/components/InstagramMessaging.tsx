@@ -103,11 +103,10 @@ export default function InstagramMessaging() {
         return [];
       }
       const messages = await response.json();
-      console.log(`Messages récupérés pour conversation ${selectedConversation.id}:`, messages);
       return messages;
     },
     enabled: !!user && !!selectedConversation && selectedConversation.id > 0,
-    refetchInterval: 2000,
+    refetchInterval: 1000, // Réduire l'intervalle pour un meilleur temps réel
   });
 
   // Fetch friends for new conversations
@@ -128,17 +127,20 @@ export default function InstagramMessaging() {
       return response.json();
     },
     onSuccess: () => {
-      // Rafraîchir les conversations et les messages
+      // Rafraîchir les conversations et les messages immédiatement
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       if (selectedConversation && selectedConversation.id > 0) {
         queryClient.invalidateQueries({ 
           queryKey: ["/api/conversations", selectedConversation.id, "messages"] 
         });
       }
+      // Forcer un refetch immédiat des messages
+      queryClient.refetchQueries({ 
+        queryKey: ["/api/conversations", selectedConversation?.id, "messages"] 
+      });
       setMessageContent("");
       setReplyingTo(null);
-      // Attendre un peu avant de faire défiler pour laisser le temps aux données de se mettre à jour
-      setTimeout(scrollToBottom, 100);
+      setTimeout(scrollToBottom, 200);
     },
     onError: (error) => {
       console.error("Erreur envoi message:", error);
@@ -287,7 +289,7 @@ export default function InstagramMessaging() {
   );
 
   // Add friends who don't have conversations yet - filter by search query and ensure unique IDs
-  const friendsWithoutConversations = friends.filter((friend: any) => {
+  const friendsWithoutConversations = friends.filter((friend: any, index: number) => {
     // Check if friend already has a conversation
     const hasConversation = conversations.some((conv: any) => 
       conv.participant?.id === friend.id
@@ -298,7 +300,10 @@ export default function InstagramMessaging() {
       friend.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       friend.lastName?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    return !hasConversation && matchesSearch;
+    // Ensure no duplicates based on ID
+    const isFirstOccurrence = friends.findIndex((f: any) => f.id === friend.id) === index;
+    
+    return !hasConversation && matchesSearch && isFirstOccurrence;
   });
 
   const emojis = ["❤️", "😂", "😮", "😢", "😡", "👍", "👎", "🔥"];
@@ -378,9 +383,9 @@ export default function InstagramMessaging() {
             ))}
 
             {/* Friends without conversations */}
-            {friendsWithoutConversations.map((friend: any) => (
+            {friendsWithoutConversations.map((friend: any, index: number) => (
               <div
-                key={`friend-no-conv-${friend.id}`}
+                key={`new-friend-${friend.id}-${index}`}
                 onClick={() => {
                   // Create a mock conversation for this friend
                   const mockConversation = {
