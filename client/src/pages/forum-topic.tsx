@@ -41,7 +41,7 @@ export default function ForumTopicPage() {
   const { data: replies } = useQuery({
     queryKey: [`/api/forum/topics/${topicId}/replies`],
     enabled: !!topicId,
-    refetchInterval: 1000, // Auto-refresh every 1 second for real-time feel
+    refetchInterval: 1000,
   });
 
   // Auto-scroll to bottom when new messages arrive
@@ -58,8 +58,8 @@ export default function ForumTopicPage() {
       formData.append("topicId", topicId!);
       
       if (replyData.files) {
-        replyData.files.forEach((file, index) => {
-          formData.append(`files`, file);
+        replyData.files.forEach((file) => {
+          formData.append("files", file);
         });
       }
 
@@ -76,93 +76,50 @@ export default function ForumTopicPage() {
       return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Réponse ajoutée !",
-        description: "Votre réponse a été publiée avec succès.",
-      });
+      queryClient.invalidateQueries({ queryKey: [`/api/forum/topics/${topicId}/replies`] });
       setReplyContent("");
       setSelectedFiles([]);
-      queryClient.invalidateQueries({ queryKey: ["/api/forum/topics", topicId, "replies"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/forum/topics", topicId] });
+      toast({
+        title: "Message envoyé !",
+        description: "Votre message a été publié avec succès.",
+      });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de créer la réponse",
+        description: "Impossible d'envoyer le message. Veuillez réessayer.",
         variant: "destructive",
       });
     },
   });
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    const validFiles = files.filter(file => {
-      const isImage = file.type.startsWith('image/');
-      const isVideo = file.type.startsWith('video/');
-      const isValidSize = file.size <= 50 * 1024 * 1024; // 50MB max
-      
-      if (!isImage && !isVideo) {
-        toast({
-          title: "Format non supporté",
-          description: "Seuls les images et vidéos sont autorisées",
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      if (!isValidSize) {
-        toast({
-          title: "Fichier trop volumineux",
-          description: "Taille maximale autorisée : 50MB",
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      return true;
-    });
+  const handleSubmitReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyContent.trim()) return;
     
-    setSelectedFiles(prev => [...prev, ...validFiles]);
+    createReplyMutation.mutate({
+      content: replyContent,
+      files: selectedFiles,
+    });
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles(prev => [...prev, ...files]);
   };
 
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmitReply = () => {
-    if (!replyContent.trim()) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez écrire un message",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    createReplyMutation.mutate({ 
-      content: replyContent, 
-      files: selectedFiles.length > 0 ? selectedFiles : undefined 
-    });
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   if (isLoading) {
     return (
-      <div className="h-screen bg-background flex overflow-hidden">
-        <Navigation variant="student" />
-        <div className="flex-1 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <Navigation />
+        <div className="ml-20 flex items-center justify-center h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Chargement du sujet...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+            <p className="text-white/70 mt-4">Chargement...</p>
           </div>
         </div>
       </div>
@@ -171,253 +128,282 @@ export default function ForumTopicPage() {
 
   if (!topic) {
     return (
-      <div className="h-screen bg-background flex overflow-hidden">
-        <Navigation variant="student" />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Sujet introuvable</h2>
-            <Link href="/forum">
-              <Button>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Retour au forum
-              </Button>
-            </Link>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <Navigation />
+        <div className="ml-20 flex flex-col items-center justify-center h-screen">
+          <h2 className="text-2xl font-bold text-white/70 mb-4">Sujet introuvable</h2>
+          <Link href="/forum">
+            <Button variant="outline" className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20">
+              <ArrowLeft className="h-4 w-4" />
+              Retour au forum
+            </Button>
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
-      <Navigation variant="student" />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-background border-b border-border p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <Navigation />
+      <div className="ml-20 flex flex-col h-screen">
+        {/* Chat Header - Instagram Style */}
+        <div className="bg-black/30 backdrop-blur-lg border-b border-white/10 p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-3">
               <Link href="/forum">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Retour au forum
+                <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                  <ArrowLeft className="h-5 w-5" />
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">{topic.title}</h1>
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-1">
-                    <User className="h-3 w-3" />
-                    <span>Par {topic.author?.firstName || 'Utilisateur'}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Clock className="h-3 w-3" />
-                    <span>{formatDate(topic.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Eye className="h-3 w-3" />
-                    <span>{topic.viewCount || 0} vues</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <MessageSquare className="h-3 w-3" />
-                    <span>{replies?.length || 0} réponses</span>
-                  </div>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10 ring-2 ring-white/20">
+                  <AvatarImage src={topic?.author?.profileImageUrl} />
+                  <AvatarFallback className="bg-gradient-to-br from-pink-500 to-violet-500 text-white">
+                    {topic?.author?.firstName?.[0] || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-white font-semibold text-lg">{topic?.title}</h1>
+                  <p className="text-white/60 text-sm">
+                    Par {topic?.author?.firstName || 'Anonyme'} • {topic?.viewCount || 0} vues
+                  </p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              {topic.isPinned && (
-                <Badge variant="secondary">
+            <div className="flex items-center gap-2">
+              {topic?.isPinned && (
+                <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
                   <Pin className="h-3 w-3 mr-1" />
                   Épinglé
                 </Badge>
               )}
-              {topic.isLocked && (
-                <Badge variant="destructive">
-                  <Lock className="h-3 w-3 mr-1" />
-                  Verrouillé
-                </Badge>
-              )}
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Original Post */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <Avatar>
-                    <AvatarImage src={topic.author?.profileImageUrl} />
-                    <AvatarFallback>
-                      {topic.author?.firstName?.[0] || 'U'}
+        {/* Messages Container - Chat Style */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Initial Topic Message */}
+          <div className="flex gap-3">
+            <Avatar className="h-10 w-10 ring-2 ring-white/20">
+              <AvatarImage src={topic?.author?.profileImageUrl} />
+              <AvatarFallback className="bg-gradient-to-br from-pink-500 to-violet-500 text-white">
+                {topic?.author?.firstName?.[0] || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="bg-white/10 backdrop-blur-lg rounded-2xl rounded-tl-sm p-4 border border-white/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-semibold text-white">{topic?.author?.firstName || 'Anonyme'}</span>
+                  <span className="text-white/50 text-xs">
+                    {new Date(topic?.createdAt).toLocaleTimeString('fr-FR', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                <p className="text-white/90 leading-relaxed">{topic?.content}</p>
+                
+                {/* Topic Attachments */}
+                {topic?.attachments && topic.attachments.length > 0 && (
+                  <div className="mt-3 grid gap-2">
+                    {topic.attachments.map((attachment: any, index: number) => (
+                      <div key={index} className="relative rounded-lg overflow-hidden">
+                        {attachment.type === 'image' ? (
+                          <img
+                            src={attachment.url}
+                            alt={attachment.filename}
+                            className="w-full max-w-sm rounded-lg"
+                          />
+                        ) : (
+                          <video
+                            src={attachment.url}
+                            controls
+                            className="w-full max-w-sm rounded-lg"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Replies */}
+          {replies && replies?.length > 0 && replies.map((reply: any) => {
+            const isCurrentUser = reply?.authorId === user?.id;
+            return (
+              <div key={reply.id} className={`flex gap-3 ${isCurrentUser ? 'justify-end' : ''}`}>
+                {!isCurrentUser && (
+                  <Avatar className="h-8 w-8 ring-2 ring-white/20">
+                    <AvatarImage src={reply?.author?.profileImageUrl} />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-sm">
+                      {reply?.author?.firstName?.[0] || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-medium">{topic.author?.firstName || 'Utilisateur'}</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(topic.createdAt)}</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <p className="whitespace-pre-wrap">{topic.content}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Replies */}
-            {replies && replies.length > 0 && (
-              <div className="space-y-4">
-                <Separator />
-                <h3 className="text-lg font-semibold">Réponses ({replies.length})</h3>
-                
-                {replies.map((reply: any, index: number) => (
-                  <Card key={reply.id}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Avatar>
-                            <AvatarImage src={reply.author?.profileImageUrl} />
-                            <AvatarFallback>
-                              {reply.author?.firstName?.[0] || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{reply.author?.firstName || 'Utilisateur'}</p>
-                            <p className="text-sm text-muted-foreground">{formatDate(reply.createdAt)}</p>
-                          </div>
-                        </div>
-                        <Badge variant="outline">#{index + 1}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
-                        <p className="whitespace-pre-wrap">{reply.content}</p>
-                      </div>
-                      
-                      {/* Media attachments */}
-                      {reply.attachments && reply.attachments.length > 0 && (
-                        <div className="mt-4 grid grid-cols-2 gap-2">
-                          {reply.attachments.map((attachment: any, i: number) => (
-                            <div key={i} className="relative">
-                              {attachment.type === 'image' ? (
-                                <img 
-                                  src={attachment.url} 
-                                  alt="Pièce jointe"
-                                  className="w-full h-32 object-cover rounded border"
-                                />
-                              ) : attachment.type === 'video' ? (
-                                <video 
-                                  src={attachment.url} 
-                                  controls
-                                  className="w-full h-32 object-cover rounded border"
-                                />
-                              ) : null}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-
-            {/* Reply Form */}
-            {!topic.isLocked && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Ajouter une réponse</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Textarea
-                    placeholder="Écrivez votre réponse..."
-                    value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                    className="min-h-[120px]"
-                  />
-                  
-                  {/* File attachments */}
-                  {selectedFiles.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Pièces jointes :</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {selectedFiles.map((file, index) => (
-                          <div key={index} className="relative border rounded p-2">
-                            <div className="flex items-center space-x-2">
-                              {file.type.startsWith('image/') ? (
-                                <ImageIcon className="h-4 w-4" />
-                              ) : (
-                                <Video className="h-4 w-4" />
-                              )}
-                              <span className="text-sm truncate">{file.name}</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeFile(index)}
-                                className="ml-auto h-6 w-6 p-0"
-                              >
-                                ×
-                              </Button>
-                            </div>
+                )}
+                <div className={`flex-1 max-w-xs ${isCurrentUser ? 'ml-16' : 'mr-16'}`}>
+                  <div className={`backdrop-blur-lg rounded-2xl p-3 border ${
+                    isCurrentUser 
+                      ? 'bg-gradient-to-br from-pink-500/20 to-violet-500/20 border-pink-500/30 rounded-br-sm' 
+                      : 'bg-white/10 border-white/20 rounded-tl-sm'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`font-medium text-sm ${isCurrentUser ? 'text-pink-200' : 'text-white'}`}>
+                        {reply?.author?.firstName || 'Anonyme'}
+                      </span>
+                      <span className="text-white/50 text-xs">
+                        {new Date(reply?.createdAt).toLocaleTimeString('fr-FR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <p className={`text-sm leading-relaxed ${isCurrentUser ? 'text-white' : 'text-white/90'}`}>
+                      {reply?.content}
+                    </p>
+                    
+                    {/* Reply Attachments */}
+                    {reply?.attachments && reply.attachments.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {reply.attachments.map((attachment: any, index: number) => (
+                          <div key={index} className="relative rounded-lg overflow-hidden">
+                            {attachment.type === 'image' ? (
+                              <img
+                                src={attachment.url}
+                                alt={attachment.filename}
+                                className="w-full rounded-lg max-h-48 object-cover"
+                              />
+                            ) : (
+                              <video
+                                src={attachment.url}
+                                controls
+                                className="w-full rounded-lg max-h-48"
+                              />
+                            )}
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        type="file"
-                        accept="image/*,video/*"
-                        multiple
-                        onChange={handleFileSelect}
-                        className="hidden"
-                        id="file-upload"
-                      />
-                      <label htmlFor="file-upload">
-                        <Button variant="outline" size="sm" asChild>
-                          <span>
-                            <Paperclip className="h-4 w-4 mr-2" />
-                            Ajouter des fichiers
-                          </span>
-                        </Button>
-                      </label>
-                    </div>
-                    
-                    <Button 
-                      onClick={handleSubmitReply}
-                      disabled={createReplyMutation.isPending || !replyContent.trim()}
-                      className="gradient-primary text-white"
-                    >
-                      {createReplyMutation.isPending ? (
-                        "Envoi en cours..."
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4 mr-2" />
-                          Répondre
-                        </>
-                      )}
-                    </Button>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                  {/* Reactions placeholder */}
+                  <div className="flex items-center gap-2 mt-1 px-3">
+                    <Button variant="ghost" size="sm" className="h-6 p-0 text-white/50 hover:text-red-400 hover:bg-transparent">
+                      <Heart className="h-4 w-4" />
+                    </Button>
+                    <span className="text-xs text-white/40">Réagir</span>
+                  </div>
+                </div>
+                {isCurrentUser && (
+                  <Avatar className="h-8 w-8 ring-2 ring-pink-500/50">
+                    <AvatarImage src={user?.profileImageUrl} />
+                    <AvatarFallback className="bg-gradient-to-br from-pink-500 to-violet-500 text-white text-sm">
+                      {user?.firstName?.[0] || 'M'}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
+            );
+          })}
+          
+          {/* Auto-scroll target */}
+          <div ref={messagesEndRef} />
+        </div>
 
-            {topic.isLocked && (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <Lock className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-muted-foreground">Ce sujet est verrouillé et n'accepte plus de nouvelles réponses.</p>
-                </CardContent>
-              </Card>
-            )}
+        {/* Message Input - Instagram Style */}
+        {!topic?.isLocked && (
+          <div className="bg-black/30 backdrop-blur-lg border-t border-white/10 p-4">
+            <form onSubmit={handleSubmitReply} className="flex items-end gap-3">
+              {/* File upload */}
+              <div className="flex flex-col gap-2">
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label htmlFor="file-upload">
+                  <Button type="button" variant="ghost" size="sm" className="h-10 w-10 p-0 text-white/70 hover:text-white hover:bg-white/20">
+                    <Paperclip className="h-5 w-5" />
+                  </Button>
+                </label>
+              </div>
+
+              {/* Message input */}
+              <div className="flex-1">
+                {selectedFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedFiles.map((file, index) => (
+                      <Badge key={index} className="bg-white/20 text-white border-white/30 flex items-center gap-1">
+                        {file.type.startsWith('image/') ? (
+                          <ImageIcon className="h-3 w-3" />
+                        ) : (
+                          <Video className="h-3 w-3" />
+                        )}
+                        <span className="text-xs">{file.name.substring(0, 20)}...</span>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="ml-1 text-xs hover:text-red-400"
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-end gap-2">
+                  <Textarea
+                    placeholder="Tapez votre message..."
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    className="flex-1 min-h-[44px] max-h-32 resize-none bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 rounded-2xl"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (replyContent.trim()) {
+                          handleSubmitReply(e);
+                        }
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="submit" 
+                    disabled={!replyContent.trim() || createReplyMutation.isPending}
+                    className="h-11 w-11 p-0 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 rounded-full"
+                  >
+                    {createReplyMutation.isPending ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <Send className="h-5 w-5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Emoji button */}
+              <Button type="button" variant="ghost" size="sm" className="h-10 w-10 p-0 text-white/70 hover:text-white hover:bg-white/20">
+                <Smile className="h-5 w-5" />
+              </Button>
+            </form>
           </div>
-        </main>
+        )}
+
+        {topic?.isLocked && (
+          <div className="bg-black/30 backdrop-blur-lg border-t border-white/10 p-4">
+            <div className="text-center py-3">
+              <Lock className="h-6 w-6 text-white/50 mx-auto mb-2" />
+              <p className="text-white/60 text-sm">Ce sujet est verrouillé</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
