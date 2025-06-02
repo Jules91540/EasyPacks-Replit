@@ -1521,7 +1521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: receiverId,
         type: "call",
         title: "Appel entrant",
-        content: `${req.user.claims.first_name || 'Un utilisateur'} vous appelle`,
+        content: `${req.user?.firstName || 'Un utilisateur'} vous appelle`,
         relatedUserId: callerId
       });
       

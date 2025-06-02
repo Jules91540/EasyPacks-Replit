@@ -914,6 +914,13 @@ export class DatabaseStorage implements IStorage {
     return result[0]?.count || 0;
   }
 
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
+    await db
+      .update(notificationsTable)
+      .set({ isRead: true })
+      .where(eq(notificationsTable.userId, userId));
+  }
+
   // Search operations
   async searchUsers(query: string, excludeUserId?: string): Promise<User[]> {
     let searchQuery = db.select().from(users);
