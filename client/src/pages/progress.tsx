@@ -71,7 +71,7 @@ export default function ProgressPage() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement de votre progression...</p>
+          <p className="text-white/80">Chargement de votre progression...</p>
         </div>
       </div>
     );
@@ -103,7 +103,7 @@ export default function ProgressPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-foreground heading-french">Ma Progression</h1>
-                <p className="text-muted-foreground subtitle-french">
+                <p className="text-white/80 subtitle-french">
                   Suivez votre avancement dans votre parcours de formation
                 </p>
               </div>
@@ -141,8 +141,8 @@ export default function ProgressPage() {
                 <div className="bg-green-100 text-green-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <CheckCircle className="h-6 w-6" />
                 </div>
-                <div className="text-2xl font-bold text-gray-800 mb-1">{completedModules}</div>
-                <p className="text-gray-600 text-sm">Modules terminés</p>
+                <div className="text-2xl font-bold text-white mb-1">{completedModules}</div>
+                <p className="text-white/80 text-sm">Modules terminés</p>
               </CardContent>
             </Card>
 
@@ -151,8 +151,8 @@ export default function ProgressPage() {
                 <div className="bg-blue-100 text-primary w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <Clock className="h-6 w-6" />
                 </div>
-                <div className="text-2xl font-bold text-gray-800 mb-1">{inProgressModules}</div>
-                <p className="text-gray-600 text-sm">En cours</p>
+                <div className="text-2xl font-bold text-white mb-1">{inProgressModules}</div>
+                <p className="text-white/80 text-sm">En cours</p>
               </CardContent>
             </Card>
 
@@ -161,8 +161,8 @@ export default function ProgressPage() {
                 <div className="bg-purple-100 text-purple-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <Trophy className="h-6 w-6" />
                 </div>
-                <div className="text-2xl font-bold text-gray-800 mb-1">{passedQuizzes}</div>
-                <p className="text-gray-600 text-sm">Quiz réussis</p>
+                <div className="text-2xl font-bold text-white mb-1">{passedQuizzes}</div>
+                <p className="text-white/80 text-sm">Quiz réussis</p>
               </CardContent>
             </Card>
 
@@ -171,8 +171,8 @@ export default function ProgressPage() {
                 <div className="bg-orange-100 text-orange-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <Target className="h-6 w-6" />
                 </div>
-                <div className="text-2xl font-bold text-gray-800 mb-1">{overallProgress}%</div>
-                <p className="text-gray-600 text-sm">Progression totale</p>
+                <div className="text-2xl font-bold text-white mb-1">{overallProgress}%</div>
+                <p className="text-white/80 text-sm">Progression totale</p>
               </CardContent>
             </Card>
           </div>
@@ -182,7 +182,7 @@ export default function ProgressPage() {
             {/* Module Progress */}
             <Card className="gradient-card">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">
+                <h3 className="text-lg font-semibold text-white mb-4 heading-french">
                   Progression par Module
                 </h3>
                 <div className="space-y-4">
@@ -192,9 +192,9 @@ export default function ProgressPage() {
                     const status = moduleProgress?.status || 'not_started';
                     
                     return (
-                      <div key={module.id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={module.id} className="border border-gray-600 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-gray-800">{module.title}</h4>
+                          <h4 className="font-medium text-white">{module.title}</h4>
                           <Badge variant={
                             status === 'completed' ? 'default' : 
                             status === 'in_progress' ? 'secondary' : 
@@ -212,7 +212,7 @@ export default function ProgressPage() {
                         <div className="mb-2">
                           <Progress value={progressPercent} className="h-2" />
                         </div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-white/80">
                           {progressPercent}% terminé • Plateforme: {module.platform || 'Général'}
                         </p>
                       </div>
