@@ -649,15 +649,15 @@ export default function SocialPage() {
               </TabsContent>
 
               <TabsContent value="messages" className="h-full">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-160px)]">
                   {/* Conversations list */}
                   <div className="lg:col-span-1">
-                    <Card className="h-full">
-                      <CardHeader>
+                    <Card className="h-full flex flex-col">
+                      <CardHeader className="flex-shrink-0">
                         <CardTitle>Conversations</CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <ScrollArea className="h-[calc(100vh-200px)]">
+                      <CardContent className="flex-1 overflow-hidden">
+                        <ScrollArea className="h-full">
                           {friends.map((friend: User) => (
                             <div
                               key={friend.id}
@@ -689,62 +689,66 @@ export default function SocialPage() {
                   <div className="lg:col-span-2">
                     {selectedUser ? (
                       <Card className="h-full flex flex-col">
-                        <CardHeader>
+                        <CardHeader className="flex-shrink-0 pb-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                              <Avatar>
+                              <Avatar className="w-8 h-8">
                                 <AvatarImage src={selectedUser.profileImageUrl} />
                                 <AvatarFallback>
                                   {selectedUser.firstName?.[0]}{selectedUser.lastName?.[0]}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <h3 className="font-semibold text-white">
+                                <h3 className="font-semibold text-white text-sm">
                                   {selectedUser.firstName} {selectedUser.lastName}
                                 </h3>
-                                <p className="text-sm text-white/70">En ligne</p>
+                                <p className="text-xs text-white/70">En ligne</p>
                               </div>
                             </div>
-                            <div className="flex space-x-2">
+                            <div className="flex space-x-1">
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="h-8 w-8 p-0"
                                 onClick={() => initiateCall.mutate({ receiverId: selectedUser.id, callType: "voice" })}
                               >
-                                <Phone className="w-4 h-4" />
+                                <Phone className="w-3 h-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="h-8 w-8 p-0"
                                 onClick={() => initiateCall.mutate({ receiverId: selectedUser.id, callType: "video" })}
                               >
-                                <Video className="w-4 h-4" />
+                                <Video className="w-3 h-3" />
                               </Button>
                             </div>
                           </div>
                         </CardHeader>
-                        <CardContent className="flex-1 flex flex-col">
-                          <ScrollArea className="flex-1 mb-4">
-                            <div className="space-y-4">
+                        <CardContent className="flex-1 flex flex-col p-4 overflow-hidden">
+                          <ScrollArea className="flex-1 mb-3">
+                            <div className="space-y-2">
                               {/* Messages would be loaded here */}
-                              <div className="text-center text-white/70 py-8">
-                                <p>Démarrez une conversation avec {selectedUser.firstName}</p>
+                              <div className="text-center text-white/70 py-4">
+                                <p className="text-sm">Démarrez une conversation avec {selectedUser.firstName}</p>
                               </div>
                             </div>
                           </ScrollArea>
-                          <div className="flex space-x-2">
+                          <div className="flex space-x-2 flex-shrink-0">
                             <Input
                               placeholder="Tapez votre message..."
                               value={messageContent}
                               onChange={(e) => setMessageContent(e.target.value)}
                               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                              className="flex-1"
+                              className="flex-1 h-9"
                             />
                             <Button
                               onClick={handleSendMessage}
                               disabled={!messageContent.trim() || sendMessage.isPending}
+                              size="sm"
+                              className="h-9 w-9 p-0"
                             >
-                              <Send className="w-4 h-4" />
+                              <Send className="w-3 h-3" />
                             </Button>
                           </div>
                         </CardContent>

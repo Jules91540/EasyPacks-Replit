@@ -1270,7 +1270,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/friends", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
       const friends = await storage.getUserFriends(userId);
       res.json(friends);
     } catch (error) {
@@ -1281,7 +1284,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/friends/requests/pending", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
       const requests = await storage.getPendingFriendRequests(userId);
       res.json(requests);
     } catch (error) {
@@ -1408,7 +1414,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/conversations", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
       const conversations = await storage.getUserConversations(userId);
       res.json(conversations);
     } catch (error) {
@@ -1515,7 +1524,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Social notifications routes
   app.get("/api/notifications/social", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
       const notifications = await storage.getUserNotifications(userId);
       res.json(notifications);
     } catch (error) {
