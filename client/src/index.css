@@ -99,7 +99,19 @@ html, body, #root {
   }
   
   .gradient-card {
-    @apply bg-gradient-to-br from-white to-gray-50 border border-gray-100;
+    @apply bg-gradient-to-br from-card to-card/80 border border-border;
+  }
+  
+  .gradient-blue-header {
+    @apply bg-gradient-to-r from-blue-600 to-blue-800;
+  }
+  
+  .gradient-blue-card {
+    @apply bg-gradient-to-br from-blue-900/20 to-blue-800/10 border border-blue-700/30;
+  }
+  
+  .gradient-blue-section {
+    @apply bg-gradient-to-r from-blue-600/10 to-blue-500/5;
   }
   
   .xp-progress {
@@ -107,11 +119,11 @@ html, body, #root {
   }
   
   .level-badge {
-    @apply bg-gradient-to-r from-purple-500 to-pink-500;
+    @apply bg-gradient-to-r from-blue-500 to-blue-700;
   }
   
   .simulation-thumbnail {
-    @apply bg-gradient-to-r from-purple-500 to-pink-500;
+    @apply bg-gradient-to-r from-blue-500 to-blue-700;
   }
   
   .simulation-scheduler {

@@ -370,12 +370,12 @@ export default function StudentDashboard() {
       <main className="flex-1 p-4 md:ml-20 overflow-y-auto">
         <div className="max-w-7xl mx-auto space-y-4">
           {/* Header with welcome message */}
-          <div className="flex items-center justify-between">
+          <div className="gradient-blue-header p-6 rounded-lg mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="text-3xl font-bold text-white">
                 Bonjour {userTyped?.firstName || 'Créateur'} ! 👋
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-blue-100 mt-2">
                 Continuez votre parcours de formation en création de contenu
               </p>
             </div>
@@ -452,10 +452,10 @@ export default function StudentDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Modules Section */}
             <div className="lg:col-span-2 space-y-6">
-              <Card>
+              <Card className="gradient-blue-card">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Rocket className="h-5 w-5 text-primary" />
+                  <CardTitle className="flex items-center gap-2 text-white">
+                    <Rocket className="h-5 w-5 text-blue-400" />
                     Formations Disponibles
                   </CardTitle>
                 </CardHeader>

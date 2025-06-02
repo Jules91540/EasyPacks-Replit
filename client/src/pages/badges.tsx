@@ -139,7 +139,7 @@ export default function BadgesPage() {
       {/* Main Content with left margin for desktop sidebar */}
       <div className="md:ml-20 flex flex-col min-h-screen">
         {/* Mobile Header */}
-        <header className="md:hidden bg-blue-50 shadow-sm border-b border-border p-4">
+        <header className="md:hidden bg-background shadow-sm border-b border-border p-4">
           <div className="flex items-center justify-between">
             <Navigation variant="student" />
             <h1 className="text-lg font-bold text-foreground">Mes Badges</h1>
@@ -156,8 +156,8 @@ export default function BadgesPage() {
                 <Award className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-800 heading-french">Mes Badges</h1>
-                <p className="text-gray-600 subtitle-french">
+                <h1 className="text-3xl font-bold text-foreground">Mes Badges</h1>
+                <p className="text-muted-foreground">
                   Vos récompenses et accomplissements
                 </p>
               </div>

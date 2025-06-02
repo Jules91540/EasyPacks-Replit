@@ -128,11 +128,11 @@ export default function AdminDashboard() {
       
       <div className="md:ml-20 flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-background border-b border-border p-6">
+        <header className="gradient-blue-header border-b border-border p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Tableau de Bord Administrateur</h1>
-              <p className="text-muted-foreground mt-1">
+              <h1 className="text-3xl font-bold text-white">Tableau de Bord Administrateur</h1>
+              <p className="text-blue-100 mt-1">
                 Bienvenue, {(user as any)?.firstName || (user as any)?.email || 'Admin'}
               </p>
             </div>
