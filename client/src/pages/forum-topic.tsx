@@ -22,6 +22,7 @@ import {
   MoreVertical
 } from "lucide-react";
 import Navigation from "@/components/ui/navigation";
+import MentionNotificationPopup, { useMentionNotifications } from "@/components/mention-notification";
 
 export default function ForumTopicPage() {
   const { user } = useAuth();
@@ -30,6 +31,9 @@ export default function ForumTopicPage() {
   const [replyContent, setReplyContent] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Système de mentions
+  const { notifications, addNotification, dismissNotification } = useMentionNotifications();
 
   const topicId = params?.id;
 
@@ -128,12 +132,12 @@ export default function ForumTopicPage() {
 
   if (!topic) {
     return (
-      <div className="min-h-screen bg-blue-50">
+      <div className="min-h-screen bg-black">
         <Navigation />
         <div className="md:ml-20 flex flex-col items-center justify-center h-screen">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Sujet introuvable</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Sujet introuvable</h2>
           <Link href="/forum">
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2 text-white border-white hover:bg-white hover:text-black">
               <ArrowLeft className="h-4 w-4" />
               Retour au forum
             </Button>
@@ -144,7 +148,7 @@ export default function ForumTopicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-black">
       <Navigation />
       <div className="md:ml-20 flex flex-col h-screen">
         {/* Chat Header - Instagram Style */}
