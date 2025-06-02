@@ -45,8 +45,10 @@ const upload = multer({
   }
 });
 
-// Temporary storage for forum topics (in production, this would be in database)
+// Temporary storage for forum topics and replies (in production, this would be in database)
 const forumTopics: any[] = [];
+const forumReplies: any[] = [];
+const userNotifications: Record<string, any[]> = {};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -473,6 +475,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating forum topic:", error);
       res.status(500).json({ message: "Erreur lors de la création du sujet" });
+    }
+  });
+
+  // Get single topic
+  app.get("/api/forum/topics/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const topicId = parseInt(req.params.id);
+      const topic = forumTopics.find(t => t.id === topicId);
+      
+      if (!topic) {
+        return res.status(404).json({ message: "Sujet introuvable" });
+      }
+
+      // Increment view count
+      topic.viewCount = (topic.viewCount || 0) + 1;
+
+      // Add author info
+      const enrichedTopic = {
+        ...topic,
+        author: { firstName: 'Utilisateur' }
+      };
+
+      res.json(enrichedTopic);
+    } catch (error) {
+      console.error("Error fetching forum topic:", error);
+      res.status(500).json({ message: "Erreur lors du chargement du sujet" });
+    }
+  });
+
+  // Get topic replies
+  app.get("/api/forum/topics/:id/replies", isAuthenticated, async (req: any, res) => {
+    try {
+      const topicId = parseInt(req.params.id);
+      const replies = forumReplies
+        .filter(r => r.topicId === topicId)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        .map(reply => ({
+          ...reply,
+          author: { firstName: 'Utilisateur' }
+        }));
+
+      res.json(replies);
+    } catch (error) {
+      console.error("Error fetching forum replies:", error);
+      res.status(500).json({ message: "Erreur lors du chargement des réponses" });
+    }
+  });
+
+  // Create forum reply with file upload
+  app.post("/api/forum/replies", isAuthenticated, upload.array('files', 5), async (req: any, res) => {
+    try {
+      const { content, topicId } = req.body;
+      const userId = req.user.id;
+      const files = req.files || [];
+
+      if (!content || !topicId) {
+        return res.status(400).json({ message: "Contenu et sujet requis" });
+      }
+
+      // Process uploaded files
+      const attachments = files.map((file: any) => ({
+        type: file.mimetype.startsWith('image/') ? 'image' : 'video',
+        url: `/uploads/${file.filename}`,
+        filename: file.originalname
+      }));
+
+      const reply = {
+        id: Date.now(),
+        content,
+        topicId: parseInt(topicId),
+        authorId: userId,
+        createdAt: new Date(),
+        attachments
+      };
+
+      forumReplies.push(reply);
+
+      // Update topic reply count
+      const topic = forumTopics.find(t => t.id === parseInt(topicId));
+      if (topic) {
+        topic.repliesCount = (topic.repliesCount || 0) + 1;
+        
+        // Create notification for topic author if different from reply author
+        if (topic.authorId !== userId) {
+          if (!userNotifications[topic.authorId]) {
+            userNotifications[topic.authorId] = [];
+          }
+          userNotifications[topic.authorId].push({
+            id: Date.now(),
+            type: 'forum_reply',
+            message: `Nouvelle réponse sur votre sujet "${topic.title}"`,
+            topicId: topic.id,
+            isRead: false,
+            createdAt: new Date()
+          });
+        }
+      }
+
+      res.json(reply);
+    } catch (error) {
+      console.error("Error creating forum reply:", error);
+      res.status(500).json({ message: "Erreur lors de la création de la réponse" });
     }
   });
 

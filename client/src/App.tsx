@@ -21,6 +21,7 @@ import BadgesPage from "@/pages/badges";
 import SimulationsPage from "@/pages/simulations";
 import ProfilePage from "@/pages/profile";
 import ForumPage from "@/pages/forum";
+import ForumTopicPage from "@/pages/forum-topic";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -74,6 +75,7 @@ function Router() {
           <Route path="/progress" component={ProgressPage} />
           <Route path="/badges" component={BadgesPage} />
           <Route path="/forum" component={ForumPage} />
+          <Route path="/forum/topic/:id" component={ForumTopicPage} />
           <Route path="/simulations" component={SimulationsPage} />
           <Route path="/profile" component={ProfilePage} />
         </>
