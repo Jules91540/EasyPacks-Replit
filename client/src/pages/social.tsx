@@ -180,6 +180,13 @@ export default function SocialPage() {
     enabled: !!user,
   });
 
+  // Fetch messages for selected conversation
+  const { data: currentMessages = [] } = useQuery({
+    queryKey: ["/api/conversations", selectedUser?.id],
+    enabled: !!user && !!selectedUser,
+    refetchInterval: 2000, // Refresh every 2 seconds for real-time updates
+  });
+
   // Create post mutation
   const createPost = useMutation({
     mutationFn: async (data: { content: string; visibility: string }) => {
@@ -295,7 +302,17 @@ export default function SocialPage() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate both conversations and the specific conversation
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      if (selectedUser) {
+        queryClient.invalidateQueries({ 
+          queryKey: ["/api/conversations", selectedUser.id] 
+        });
+      }
+      // Force immediate refetch of current conversation
+      queryClient.refetchQueries({ 
+        queryKey: ["/api/conversations", selectedUser?.id] 
+      });
       setMessageContent("");
       toast({
         title: "Message envoyé",
