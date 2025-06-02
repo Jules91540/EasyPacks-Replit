@@ -204,7 +204,7 @@ export default function ModulesPage() {
                   <div className="text-2xl font-bold text-primary mb-2">
                     {modules.length}
                   </div>
-                  <p className="text-gray-600">Formations disponibles</p>
+                  <p className="text-white/80">Formations disponibles</p>
                 </CardContent>
               </Card>
               
@@ -213,7 +213,7 @@ export default function ModulesPage() {
                   <div className="text-2xl font-bold text-green-600 mb-2">
                     {progress.filter(p => p.status === 'completed').length}
                   </div>
-                  <p className="text-gray-600">Formations terminées</p>
+                  <p className="text-white/80">Formations terminées</p>
                 </CardContent>
               </Card>
               
@@ -222,7 +222,7 @@ export default function ModulesPage() {
                   <div className="text-2xl font-bold text-blue-600 mb-2">
                     {progress.filter(p => p.status === 'in_progress').length}
                   </div>
-                  <p className="text-gray-600">En cours</p>
+                  <p className="text-white/80">En cours</p>
                 </CardContent>
               </Card>
             </div>
