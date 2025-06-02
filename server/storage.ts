@@ -624,14 +624,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPendingFriendRequests(userId: string): Promise<Friendship[]> {
-    return await db
-      .select()
+    const results = await db
+      .select({
+        id: friendships.id,
+        senderId: friendships.senderId,
+        receiverId: friendships.receiverId,
+        status: friendships.status,
+        createdAt: friendships.createdAt,
+        updatedAt: friendships.updatedAt,
+        sender: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          profileImageUrl: users.profileImageUrl
+        }
+      })
       .from(friendships)
+      .leftJoin(users, eq(friendships.senderId, users.id))
       .where(and(
         eq(friendships.receiverId, userId),
         eq(friendships.status, "pending")
       ))
       .orderBy(desc(friendships.createdAt));
+    
+    return results as any;
   }
 
   async getSentFriendRequests(userId: string): Promise<Friendship[]> {
