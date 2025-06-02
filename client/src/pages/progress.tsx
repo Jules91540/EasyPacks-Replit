@@ -78,14 +78,14 @@ export default function ProgressPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-blue-50">
       {/* Navigation Sidebar */}
       <Navigation variant="student" />
       
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Content with left margin for desktop sidebar */}
+      <div className="md:ml-20 flex flex-col min-h-screen">
         {/* Mobile Header */}
-        <header className="md:hidden bg-background shadow-sm border-b border-border p-4">
+        <header className="md:hidden bg-blue-50 shadow-sm border-b border-border p-4">
           <div className="flex items-center justify-between">
             <Navigation variant="student" />
             <h1 className="text-lg font-bold text-foreground">Ma Progression</h1>

@@ -101,9 +101,9 @@ export default function AdminDashboard() {
 
   if (isLoading || statsLoading) {
     return (
-      <div className="h-screen bg-background flex overflow-hidden">
+      <div className="h-screen bg-blue-50 flex overflow-hidden">
         <Navigation variant="admin" />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="md:ml-20 flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-lg text-muted-foreground">Chargement du panneau d'administration...</p>

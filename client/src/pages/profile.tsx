@@ -386,14 +386,14 @@ export default function ProfilePage() {
   const navigationVariant = (user as any)?.role === 'admin' ? 'admin' : 'student';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-blue-50">
       {/* Navigation Sidebar */}
       <Navigation variant={navigationVariant} />
       
       {/* Main Content with left margin for desktop sidebar */}
       <div className="md:ml-20 flex flex-col min-h-screen">
         {/* Mobile Header */}
-        <header className="md:hidden bg-background shadow-sm border-b border-border p-4">
+        <header className="md:hidden bg-blue-50 shadow-sm border-b border-border p-4">
           <div className="flex items-center justify-between">
             <Navigation variant={navigationVariant} />
             <h1 className="text-lg font-bold text-foreground">Mon Profil</h1>

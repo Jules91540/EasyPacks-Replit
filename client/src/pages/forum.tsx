@@ -71,9 +71,9 @@ export default function ForumPage() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-background flex overflow-hidden">
+      <div className="h-screen bg-blue-50 flex overflow-hidden">
         <Navigation variant="student" />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="md:ml-20 flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-lg text-muted-foreground">Chargement du forum...</p>
@@ -84,12 +84,12 @@ export default function ForumPage() {
   }
 
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
+    <div className="h-screen bg-blue-50 flex overflow-hidden">
       <Navigation variant="student" />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="md:ml-20 flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-background border-b border-border p-4">
+        <header className="bg-blue-50 border-b border-border p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Forum des Créateurs</h1>

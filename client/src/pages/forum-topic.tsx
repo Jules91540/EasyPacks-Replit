@@ -128,12 +128,12 @@ export default function ForumTopicPage() {
 
   if (!topic) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-blue-50">
         <Navigation />
-        <div className="ml-20 flex flex-col items-center justify-center h-screen">
-          <h2 className="text-2xl font-bold text-white/70 mb-4">Sujet introuvable</h2>
+        <div className="md:ml-20 flex flex-col items-center justify-center h-screen">
+          <h2 className="text-2xl font-bold text-foreground mb-4">Sujet introuvable</h2>
           <Link href="/forum">
-            <Button variant="outline" className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20">
+            <Button variant="outline" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               Retour au forum
             </Button>
@@ -144,9 +144,9 @@ export default function ForumTopicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-blue-50">
       <Navigation />
-      <div className="ml-20 flex flex-col h-screen">
+      <div className="md:ml-20 flex flex-col h-screen">
         {/* Chat Header - Instagram Style */}
         <div className="bg-black/30 backdrop-blur-lg border-b border-white/10 p-4">
           <div className="flex items-center justify-between">
