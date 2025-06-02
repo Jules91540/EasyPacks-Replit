@@ -396,7 +396,7 @@ export default function StudentDashboard() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">Niveau {currentLevel}</p>
-                    <p className="text-xs text-muted-foreground">{currentXP} XP</p>
+                    <p className="text-xs text-white/80">{currentXP} XP</p>
                   </div>
                 </div>
               </Card>
@@ -500,7 +500,7 @@ export default function StudentDashboard() {
                             </Badge>
                           </div>
                           <h4 className="font-semibold mb-2">{quiz.title}</h4>
-                          <p className="text-sm text-muted-foreground mb-3">
+                          <p className="text-sm text-white/80 mb-3">
                             {quiz.description}
                           </p>
                           <Button
@@ -539,12 +539,12 @@ export default function StudentDashboard() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{activity.title}</p>
-                            <p className="text-xs text-muted-foreground">{activity.description}</p>
+                            <p className="text-xs text-white/80">{activity.description}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="outline" className="text-xs">
                                 +{activity.xp} XP
                               </Badge>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-white/60">
                                 {new Date(activity.timestamp).toLocaleDateString()}
                               </span>
                             </div>
@@ -589,7 +589,7 @@ export default function StudentDashboard() {
                 <CardContent>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary mb-2">{dailyStreak}</div>
-                    <p className="text-sm text-muted-foreground mb-4">jours consécutifs</p>
+                    <p className="text-sm text-white/80 mb-4">jours consécutifs</p>
                     <Alert>
                       <Zap className="h-4 w-4" />
                       <AlertDescription>
