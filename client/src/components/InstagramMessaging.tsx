@@ -87,8 +87,18 @@ export default function InstagramMessaging() {
 
   // Fetch messages for selected conversation
   const { data: currentMessages = [] } = useQuery({
-    queryKey: ["/api/conversations", selectedConversation?.participant?.id],
-    enabled: !!user && !!selectedConversation,
+    queryKey: ["/api/conversations", selectedConversation?.id, "messages"],
+    queryFn: async () => {
+      if (!selectedConversation) return [];
+      
+      // If it's a new conversation (id === 0), return empty array
+      if (selectedConversation.id === 0) return [];
+      
+      const response = await fetch(`/api/conversations/${selectedConversation.id}/messages`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!user && !!selectedConversation && selectedConversation.id > 0,
     refetchInterval: 1000,
   });
 

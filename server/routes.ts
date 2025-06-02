@@ -1509,6 +1509,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/conversations/:conversationId/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const currentUserId = req.user?.id;
+      
+      // Get conversation details to verify user access
+      const conversations = await storage.getUserConversations(currentUserId);
+      const conversation = conversations.find((conv: any) => conv.id === conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      
+      // Get the other participant's ID
+      const otherUserId = conversation.participant1Id === currentUserId 
+        ? conversation.participant2Id 
+        : conversation.participant1Id;
+      
+      const messages = await storage.getConversation(currentUserId, otherUserId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching conversation messages:", error);
+      res.status(500).json({ message: "Failed to fetch conversation messages" });
+    }
+  });
+
   app.get("/api/messages/unread-count", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
