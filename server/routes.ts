@@ -21,6 +21,10 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+// Store persistent data for reactions and notifications
+let messageReactions: Record<string, Record<string, string[]>> = {};
+let userNotifications: Record<string, any[]> = {};
+
 const storage_multer = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -48,7 +52,6 @@ const upload = multer({
 // Temporary storage for forum topics and replies (in production, this would be in database)
 const forumTopics: any[] = [];
 const forumReplies: any[] = [];
-const userNotifications: Record<string, any[]> = {};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -560,8 +563,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
 
       const filteredUsers = allUsers.filter(user => 
-        user.firstName.toLowerCase().includes(query.toLowerCase()) ||
-        user.lastName.toLowerCase().includes(query.toLowerCase())
+        user.firstName.toLowerCase().startsWith(query.toLowerCase()) ||
+        user.lastName.toLowerCase().startsWith(query.toLowerCase())
       );
 
       res.json(filteredUsers.slice(0, 5)); // Limiter à 5 résultats
@@ -575,13 +578,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/forum/reactions/:messageId", isAuthenticated, async (req: any, res) => {
     try {
       const messageId = req.params.messageId;
+      const userId = req.user.id;
       
-      // Simuler les réactions (à remplacer par une vraie base de données)
-      const reactions = [
-        { emoji: "❤️", count: Math.floor(Math.random() * 5) + 1, userReacted: Math.random() > 0.5 },
-        { emoji: "👍", count: Math.floor(Math.random() * 3) + 1, userReacted: Math.random() > 0.5 },
-        { emoji: "😂", count: Math.floor(Math.random() * 2) + 1, userReacted: Math.random() > 0.5 }
-      ].filter(r => r.count > 0);
+      // Gérer les réactions de manière persistante
+      if (!messageReactions[messageId]) {
+        messageReactions[messageId] = {};
+      }
+      
+      const reactions = Object.keys(messageReactions[messageId]).map(emoji => {
+        const userList = messageReactions[messageId][emoji];
+        return {
+          emoji,
+          count: userList.length,
+          userReacted: userList.includes(userId)
+        };
+      });
+      
+      // Ajouter les réactions par défaut si aucune réaction existe
+      if (reactions.length === 0) {
+        reactions.push(
+          { emoji: "❤️", count: 0, userReacted: false },
+          { emoji: "👍", count: 0, userReacted: false },
+          { emoji: "😂", count: 0, userReacted: false }
+        );
+      }
 
       res.json(reactions);
     } catch (error) {
@@ -596,8 +616,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { messageId, messageType, emoji } = req.body;
       const userId = req.user.id;
 
-      // Simuler l'ajout/suppression de réaction
-      const reactionAdded = Math.random() > 0.5;
+      // Initialiser les réactions pour ce message si elles n'existent pas
+      if (!messageReactions[messageId]) {
+        messageReactions[messageId] = {};
+      }
+      
+      // Initialiser l'emoji si il n'existe pas
+      if (!messageReactions[messageId][emoji]) {
+        messageReactions[messageId][emoji] = [];
+      }
+      
+      const userIndex = messageReactions[messageId][emoji].indexOf(userId);
+      let reactionAdded = false;
+      
+      if (userIndex === -1) {
+        // Ajouter la réaction
+        messageReactions[messageId][emoji].push(userId);
+        reactionAdded = true;
+      } else {
+        // Supprimer la réaction
+        messageReactions[messageId][emoji].splice(userIndex, 1);
+        reactionAdded = false;
+      }
       
       res.json({ 
         success: true, 
