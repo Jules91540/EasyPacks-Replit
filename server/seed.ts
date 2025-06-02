@@ -19,6 +19,56 @@ export async function seedDatabase() {
 
     console.log("✅ Admin user created");
 
+    // Create sample users for discovery
+    const sampleUsers = [
+      {
+        id: "user_marie_2024",
+        email: "marie.dubois@example.com",
+        firstName: "Marie",
+        lastName: "Dubois",
+        role: "student",
+        level: 3,
+        xp: 850,
+        profileImageUrl: null
+      },
+      {
+        id: "user_lucas_2024", 
+        email: "lucas.martin@example.com",
+        firstName: "Lucas",
+        lastName: "Martin", 
+        role: "student",
+        level: 5,
+        xp: 1200,
+        profileImageUrl: null
+      },
+      {
+        id: "user_sarah_2024",
+        email: "sarah.wilson@example.com", 
+        firstName: "Sarah",
+        lastName: "Wilson",
+        role: "student",
+        level: 2,
+        xp: 450,
+        profileImageUrl: null
+      },
+      {
+        id: "user_alex_2024",
+        email: "alex.rodriguez@example.com",
+        firstName: "Alex", 
+        lastName: "Rodriguez",
+        role: "student",
+        level: 4,
+        xp: 980,
+        profileImageUrl: null
+      }
+    ];
+
+    for (const user of sampleUsers) {
+      await db.insert(users).values(user).onConflictDoNothing();
+    }
+
+    console.log("✅ Sample users created");
+
     // Create sample modules
     const sampleModules = [
       {
