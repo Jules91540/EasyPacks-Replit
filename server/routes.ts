@@ -429,6 +429,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create forum topic
+  app.post("/api/forum/topics", isAuthenticated, async (req: any, res) => {
+    try {
+      const { title, content, categoryId } = req.body;
+      const userId = req.user.id;
+
+      if (!title || !content || !categoryId) {
+        return res.status(400).json({ message: "Titre, contenu et catégorie requis" });
+      }
+
+      // For now, simulate topic creation since we don't have actual database storage
+      const topic = {
+        id: Date.now(),
+        title,
+        content,
+        categoryId: parseInt(categoryId),
+        authorId: userId,
+        createdAt: new Date(),
+        isPinned: false,
+        isLocked: false,
+        viewCount: 0,
+        repliesCount: 0
+      };
+
+      res.json(topic);
+    } catch (error) {
+      console.error("Error creating forum topic:", error);
+      res.status(500).json({ message: "Erreur lors de la création du sujet" });
+    }
+  });
+
   // Test email route - mode simulation
   app.post("/api/test-email", isAuthenticated, async (req: any, res) => {
     try {

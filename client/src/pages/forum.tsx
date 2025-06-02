@@ -8,16 +8,66 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquare, Eye, Clock, Plus, Pin, Lock, User } from "lucide-react";
 import Navigation from "@/components/ui/navigation";
 
 export default function ForumPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newTopicForm, setNewTopicForm] = useState({
+    title: "",
+    content: "",
+    categoryId: ""
+  });
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ["/api/forum/categories"],
   });
+
+  const createTopicMutation = useMutation({
+    mutationFn: async (topicData: { title: string; content: string; categoryId: string }) => {
+      return await apiRequest("/api/forum/topics", "POST", topicData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sujet créé !",
+        description: "Votre sujet a été publié avec succès.",
+      });
+      setIsCreateModalOpen(false);
+      setNewTopicForm({ title: "", content: "", categoryId: "" });
+      queryClient.invalidateQueries({ queryKey: ["/api/forum/categories"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de créer le sujet",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateTopic = (categoryId: string) => {
+    setNewTopicForm({ ...newTopicForm, categoryId });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleSubmitTopic = () => {
+    if (!newTopicForm.title || !newTopicForm.content || !newTopicForm.categoryId) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs",
+        variant: "destructive",
+      });
+      return;
+    }
+    createTopicMutation.mutate(newTopicForm);
+  };
 
   if (isLoading) {
     return (
@@ -45,10 +95,6 @@ export default function ForumPage() {
               <h1 className="text-2xl font-bold text-foreground">Forum des Créateurs</h1>
               <p className="text-muted-foreground">Échangez avec la communauté d'apprentis créateurs</p>
             </div>
-            <Button className="gradient-primary text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau sujet
-            </Button>
           </div>
         </header>
 
@@ -116,7 +162,12 @@ export default function ForumPage() {
                         <div className="text-center py-6">
                           <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                           <p className="text-sm text-muted-foreground">Aucun sujet dans cette catégorie</p>
-                          <Button variant="outline" size="sm" className="mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => handleCreateTopic(category.id.toString())}
+                          >
                             Créer le premier sujet
                           </Button>
                         </div>
@@ -172,6 +223,70 @@ export default function ForumPage() {
           </div>
         </main>
       </div>
+
+      {/* Create Topic Dialog */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Créer un nouveau sujet</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Catégorie</Label>
+              <Select 
+                value={newTopicForm.categoryId} 
+                onValueChange={(value) => setNewTopicForm({ ...newTopicForm, categoryId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionnez une catégorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((category: any) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">Titre du sujet</Label>
+              <Input
+                id="title"
+                placeholder="Entrez le titre de votre sujet..."
+                value={newTopicForm.title}
+                onChange={(e) => setNewTopicForm({ ...newTopicForm, title: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="content">Contenu</Label>
+              <Textarea
+                id="content"
+                placeholder="Décrivez votre question ou partagez votre expérience..."
+                className="min-h-[120px]"
+                value={newTopicForm.content}
+                onChange={(e) => setNewTopicForm({ ...newTopicForm, content: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsCreateModalOpen(false)}
+              disabled={createTopicMutation.isPending}
+            >
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleSubmitTopic}
+              disabled={createTopicMutation.isPending}
+              className="gradient-primary text-white"
+            >
+              {createTopicMutation.isPending ? "Création..." : "Créer le sujet"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
