@@ -103,134 +103,163 @@ export default function ModulesPage() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center mb-4">
-              <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mr-4">
-                <BookOpen className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-white heading-french">Formations</h1>
-                <p className="text-white/80 subtitle-french">
-                  Découvrez nos modules de formation pour devenir créateur de contenu
-                </p>
+        <main className="flex-1 p-4 h-screen overflow-hidden">
+          {/* Compact Header */}
+          <div className="flex items-center mb-4">
+            <div className="bg-primary text-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">Formations</h1>
+              <p className="text-white/80 text-sm">
+                {modules.length} formations • {progress.filter(p => p.status === 'completed').length} terminées
+              </p>
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Rechercher..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-8 text-sm"
+                />
               </div>
             </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant={selectedPlatform === 'all' ? 'default' : 'outline'}
+                onClick={() => setSelectedPlatform('all')}
+                size="sm"
+                className="text-xs"
+              >
+                Toutes
+              </Button>
+              <Button
+                variant={selectedPlatform === 'youtube' ? 'default' : 'outline'}
+                onClick={() => setSelectedPlatform('youtube')}
+                size="sm"
+                className="text-xs"
+              >
+                <Youtube className="w-3 h-3 mr-1" />
+                YT
+              </Button>
+              <Button
+                variant={selectedPlatform === 'tiktok' ? 'default' : 'outline'}
+                onClick={() => setSelectedPlatform('tiktok')}
+                size="sm"
+                className="text-xs"
+              >
+                <Video className="w-3 h-3 mr-1" />
+                TT
+              </Button>
+              <Button
+                variant={selectedPlatform === 'twitch' ? 'default' : 'outline'}
+                onClick={() => setSelectedPlatform('twitch')}
+                size="sm"
+                className="text-xs"
+              >
+                <Gamepad2 className="w-3 h-3 mr-1" />
+                TW
+              </Button>
+            </div>
+          </div>
 
-            {/* Search and Filters */}
+          {/* Compact Stats */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
             <Card className="gradient-card">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Rechercher une formation..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <div className="flex space-x-2">
-                    <div className="flex items-center space-x-2">
-                      <Filter className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Plateforme:</span>
-                    </div>
-                    {platforms.map((platform) => (
-                      <Button
-                        key={platform}
-                        variant={filterPlatform === platform ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilterPlatform(platform)}
-                      >
-                        {platformLabels[platform]}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
+              <CardContent className="p-3 text-center">
+                <div className="text-lg font-bold text-primary">{modules.length}</div>
+                <p className="text-white/80 text-xs">Disponibles</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="gradient-card">
+              <CardContent className="p-3 text-center">
+                <div className="text-lg font-bold text-green-600">{progress.filter(p => p.status === 'completed').length}</div>
+                <p className="text-white/80 text-xs">Terminées</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="gradient-card">
+              <CardContent className="p-3 text-center">
+                <div className="text-lg font-bold text-blue-600">{progress.filter(p => p.status === 'in_progress').length}</div>
+                <p className="text-white/80 text-xs">En cours</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Modules Grid */}
-          {filteredModules.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredModules.map((module) => (
-                <ModuleCard
-                  key={module.id}
-                  module={module}
-                  status={getModuleStatus(module.id)}
-                  progress={getModuleProgress(module.id)}
-                  onStartQuiz={setSelectedQuiz}
-                />
-              ))}
-            </div>
-          ) : (
-            <Card className="gradient-blue-card">
-              <CardContent className="p-12 text-center">
-                <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {searchTerm || filterPlatform !== "all" 
-                    ? "Aucune formation trouvée" 
-                    : "Aucune formation disponible"
-                  }
-                </h3>
-                <p className="text-gray-300 mb-4">
-                  {searchTerm || filterPlatform !== "all"
-                    ? "Essayez de modifier vos critères de recherche"
-                    : "Les formations seront bientôt disponibles"
-                  }
-                </p>
-                {(searchTerm || filterPlatform !== "all") && (
-                  <Button 
-                    onClick={() => {
-                      setSearchTerm("");
-                      setFilterPlatform("all");
-                    }}
-                    variant="outline"
-                  >
-                    Réinitialiser les filtres
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-[calc(100vh-280px)] overflow-y-auto">
+            {filteredModules.map((module) => {
+              const moduleProgress = progress.find(p => p.moduleId === module.id);
+              const status = moduleProgress?.status || 'not_started';
+              const progressPercent = moduleProgress?.progress || 0;
+              
+              return (
+                <Card key={module.id} className="gradient-card h-fit">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white text-sm mb-1">{module.title}</h3>
+                        <p className="text-white/80 text-xs mb-2 line-clamp-2">{module.description}</p>
+                      </div>
+                      <Badge variant="outline" className="text-xs ml-2">
+                        {module.platform || 'Général'}
+                      </Badge>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-white/80">Progression</span>
+                        <span className="text-xs text-white">{progressPercent}%</span>
+                      </div>
+                      <Progress value={progressPercent} className="h-1" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <Badge variant={
+                        status === 'completed' ? 'default' : 
+                        status === 'in_progress' ? 'secondary' : 
+                        'outline'
+                      } className="text-xs">
+                        {status === 'completed' ? 'Terminé' :
+                         status === 'in_progress' ? 'En cours' :
+                         'Nouveau'}
+                      </Badge>
+                      
+                      <Button size="sm" className="text-xs">
+                        <Play className="mr-1 h-3 w-3" />
+                        {status === 'not_started' ? 'Commencer' : 'Continuer'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
 
-          {/* Statistics Summary */}
-          {modules.length > 0 && (
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="gradient-card">
-                <CardContent className="p-6 text-center">
-                  <div className="text-2xl font-bold text-primary mb-2">
-                    {modules.length}
-                  </div>
-                  <p className="text-white/80">Formations disponibles</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="gradient-card">
-                <CardContent className="p-6 text-center">
-                  <div className="text-2xl font-bold text-green-600 mb-2">
-                    {progress.filter(p => p.status === 'completed').length}
-                  </div>
-                  <p className="text-white/80">Formations terminées</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="gradient-card">
-                <CardContent className="p-6 text-center">
-                  <div className="text-2xl font-bold text-blue-600 mb-2">
-                    {progress.filter(p => p.status === 'in_progress').length}
-                  </div>
-                  <p className="text-white/80">En cours</p>
-                </CardContent>
-              </Card>
+          {filteredModules.length === 0 && (
+            <div className="text-center py-8">
+              <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Aucune formation trouvée
+              </h3>
+              <p className="text-white/80 text-sm">
+                {searchTerm || selectedPlatform !== 'all' 
+                  ? 'Modifiez vos critères de recherche.' 
+                  : 'Aucune formation disponible.'}
+              </p>
             </div>
           )}
         </main>
       </div>
 
-      {/* Quiz Modal */}
       {selectedQuiz && (
         <QuizModal
           quiz={selectedQuiz}
