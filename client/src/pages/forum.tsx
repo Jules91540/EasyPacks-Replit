@@ -71,7 +71,7 @@ export default function ForumPage() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-blue-50 flex overflow-hidden">
+      <div className="h-screen bg-background flex overflow-hidden">
         <Navigation variant="student" />
         <div className="md:ml-20 flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -84,7 +84,7 @@ export default function ForumPage() {
   }
 
   return (
-    <div className="h-screen bg-blue-50 flex overflow-hidden">
+    <div className="h-screen bg-background flex overflow-hidden">
       <Navigation variant="student" />
       
       <div className="md:ml-20 flex-1 flex flex-col overflow-hidden">

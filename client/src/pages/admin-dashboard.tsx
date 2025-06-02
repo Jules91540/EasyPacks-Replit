@@ -101,7 +101,7 @@ export default function AdminDashboard() {
 
   if (isLoading || statsLoading) {
     return (
-      <div className="h-screen bg-blue-50 flex overflow-hidden">
+      <div className="h-screen bg-background flex overflow-hidden">
         <Navigation variant="admin" />
         <div className="md:ml-20 flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -123,12 +123,12 @@ export default function AdminDashboard() {
   const displayStats = stats || defaultStats;
 
   return (
-    <div className="h-screen bg-blue-50 flex overflow-hidden">
+    <div className="h-screen bg-background flex overflow-hidden">
       <Navigation variant="admin" />
       
       <div className="md:ml-20 flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-blue-50 border-b border-border p-6">
+        <header className="bg-background border-b border-border p-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Tableau de Bord Administrateur</h1>

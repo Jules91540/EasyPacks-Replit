@@ -87,7 +87,7 @@ export default function ModulesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-background">
       {/* Navigation Sidebar */}
       <Navigation variant="student" />
       

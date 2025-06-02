@@ -364,7 +364,7 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-blue-50 overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       <Navigation variant="student" />
       
       <main className="flex-1 p-4 md:ml-20 overflow-y-auto">

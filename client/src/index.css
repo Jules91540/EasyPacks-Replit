@@ -21,8 +21,8 @@ html, body, #root {
 }
 
 :root {
-  --background: 240 10% 8%; /* Dark background like mockup */
-  --foreground: 0 0% 98%;
+  --background: 240 10% 8%; /* Dark background */
+  --foreground: 0 0% 98%; /* White text */
   --muted: 240 6% 15%;
   --muted-foreground: 240 5% 64.9%;
   --popover: 240 10% 12%;
@@ -31,23 +31,23 @@ html, body, #root {
   --card-foreground: 0 0% 98%;
   --border: 240 6% 20%;
   --input: 240 6% 20%;
-  --primary: 207 90% 54%; /* #007bff */
-  --primary-foreground: 211 100% 99%;
+  --primary: 207 90% 54%; /* Blue primary */
+  --primary-foreground: 0 0% 100%; /* White text on primary */
   --secondary: 240 6% 15%;
   --secondary-foreground: 0 0% 98%;
   --accent: 240 6% 15%;
   --accent-foreground: 0 0% 98%;
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 60 9.1% 97.8%;
+  --destructive-foreground: 0 0% 98%;
   --ring: 240 4.9% 83.9%;
   --radius: 0.75rem;
   
-  /* Sidebar colors to match mockup */
-  --sidebar-bg: 240 15% 5%; /* Very dark sidebar */
+  /* Sidebar colors */
+  --sidebar-bg: 240 15% 5%;
   --sidebar-item-hover: 240 10% 10%;
   --sidebar-item-active: 207 90% 54%;
   
-  /* Custom French platform colors */
+  /* Custom colors */
   --primary-dark: 212 100% 35%;
   --primary-light: 207 100% 70%;
   --success: 142 76% 36%;
