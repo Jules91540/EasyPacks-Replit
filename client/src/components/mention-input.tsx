@@ -15,9 +15,10 @@ interface MentionInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
-export default function MentionInput({ value, onChange, placeholder, className }: MentionInputProps) {
+export default function MentionInput({ value, onChange, placeholder, className, onKeyDown }: MentionInputProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
@@ -86,6 +87,10 @@ export default function MentionInput({ value, onChange, placeholder, className }
     if (e.key === 'Escape') {
       setShowSuggestions(false);
       setMentionQuery('');
+    }
+    
+    if (onKeyDown) {
+      onKeyDown(e);
     }
   };
 
