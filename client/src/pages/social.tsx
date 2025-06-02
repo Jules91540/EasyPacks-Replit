@@ -13,6 +13,7 @@ import Navigation from "@/components/ui/navigation";
 import { IncomingCallPopup } from "@/components/IncomingCallPopup";
 import { MessageWithReactions } from "@/components/MessageWithReactions";
 import { UserProfile } from "@/components/UserProfile";
+import InstagramMessaging from "@/components/InstagramMessaging";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -884,129 +885,9 @@ export default function SocialPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="messages" className="h-full overflow-y-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[calc(100vh-160px)] pb-4">
-                  {/* Conversations list */}
-                  <div className="lg:col-span-1">
-                    <Card className="h-full flex flex-col">
-                      <CardHeader className="flex-shrink-0">
-                        <CardTitle>Conversations</CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex-1 overflow-hidden">
-                        <ScrollArea className="h-full">
-                          {friends.map((friend: User) => (
-                            <div
-                              key={`messages-friend-${friend.id}`}
-                              className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-white/10 ${
-                                selectedUser?.id === friend.id ? "bg-white/10" : ""
-                              }`}
-                              onClick={() => setSelectedUser(friend)}
-                            >
-                              <Avatar>
-                                <AvatarImage src={friend.profileImageUrl} />
-                                <AvatarFallback>
-                                  {friend.firstName?.[0]}{friend.lastName?.[0]}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <p className="font-medium text-white">
-                                  {friend.firstName} {friend.lastName}
-                                </p>
-                                <p className="text-sm text-white/70">En ligne</p>
-                              </div>
-                            </div>
-                          ))}
-                        </ScrollArea>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Chat window */}
-                  <div className="lg:col-span-2">
-                    {selectedUser ? (
-                      <Card className="h-full flex flex-col">
-                        <CardHeader className="flex-shrink-0 pb-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage src={selectedUser.profileImageUrl} />
-                                <AvatarFallback>
-                                  {selectedUser.firstName?.[0]}{selectedUser.lastName?.[0]}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <h3 className="font-semibold text-white text-sm">
-                                  {selectedUser.firstName} {selectedUser.lastName}
-                                </h3>
-                                <p className="text-xs text-white/70">En ligne</p>
-                              </div>
-                            </div>
-                            <div className="flex space-x-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 w-8 p-0"
-                                onClick={() => initiateCall.mutate({ receiverId: selectedUser.id, callType: "voice" })}
-                              >
-                                <Phone className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 w-8 p-0"
-                                onClick={() => initiateCall.mutate({ receiverId: selectedUser.id, callType: "video" })}
-                              >
-                                <Video className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 w-8 p-0"
-                                onClick={() => initiateCall.mutate({ receiverId: selectedUser.id, callType: "screen_share" })}
-                                title="Partage d'écran"
-                              >
-                                <Monitor className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="flex-1 flex flex-col p-4 overflow-hidden">
-                          <ScrollArea className="flex-1 mb-3">
-                            <div className="space-y-2">
-                              {/* Messages would be loaded here */}
-                              <div className="text-center text-white/70 py-4">
-                                <p className="text-sm">Démarrez une conversation avec {selectedUser.firstName}</p>
-                              </div>
-                            </div>
-                          </ScrollArea>
-                          <div className="flex space-x-2 flex-shrink-0">
-                            <Input
-                              placeholder="Tapez votre message..."
-                              value={messageContent}
-                              onChange={(e) => setMessageContent(e.target.value)}
-                              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                              className="flex-1 h-9"
-                            />
-                            <Button
-                              onClick={handleSendMessage}
-                              disabled={!messageContent.trim() || sendMessage.isPending}
-                              size="sm"
-                              className="h-9 w-9 p-0"
-                            >
-                              <Send className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <Card className="h-full flex items-center justify-center">
-                        <div className="text-center text-white/70">
-                          <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                          <p>Sélectionnez une conversation pour commencer</p>
-                        </div>
-                      </Card>
-                    )}
-                  </div>
+              <TabsContent value="messages" className="h-full overflow-hidden">
+                <div className="h-[calc(100vh-160px)]">
+                  <InstagramMessaging />
                 </div>
               </TabsContent>
 
