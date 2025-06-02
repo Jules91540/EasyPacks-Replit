@@ -89,7 +89,7 @@ export default function ForumPage() {
       
       <div className="md:ml-20 flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-blue-50 border-b border-border p-4">
+        <header className="bg-background border-b border-border p-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Forum des Créateurs</h1>
