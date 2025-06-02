@@ -563,10 +563,10 @@ export default function IntelligentChatbot({ isOpen, onToggle }: ChatbotProps) {
                       message.sender === 'user'
                         ? 'bg-blue-600 text-white ml-auto'
                         : message.type === 'tip'
-                        ? 'bg-amber-50 border-2 border-amber-200 text-gray-800'
+                        ? 'bg-amber-500/20 border-2 border-amber-500/30 text-foreground'
                         : message.type === 'suggestion'
-                        ? 'bg-green-50 border-2 border-green-200 text-gray-800'
-                        : 'bg-gray-100 border border-gray-200 text-gray-800'
+                        ? 'bg-green-500/20 border-2 border-green-500/30 text-foreground'
+                        : 'bg-muted border border-border text-foreground'
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
@@ -593,13 +593,13 @@ export default function IntelligentChatbot({ isOpen, onToggle }: ChatbotProps) {
           </ScrollArea>
 
           {/* Quick Actions */}
-          <div className="p-3 border-t bg-gray-50">
+          <div className="p-3 border-t border-border bg-background">
             <div className="flex gap-2 mb-3">
               <Button
                 onClick={addRandomTip}
                 size="sm"
                 variant="outline"
-                className="text-xs bg-amber-100 border-amber-300 text-amber-700 hover:bg-amber-200"
+                className="text-xs bg-amber-500/20 border-amber-500/30 text-amber-400 hover:bg-amber-500/30"
               >
                 <TrendingUp className="h-3 w-3 mr-1" />
                 Tip du jour
@@ -608,14 +608,14 @@ export default function IntelligentChatbot({ isOpen, onToggle }: ChatbotProps) {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 border-t bg-white">
+          <div className="p-4 border-t border-border bg-background">
             <div className="flex gap-2">
               <Input
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 placeholder="Demande-moi des conseils..."
-                className="flex-1 border-2 border-gray-200 focus:border-blue-400 text-gray-800"
+                className="flex-1 border-2 border-border focus:border-primary bg-background text-foreground"
               />
               <Button 
                 onClick={handleSendMessage}
