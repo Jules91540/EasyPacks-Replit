@@ -1331,6 +1331,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/friends/remove/:friendId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub || req.user?.id;
+      const { friendId } = req.params;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      await storage.removeFriend(userId, friendId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing friend:", error);
+      res.status(500).json({ message: "Failed to remove friend" });
+    }
+  });
+
   app.get("/api/friends/requests/pending", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub || req.user?.id;

@@ -158,6 +158,9 @@ export interface IStorage {
   
   // Search operations
   searchUsers(query: string, excludeUserId?: string): Promise<User[]>;
+  
+  // Friend removal
+  removeFriend(userId: string, friendId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -561,6 +564,22 @@ export class DatabaseStorage implements IStorage {
 
   // Social operations - Friends
   async sendFriendRequest(senderId: string, receiverId: string): Promise<Friendship> {
+    // Check if friendship already exists
+    const existingFriendship = await db
+      .select()
+      .from(friendships)
+      .where(
+        or(
+          and(eq(friendships.senderId, senderId), eq(friendships.receiverId, receiverId)),
+          and(eq(friendships.senderId, receiverId), eq(friendships.receiverId, senderId))
+        )
+      )
+      .limit(1);
+
+    if (existingFriendship.length > 0) {
+      throw new Error('Friendship already exists or request already sent');
+    }
+
     const [friendship] = await db
       .insert(friendships)
       .values({
@@ -772,22 +791,31 @@ export class DatabaseStorage implements IStorage {
       .values(message)
       .returning();
     
-    // Update or create conversation
-    await db
-      .insert(conversations)
-      .values({
-        participant1Id: message.senderId,
-        participant2Id: message.receiverId,
-        lastMessageId: newMessage.id,
-        lastActivityAt: new Date()
-      })
-      .onConflictDoUpdate({
-        target: [conversations.participant1Id, conversations.participant2Id],
-        set: {
+    // Update or create conversation - ensure participant order consistency
+    const [smaller, larger] = [message.senderId, message.receiverId].sort();
+    
+    try {
+      await db
+        .insert(conversations)
+        .values({
+          participant1Id: smaller,
+          participant2Id: larger,
           lastMessageId: newMessage.id,
           lastActivityAt: new Date()
-        }
-      });
+        });
+    } catch (error) {
+      // If conversation exists, update it
+      await db
+        .update(conversations)
+        .set({
+          lastMessageId: newMessage.id,
+          lastActivityAt: new Date()
+        })
+        .where(and(
+          eq(conversations.participant1Id, smaller),
+          eq(conversations.participant2Id, larger)
+        ));
+    }
     
     return newMessage;
   }
@@ -940,6 +968,17 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await searchQuery.limit(20);
+  }
+
+  async removeFriend(userId: string, friendId: string): Promise<void> {
+    await db
+      .delete(friendships)
+      .where(
+        or(
+          and(eq(friendships.senderId, userId), eq(friendships.receiverId, friendId)),
+          and(eq(friendships.senderId, friendId), eq(friendships.receiverId, userId))
+        )
+      );
   }
 }
 
