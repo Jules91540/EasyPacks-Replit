@@ -39,26 +39,27 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
   const [filteredSteps, setFilteredSteps] = useState<GuideStep[]>([]);
   const [visitedSteps, setVisitedSteps] = useState<Set<string>>(new Set());
   const [completedCategories, setCompletedCategories] = useState<Set<string>>(new Set());
+  const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
 
   const guideSteps: GuideStep[] = [
     // Getting Started
     {
       id: 'welcome',
-      title: 'Bienvenue dans Easy Packs',
-      description: 'Découvrez votre centre de formation pour créateurs de contenu',
-      content: 'Easy Packs est votre centre de formation complet pour devenir un créateur de contenu professionnel. Explorez nos modules spécialisés pour chaque plateforme sociale et rejoignez notre communauté active.',
+      title: 'Bienvenue !',
+      description: 'Découvrez votre plateforme de formation',
+      content: 'Bienvenue dans votre centre de formation pour créateurs de contenu ! Apprenez facilement avec des cours interactifs et une communauté bienveillante.',
       icon: Home,
       category: 'getting_started',
-      keywords: ['bienvenue', 'introduction', 'démarrage', 'présentation']
+      keywords: ['bienvenue', 'formation', 'début']
     },
     {
       id: 'first_steps',
-      title: 'Premiers pas',
-      description: 'Comment commencer votre apprentissage',
-      content: 'Commencez par explorer la section "Modules" pour découvrir les formations disponibles. Consultez votre tableau de bord pour suivre vos progrès et n\'hésitez pas à utiliser le chatbot IA pour obtenir de l\'aide.',
+      title: 'Comment commencer',
+      description: 'Vos premiers pas sur la plateforme',
+      content: 'Explorez les cours disponibles dans la section "Modules". Chaque cours contient des leçons simples et des quiz amusants. Votre progression est automatiquement sauvegardée.',
       icon: Play,
       category: 'getting_started',
-      keywords: ['premiers pas', 'commencer', 'démarrer', 'début']
+      keywords: ['commencer', 'cours', 'progression']
     },
     
     // Navigation
@@ -73,30 +74,30 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
     },
     {
       id: 'modules',
-      title: 'Modules de formation',
-      description: 'Accédez à vos cours spécialisés',
-      content: 'Dans la section Modules, trouvez des formations spécialisées pour chaque plateforme : Twitch, YouTube, Instagram, TikTok et X. Chaque module contient des leçons progressives et des quiz d\'évaluation.',
+      title: 'Les cours',
+      description: 'Vos formations par plateforme',
+      content: 'Dans "Modules", trouvez des cours pour YouTube, Twitch, TikTok et Twitter. Chaque cours a des leçons simples et des quiz pour vérifier que vous avez compris.',
       icon: BookOpen,
       category: 'navigation',
-      keywords: ['modules', 'cours', 'formation', 'leçons', 'apprentissage']
+      keywords: ['modules', 'cours', 'formation']
     },
     {
       id: 'forum',
-      title: 'Forum communautaire',
-      description: 'Échangez avec d\'autres créateurs',
-      content: 'Le forum utilise une interface moderne inspirée d\'Instagram. Créez des sujets, participez aux discussions, partagez vos expériences et recevez des conseils de la communauté.',
+      title: 'La communauté',
+      description: 'Échangez avec d\'autres apprenants',
+      content: 'Dans le "Forum", posez vos questions, partagez vos expériences, et aidez les autres. C\'est un espace bienveillant pour tous.',
       icon: Users,
       category: 'navigation',
-      keywords: ['forum', 'communauté', 'discussion', 'échange', 'social']
+      keywords: ['forum', 'communauté', 'discussions']
     },
     {
       id: 'progress',
-      title: 'Suivi des progrès',
-      description: 'Visualisez votre évolution',
-      content: 'La page Progrès vous montre votre avancement détaillé dans chaque module, vos scores aux quiz, et votre niveau général. Suivez vos statistiques et identifiez les domaines à améliorer.',
+      title: 'Vos résultats',
+      description: 'Suivez votre progression',
+      content: 'Dans "Progrès", voyez vos cours terminés, vos scores aux quiz, et votre niveau. C\'est là que vous pouvez voir tout ce que vous avez accompli.',
       icon: Target,
       category: 'navigation',
-      keywords: ['progrès', 'avancement', 'statistiques', 'évolution']
+      keywords: ['progrès', 'résultats', 'statistiques']
     },
     
     // Features
@@ -171,11 +172,22 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
     setCurrentStep(0);
   }, [currentCategory, searchQuery]);
 
-  // Marquer la step actuelle comme visitée
+  // Marquer la step actuelle comme visitée et mettre en surbrillance
   useEffect(() => {
     if (filteredSteps[currentStep]) {
       const stepId = filteredSteps[currentStep].id;
       setVisitedSteps(prev => new Set([...Array.from(prev), stepId]));
+      
+      // Définir l'élément à surligner selon l'étape
+      const highlightMap: { [key: string]: string } = {
+        'dashboard': 'nav-home',
+        'modules': 'nav-modules', 
+        'forum': 'nav-forum',
+        'progress': 'nav-progress',
+        'badges': 'nav-badges'
+      };
+      
+      setHighlightedElement(highlightMap[stepId] || null);
       
       // Vérifier si toutes les étapes de la catégorie ont été visitées
       const categorySteps = guideSteps.filter(step => step.category === currentCategory);
@@ -186,6 +198,13 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
       }
     }
   }, [currentStep, filteredSteps, currentCategory]);
+
+  // Nettoyer la surbrillance quand le guide se ferme
+  useEffect(() => {
+    if (!isOpen) {
+      setHighlightedElement(null);
+    }
+  }, [isOpen]);
 
   // Fonction pour vérifier si une catégorie peut être accédée
   const canAccessCategory = (categoryId: string) => {
@@ -226,19 +245,52 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
   const currentStepData = filteredSteps[currentStep];
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      >
+    <>
+      {/* Overlay de surbrillance pour les éléments de navigation */}
+      {highlightedElement && (
+        <div className="fixed inset-0 pointer-events-none z-40">
+          <style>{`
+            [data-nav-id="${highlightedElement}"] {
+              position: relative;
+              animation: highlight-pulse 2s infinite;
+            }
+            
+            [data-nav-id="${highlightedElement}"]::after {
+              content: '';
+              position: absolute;
+              inset: -4px;
+              background: transparent;
+              border: 3px solid rgb(147, 51, 234);
+              border-radius: 12px;
+              animation: highlight-pulse 2s infinite;
+              pointer-events: none;
+            }
+            
+            @keyframes highlight-pulse {
+              0%, 100% { 
+                box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.4), 0 0 20px rgba(147, 51, 234, 0.3);
+              }
+              50% { 
+                box-shadow: 0 0 0 8px rgba(147, 51, 234, 0.6), 0 0 30px rgba(147, 51, 234, 0.5);
+              }
+            }
+          `}</style>
+        </div>
+      )}
+
+      <AnimatePresence>
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-full max-w-5xl max-h-[90vh] mx-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl shadow-2xl border border-purple-500/20 overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
         >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="relative w-full max-w-5xl max-h-[90vh] mx-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl shadow-2xl border border-purple-500/20 overflow-hidden"
+          >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-purple-500/20">
             <div className="flex items-center space-x-3">
@@ -430,9 +482,10 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
               )}
             </div>
           </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </AnimatePresence>
+    </>
   );
 }
 
