@@ -806,23 +806,57 @@ export default function SocialPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {allUsers.map((user: any) => (
                           <Card key={user.id}>
-                            <CardContent className="p-6 text-center">
-                              <Avatar className="w-16 h-16 mx-auto mb-4">
-                                <AvatarImage src={user.profileImageUrl} />
-                                <AvatarFallback>
-                                  {user.firstName?.[0]}{user.lastName?.[0]}
-                                </AvatarFallback>
-                              </Avatar>
-                              <h3 className="font-semibold text-white mb-2">
-                                {user.firstName} {user.lastName}
-                              </h3>
+                            <CardContent className="p-6">
+                              <div className="text-center mb-4">
+                                <Avatar className="w-16 h-16 mx-auto mb-3">
+                                  <AvatarImage src={user.profileImageUrl} />
+                                  <AvatarFallback>
+                                    {user.firstName?.[0]}{user.lastName?.[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <h3 className="font-semibold text-white mb-1">
+                                  {user.firstName} {user.lastName}
+                                </h3>
+                                <p className="text-sm text-white/70">{user.email}</p>
+                              </div>
+                              
+                              {user.stats && (
+                                <div className="space-y-2 mb-4 text-sm">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-white/70">Niveau:</span>
+                                    <span className="text-blue-400 font-semibold">
+                                      {user.stats.level}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-white/70">XP Total:</span>
+                                    <span className="text-green-400 font-semibold">
+                                      {user.stats.totalXP}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-white/70">Modules:</span>
+                                    <span className="text-purple-400 font-semibold">
+                                      {user.stats.completedModules}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-white/70">Badges:</span>
+                                    <span className="text-yellow-400 font-semibold">
+                                      {user.stats.totalBadges}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              
                               <Button
                                 size="sm"
+                                className="w-full"
                                 onClick={() => sendFriendRequest.mutate(user.id)}
                                 disabled={sendFriendRequest.isPending}
                               >
-                                <UserPlus className="w-4 h-4 mr-1" />
-                                Ajouter
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Ajouter comme ami
                               </Button>
                             </CardContent>
                           </Card>

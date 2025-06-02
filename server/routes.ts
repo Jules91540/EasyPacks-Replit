@@ -1416,6 +1416,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Discover users with stats
+  app.get("/api/users/discover", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user?.claims?.sub;
+      if (!currentUserId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      // Get all users except current user
+      const users = await storage.searchUsers("", currentUserId);
+      
+      // Add basic stats for each user
+      const usersWithStats = await Promise.all(users.map(async (user) => {
+        const progress = await storage.getUserModuleProgress(user.id);
+        const badges = await storage.getUserBadges(user.id);
+        const completedModules = progress.filter(p => p.completedAt !== null).length;
+        const totalXP = progress.reduce((sum, p) => sum + (p.progress * 100), 0);
+        
+        return {
+          ...user,
+          stats: {
+            completedModules,
+            totalBadges: badges.length,
+            totalXP: Math.floor(totalXP),
+            level: storage.calculateLevel(totalXP)
+          }
+        };
+      }));
+      
+      res.json(usersWithStats);
+    } catch (error) {
+      console.error("Error discovering users:", error);
+      res.status(500).json({ message: "Failed to discover users" });
+    }
+  });
+
   app.get("/api/conversations", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
@@ -1529,22 +1565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Discover all users route
-  app.get("/api/users/discover", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      
-      if (!userId) {
-        return res.status(401).json({ message: "User not authenticated" });
-      }
-      
-      const users = await storage.searchUsers("", userId);
-      res.json(users);
-    } catch (error) {
-      console.error("Error discovering users:", error);
-      res.status(500).json({ message: "Failed to discover users" });
-    }
-  });
+
 
   // Social notifications routes
   app.get("/api/notifications/social", isAuthenticated, async (req: any, res) => {
