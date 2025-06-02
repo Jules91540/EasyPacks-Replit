@@ -216,9 +216,9 @@ html, body, #root {
 }
 
 .heading-french {
-  @apply font-bold text-gray-800 tracking-tight;
+  @apply font-bold text-white tracking-tight;
 }
 
 .subtitle-french {
-  @apply text-gray-600 leading-relaxed;
+  @apply text-white leading-relaxed;
 }

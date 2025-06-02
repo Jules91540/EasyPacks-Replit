@@ -412,7 +412,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-white heading-french">Mon Profil</h1>
-                  <p className="text-gray-300 subtitle-french">
+                  <p className="text-white subtitle-french">
                     Gérez vos informations personnelles et consultez vos statistiques
                   </p>
                 </div>
