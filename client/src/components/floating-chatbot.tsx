@@ -143,20 +143,20 @@ export default function FloatingChatbot() {
 
   if (!isOpen) {
     return (
-      <div className="fixed left-20 bottom-6 z-50">
+      <div className="fixed left-2 bottom-6 z-50 ml-16">
         <Button
           onClick={() => setIsOpen(true)}
-          className="h-14 w-14 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-white/20"
+          className="h-12 w-12 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-white/20"
           size="icon"
         >
-          <Bot className="h-6 w-6 text-white" />
+          <Bot className="h-5 w-5 text-white" />
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="fixed left-20 bottom-6 z-50">
+    <div className="fixed left-2 bottom-6 z-50 ml-16">
       <Card className="w-80 h-96 bg-slate-900/95 backdrop-blur-lg border-violet-500/30 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-violet-500/30">

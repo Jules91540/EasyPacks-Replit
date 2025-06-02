@@ -96,8 +96,9 @@ function App() {
         <Toaster />
         <Router />
         
-        {/* Chatbot flottant - visible sur toutes les pages */}
+        {/* Chatbot flottant global */}
         <FloatingChatbot />
+
       </TooltipProvider>
     </QueryClientProvider>
   );
