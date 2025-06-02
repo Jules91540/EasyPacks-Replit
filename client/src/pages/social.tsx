@@ -187,6 +187,33 @@ export default function SocialPage() {
     refetchInterval: 2000, // Refresh every 2 seconds for real-time updates
   });
 
+  // Helper function to get conversation messages
+  const getConversationMessages = (userId: string) => {
+    // Use current messages if this is the selected user, otherwise get from conversations
+    if (selectedUser?.id === userId && currentMessages.length > 0) {
+      return currentMessages;
+    }
+    const conversation = conversations?.find((conv: any) => 
+      conv.participant1Id === userId || conv.participant2Id === userId
+    );
+    return conversation?.messages || [];
+  };
+
+  // Helper function to check if user is already a friend or has pending request
+  const getUserFriendshipStatus = (userId: string) => {
+    // Check if already a friend
+    const isFriend = friends?.some((friend: any) => friend.id === userId);
+    if (isFriend) return 'friend';
+    
+    // Check if request is pending (sent by current user)
+    const sentRequest = friendRequests?.some((req: any) => 
+      req.receiverId === userId && req.status === 'pending'
+    );
+    if (sentRequest) return 'pending';
+    
+    return 'none';
+  };
+
   // Create post mutation
   const createPost = useMutation({
     mutationFn: async (data: { content: string; visibility: string }) => {
