@@ -422,8 +422,13 @@ export default function SocialPage() {
               <TabsTrigger value="friends">
                 Amis ({friends.length})
               </TabsTrigger>
-              <TabsTrigger value="requests">
+              <TabsTrigger value="requests" className="relative">
                 Demandes ({friendRequests.length})
+                {friendRequests.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {friendRequests.length}
+                  </span>
+                )}
               </TabsTrigger>
               <TabsTrigger value="messages">Messages</TabsTrigger>
               <TabsTrigger value="search">Découvrir</TabsTrigger>
