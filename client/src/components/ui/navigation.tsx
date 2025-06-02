@@ -193,7 +193,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                       isActive 
                         ? 'bg-primary text-white' 
-                        : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                        : 'text-white hover:text-white hover:bg-gray-700'
                     }`}
                     onClick={() => setOpen(false)}
                   >
