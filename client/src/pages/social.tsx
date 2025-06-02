@@ -971,7 +971,7 @@ export default function SocialPage() {
                   {searchQuery.length >= 2 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {searchResults.map((user: User) => (
-                        <Card key={user.id}>
+                        <Card key={`search-result-${user.id}`}>
                           <CardContent className="p-6 text-center">
                             <Avatar className="w-16 h-16 mx-auto mb-4">
                               <AvatarImage src={user.profileImageUrl} />
@@ -1000,7 +1000,7 @@ export default function SocialPage() {
                       <h3 className="text-lg font-semibold text-white mb-4">Découvrir des utilisateurs</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {allUsers.map((user: any) => (
-                          <Card key={user.id}>
+                          <Card key={`discover-user-${user.id}`}>
                             <CardContent className="p-6">
                               <div className="text-center mb-4">
                                 <Avatar className="w-16 h-16 mx-auto mb-3">
