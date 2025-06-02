@@ -22,6 +22,7 @@ import {
   Search,
   Phone,
   Video,
+  Monitor,
   MoreHorizontal,
   Check,
   X,
@@ -241,9 +242,14 @@ export default function SocialPage() {
   // Like post mutation
   const likePost = useMutation({
     mutationFn: async (postId: number) => {
-      return apiRequest(`/api/posts/${postId}/like`, {
+      const response = await fetch(`/api/posts/${postId}/like`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
@@ -253,10 +259,15 @@ export default function SocialPage() {
   // Send message mutation
   const sendMessage = useMutation({
     mutationFn: async (data: { receiverId: string; content: string }) => {
-      return apiRequest("/api/messages", {
+      const response = await fetch("/api/messages", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
@@ -271,16 +282,39 @@ export default function SocialPage() {
   // Initiate call mutation
   const initiateCall = useMutation({
     mutationFn: async (data: { receiverId: string; callType: string }) => {
-      return apiRequest("/api/calls", {
+      const response = await fetch("/api/calls", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Appel initié",
         description: "L'appel a été lancé",
       });
+    },
+  });
+
+  // Mark all notifications as read mutation
+  const markAllNotificationsRead = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/notifications/mark-all-read", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/social"] });
     },
   });
 
@@ -742,6 +776,15 @@ export default function SocialPage() {
                                 onClick={() => initiateCall.mutate({ receiverId: selectedUser.id, callType: "video" })}
                               >
                                 <Video className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 w-8 p-0"
+                                onClick={() => initiateCall.mutate({ receiverId: selectedUser.id, callType: "screen_share" })}
+                                title="Partage d'écran"
+                              >
+                                <Monitor className="w-3 h-3" />
                               </Button>
                             </div>
                           </div>

@@ -1507,7 +1507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/calls", isAuthenticated, async (req: any, res) => {
     try {
       const { receiverId, callType = "voice" } = req.body;
-      const callerId = req.user.claims.sub;
+      const callerId = req.user.id;
       
       const call = await storage.initiateCall({
         callerId,
@@ -1603,6 +1603,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error marking notification as read:", error);
       res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  // Mark all notifications as read
+  app.put("/api/notifications/mark-all-read", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      // Cette fonction devra être ajoutée au storage
+      await storage.markAllNotificationsAsRead(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
     }
   });
 
