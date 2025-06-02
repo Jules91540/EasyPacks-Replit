@@ -36,12 +36,12 @@ export default function ForumTopicPage() {
   const topicId = params?.id;
 
   const { data: topic, isLoading } = useQuery({
-    queryKey: ["/api/forum/topics", topicId],
+    queryKey: [`/api/forum/topics/${topicId}`],
     enabled: !!topicId,
   });
 
   const { data: replies } = useQuery({
-    queryKey: ["/api/forum/topics", topicId, "replies"],
+    queryKey: [`/api/forum/topics/${topicId}/replies`],
     enabled: !!topicId,
   });
 
