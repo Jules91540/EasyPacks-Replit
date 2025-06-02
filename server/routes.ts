@@ -45,6 +45,9 @@ const upload = multer({
   }
 });
 
+// Temporary storage for forum topics (in production, this would be in database)
+const forumTopics: any[] = [];
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -387,39 +390,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Forum routes
   app.get("/api/forum/categories", isAuthenticated, async (req: any, res) => {
     try {
-      // For now, return basic categories - in a real app, these would be stored in database
+      // Get topics by category
+      const getTopicsByCategory = (categoryId: number) => {
+        return forumTopics
+          .filter(topic => topic.categoryId === categoryId)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 3)
+          .map(topic => ({
+            ...topic,
+            author: { firstName: 'Utilisateur' }, // Simplified for demo
+            repliesCount: 0
+          }));
+      };
+
       const categories = [
         {
           id: 1,
           name: "Création de contenu YouTube",
           description: "Discutez de vos stratégies, conseils et expériences sur YouTube",
           color: "#FF0000",
-          topicsCount: 0,
-          latestTopics: []
+          topicsCount: forumTopics.filter(t => t.categoryId === 1).length,
+          latestTopics: getTopicsByCategory(1)
         },
         {
           id: 2,
           name: "Instagram & Réseaux sociaux",
           description: "Partagez vos astuces pour Instagram, TikTok et autres plateformes",
           color: "#E4405F",
-          topicsCount: 0,
-          latestTopics: []
+          topicsCount: forumTopics.filter(t => t.categoryId === 2).length,
+          latestTopics: getTopicsByCategory(2)
         },
         {
           id: 3,
           name: "Streaming Twitch",
           description: "Conseils et discussions sur le streaming en direct",
           color: "#9146FF",
-          topicsCount: 0,
-          latestTopics: []
+          topicsCount: forumTopics.filter(t => t.categoryId === 3).length,
+          latestTopics: getTopicsByCategory(3)
         },
         {
           id: 4,
           name: "Questions générales",
           description: "Posez vos questions sur la création de contenu",
           color: "#00D2FF",
-          topicsCount: 0,
-          latestTopics: []
+          topicsCount: forumTopics.filter(t => t.categoryId === 4).length,
+          latestTopics: getTopicsByCategory(4)
         }
       ];
       res.json(categories);
@@ -439,7 +454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Titre, contenu et catégorie requis" });
       }
 
-      // For now, simulate topic creation since we don't have actual database storage
+      // Store topic in memory (in production, this would be in database)
       const topic = {
         id: Date.now(),
         title,
@@ -453,6 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         repliesCount: 0
       };
 
+      forumTopics.push(topic);
       res.json(topic);
     } catch (error) {
       console.error("Error creating forum topic:", error);
