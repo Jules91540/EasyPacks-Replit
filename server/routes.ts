@@ -1263,7 +1263,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/friends/request", isAuthenticated, async (req: any, res) => {
     try {
       const { receiverId } = req.body;
-      const senderId = req.user?.claims?.sub;
+      const senderId = req.user?.claims?.sub || req.user?.id;
+      
+      console.log("=== FRIEND REQUEST DEBUG ===");
+      console.log("User object:", req.user);
+      console.log("Sender ID:", senderId);
+      console.log("Receiver ID:", receiverId);
       
       if (!senderId) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -1276,11 +1281,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: receiverId,
         type: "friend_request",
         title: "Nouvelle demande d'ami",
-        content: `${req.user.claims.first_name || 'Un utilisateur'} vous a envoyé une demande d'ami`,
+        content: `${req.user.claims?.first_name || req.user.firstName || 'Un utilisateur'} vous a envoyé une demande d'ami`,
         relatedUserId: senderId
       });
       
-      res.json(friendship);
+      console.log("=== FRIEND REQUEST SUCCESS ===");
+      console.log("Friendship created:", friendship);
+      
+      res.json({ ...friendship, message: "Demande d'ami envoyée avec succès!" });
     } catch (error) {
       console.error("Error sending friend request:", error);
       res.status(500).json({ message: "Failed to send friend request" });
@@ -1311,7 +1319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/friends", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.claims?.sub || req.user?.id;
       if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
       }
@@ -1325,7 +1333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/friends/requests/pending", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.claims?.sub || req.user?.id;
       if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
       }
