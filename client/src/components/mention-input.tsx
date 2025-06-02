@@ -107,7 +107,7 @@ export default function MentionInput({ value, onChange, placeholder, className, 
       />
       
       {showSuggestions && users.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full bottom-full mb-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {users.map((user: User) => (
             <div
               key={user.id}
@@ -115,7 +115,7 @@ export default function MentionInput({ value, onChange, placeholder, className, 
               className="flex items-center gap-3 p-3 hover:bg-gray-700 cursor-pointer transition-colors"
             >
               <Avatar className="h-8 w-8">
-                <AvatarImage src="" />
+                <AvatarImage src={user.profileImageUrl} />
                 <AvatarFallback className="bg-blue-600 text-white text-xs">
                   {user.firstName[0]}{user.lastName[0]}
                 </AvatarFallback>

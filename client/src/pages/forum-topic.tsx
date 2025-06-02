@@ -380,7 +380,7 @@ export default function ForumTopicPage() {
                     placeholder="Tapez votre message... (utilisez @ pour mentionner quelqu'un)"
                     value={replyContent}
                     onChange={setReplyContent}
-                    className="flex-1 min-h-[44px] max-h-32 resize-none bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 rounded-2xl"
+                    className="flex-1 min-h-[80px] max-h-40 resize-none bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:bg-white/20 rounded-2xl"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
