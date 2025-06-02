@@ -33,6 +33,10 @@ import {
   Mail,
   Plus,
   Globe,
+  Mic,
+  MicOff,
+  VideoOff,
+  PhoneOff,
   Lock,
   Eye
 } from "lucide-react";
