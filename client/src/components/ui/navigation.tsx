@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Video, Home, BookOpen, Award, BarChart3, Settings, LogOut, User, Package, Search, MessageSquare, HelpCircle } from "lucide-react";
@@ -14,6 +15,12 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
   const { user } = useAuth();
+
+  // Get notifications count
+  const { data: notifications } = useQuery({
+    queryKey: ["/api/notifications"],
+    refetchInterval: 30000, // Poll every 30 seconds
+  });
 
   const handleLogout = async () => {
     try {
@@ -67,6 +74,8 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
       {navItems.map((item, index) => {
         const Icon = item.icon;
         const isActive = location === item.href;
+        const isForum = item.href === '/forum';
+        const unreadCount = notifications?.unreadCount || 0;
         
         return (
           <Link key={item.href} href={item.href}>
@@ -79,9 +88,20 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
               title={item.label}
             >
               <Icon className="h-5 w-5" />
+              
+              {/* Notification badge for forum */}
+              {isForum && unreadCount > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-lg animate-pulse">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </div>
+              )}
+              
               {/* Tooltip */}
               <div className="absolute left-14 bg-gray-900/90 backdrop-blur text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
                 {item.label}
+                {isForum && unreadCount > 0 && (
+                  <span className="ml-2 text-red-300">({unreadCount} nouveaux)</span>
+                )}
                 <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900/90 rotate-45"></div>
               </div>
             </div>

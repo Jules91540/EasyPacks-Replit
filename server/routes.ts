@@ -580,6 +580,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user notifications
+  app.get("/api/notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const notifications = userNotifications[userId] || [];
+      const unreadCount = notifications.filter(n => !n.isRead).length;
+      
+      res.json({ 
+        notifications: notifications.slice(-10), // Last 10 notifications
+        unreadCount 
+      });
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Erreur lors du chargement des notifications" });
+    }
+  });
+
+  // Mark notification as read
+  app.patch("/api/notifications/:id/read", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const notificationId = parseInt(req.params.id);
+      
+      if (userNotifications[userId]) {
+        const notification = userNotifications[userId].find(n => n.id === notificationId);
+        if (notification) {
+          notification.isRead = true;
+        }
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Erreur lors de la mise à jour de la notification" });
+    }
+  });
+
+  // Serve uploaded files
+  app.use('/uploads', express.static(uploadDir));
+
   // Test email route - mode simulation
   app.post("/api/test-email", isAuthenticated, async (req: any, res) => {
     try {
