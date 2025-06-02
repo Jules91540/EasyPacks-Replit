@@ -24,7 +24,7 @@ export default function WelcomeTutorial({ isOpen, onClose, userName }: WelcomeTu
     {
       id: 1,
       title: "Bienvenue sur Easy Packs !",
-      description: `Salut ${userName} ! Nous sommes ravis de t'accueillir dans ta nouvelle plateforme de formation pour créateurs de contenu.`,
+      description: `Salut ${userName} ! Nous sommes ravis de t'accueillir dans ton nouveau centre de formation pour devenir créateur de contenu.`,
       icon: Play,
       features: [
         "Formation complète sur toutes les plateformes",
