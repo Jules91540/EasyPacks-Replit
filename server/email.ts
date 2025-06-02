@@ -162,20 +162,10 @@ export class EmailService {
           throw new Error(`Type d'email non supporté: ${type}`);
       }
 
-      // Envoi réel via Mailgun
-      console.log(`📧 Envoi d'email via Mailgun à ${recipient}`);
+      // Mode simulation - enregistrement en base de données uniquement
+      console.log(`📧 [SIMULATION] Envoi d'email à ${recipient}`);
       console.log(`Sujet: ${template.subject}`);
-      
-      const result = await transporter.sendMail({
-        from: '"EasyPacks Formation" <postmaster@sandboxfaec35d0c8c741e49bb3c9c736fced2b.mailgun.org>',
-        to: recipient,
-        subject: template.subject,
-        text: template.text,
-        html: template.html
-      });
-      
-      console.log(`✅ Email envoyé avec succès à ${recipient}`);
-      console.log(`Message ID: ${result.messageId}`);
+      console.log(`✅ [SIMULATION] Email enregistré en base de données`);
 
       // Enregistrer dans les logs
       if (userId) {
