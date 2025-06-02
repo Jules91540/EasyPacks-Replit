@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { apiRequest } from "@/lib/queryClient";
 import Navigation from "@/components/ui/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,51 @@ import { Users, BookOpen, HelpCircle, TrendingUp, Plus, BarChart3, Award, Video,
 export default function AdminDashboard() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Mutation pour supprimer tous les utilisateurs non-administrateurs
+  const deleteNonAdminUsersMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/admin/users/non-admin", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Succès",
+        description: data.message,
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      setShowDeleteConfirm(false);
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Non autorisé",
+          description: "Vous êtes déconnecté. Reconnexion...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer les comptes utilisateurs",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
@@ -294,7 +340,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* System Status */}
+            {/* System Status & User Management */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -320,28 +366,81 @@ export default function AdminDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Actions Rapides</CardTitle>
+                  <CardTitle className="text-lg">Gestion des Utilisateurs</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <Link href="/admin/modules">
-                      <Button className="w-full justify-start" variant="outline">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Créer un nouveau module
-                      </Button>
-                    </Link>
-                    <Link href="/admin/quizzes">
-                      <Button className="w-full justify-start" variant="outline">
-                        <HelpCircle className="h-4 w-4 mr-2" />
-                        Ajouter un quiz
-                      </Button>
-                    </Link>
-                    <Link href="/admin/badges">
-                      <Button className="w-full justify-start" variant="outline">
-                        <Award className="h-4 w-4 mr-2" />
-                        Créer un badge
-                      </Button>
-                    </Link>
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-start space-x-3">
+                        <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-red-800">Zone de Danger</h4>
+                          <p className="text-sm text-red-700 mt-1">
+                            Supprimer tous les comptes étudiants (les comptes administrateurs seront préservés)
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        {showDeleteConfirm ? (
+                          <div className="space-y-2">
+                            <p className="text-sm text-red-800 font-medium">
+                              Êtes-vous sûr ? Cette action est irréversible.
+                            </p>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => deleteNonAdminUsersMutation.mutate()}
+                                disabled={deleteNonAdminUsersMutation.isPending}
+                              >
+                                {deleteNonAdminUsersMutation.isPending ? "Suppression..." : "Confirmer"}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowDeleteConfirm(false)}
+                              >
+                                Annuler
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="w-full justify-start"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Supprimer tous les comptes étudiants
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t">
+                      <h4 className="text-sm font-medium mb-3">Actions Rapides</h4>
+                      <div className="space-y-2">
+                        <Link href="/admin/modules">
+                          <Button className="w-full justify-start" variant="outline" size="sm">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Créer un nouveau module
+                          </Button>
+                        </Link>
+                        <Link href="/admin/quizzes">
+                          <Button className="w-full justify-start" variant="outline" size="sm">
+                            <HelpCircle className="h-4 w-4 mr-2" />
+                            Ajouter un quiz
+                          </Button>
+                        </Link>
+                        <Link href="/admin/badges">
+                          <Button className="w-full justify-start" variant="outline" size="sm">
+                            <Award className="h-4 w-4 mr-2" />
+                            Créer un badge
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
