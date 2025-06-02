@@ -9,6 +9,7 @@ import IntelligentChatbot, { ChatbotToggle } from "@/components/intelligent-chat
 import FloatingChatbot from "@/components/floating-chatbot";
 import SplashScreen from "@/components/splash-screen";
 import WelcomeTutorial from "@/components/welcome-tutorial";
+import InAppGuide, { GuideButton } from "@/components/in-app-guide";
 import Landing from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
@@ -91,6 +92,7 @@ function Router() {
 
 function AppContent() {
   const [showWelcomeTutorial, setShowWelcomeTutorial] = useState(false);
+  const [showInAppGuide, setShowInAppGuide] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -120,6 +122,17 @@ function AppContent() {
       
       {/* Chatbot flottant global */}
       <FloatingChatbot />
+
+      {/* Bouton du guide d'utilisation */}
+      {isAuthenticated && (
+        <GuideButton onClick={() => setShowInAppGuide(true)} />
+      )}
+
+      {/* Guide d'utilisation in-app */}
+      <InAppGuide 
+        isOpen={showInAppGuide}
+        onClose={() => setShowInAppGuide(false)}
+      />
 
       {/* Tutoriel de bienvenue pour nouveaux utilisateurs */}
       {showWelcomeTutorial && user && (
