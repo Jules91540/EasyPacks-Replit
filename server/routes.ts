@@ -56,6 +56,41 @@ const forumTopics: any[] = [];
 const forumReplies: any[] = [];
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // PRIORITY ROUTE - Discover users (must be first to avoid conflicts)
+  app.get("/api/users/discover", async (req: any, res) => {
+    console.log("=== DISCOVER USERS ROUTE HIT ===");
+    
+    try {
+      const { db } = await import("./db");
+      const { users } = await import("@shared/schema");
+      
+      const allUsers = await db.select().from(users);
+      console.log("Found users in database:", allUsers.length);
+      
+      const usersWithStats = allUsers.map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        level: user.level || 1,
+        xp: user.xp || 0,
+        stats: {
+          completedModules: Math.floor(Math.random() * 5),
+          totalBadges: Math.floor(Math.random() * 3),
+          totalXP: user.xp || Math.floor(Math.random() * 1000),
+          level: user.level || 1
+        }
+      }));
+      
+      console.log("Returning users:", usersWithStats.length);
+      res.json(usersWithStats);
+    } catch (error) {
+      console.error("Discover route error:", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  });
+
   // Auth middleware
   await setupAuth(app);
 
@@ -1418,42 +1453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Discover users with stats - WORKING ROUTE
-  app.get("/api/users/discover", async (req: any, res) => {
-    console.log("=== DISCOVER USERS ROUTE ACCESSED ===");
-    
-    try {
-      // Direct database query to get all users
-      const { db } = await import("./db");
-      const { users } = await import("@shared/schema");
-      
-      const allUsers = await db.select().from(users);
-      console.log("Database query returned:", allUsers.length, "users");
-      
-      // Add stats to each user
-      const usersWithStats = allUsers.map((user: any) => ({
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
-        level: user.level || 1,
-        xp: user.xp || 0,
-        stats: {
-          completedModules: Math.floor(Math.random() * 5),
-          totalBadges: Math.floor(Math.random() * 3),
-          totalXP: user.xp || Math.floor(Math.random() * 1000),
-          level: user.level || 1
-        }
-      }));
-      
-      console.log("Sending response with", usersWithStats.length, "users");
-      res.json(usersWithStats);
-    } catch (error) {
-      console.error("Error in discover route:", error);
-      res.status(500).json({ message: "Erreur lors de la découverte d'utilisateurs" });
-    }
-  });
+
 
   // Send friend request route - SIMPLE VERSION
   app.post("/api/friends/request", async (req: any, res) => {
