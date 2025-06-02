@@ -42,7 +42,7 @@ import {
   type InsertPostComment,
   type PrivateMessage,
   type InsertPrivateMessage,
-  type Conversation,
+  type ConversationWithParticipant,
   type InsertConversation,
   type CallSession,
   type InsertCallSession,
@@ -837,76 +837,67 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(privateMessages.createdAt));
   }
 
-  async getUserConversations(userId: string): Promise<Conversation[]> {
-    // Get unique conversations with participant info from private_messages
-    const result = await db.execute(sql`
-      WITH unique_conversations AS (
-        SELECT DISTINCT
-          CASE 
-            WHEN sender_id < receiver_id THEN sender_id
-            ELSE receiver_id
-          END as participant1_id,
-          CASE 
-            WHEN sender_id < receiver_id THEN receiver_id
-            ELSE sender_id
-          END as participant2_id,
-          MAX(created_at) as last_message_at,
-          (SELECT content FROM ${privateMessages} pm2 
-           WHERE ((pm2.sender_id = participant1_id AND pm2.receiver_id = participant2_id) 
-                  OR (pm2.sender_id = participant2_id AND pm2.receiver_id = participant1_id))
-           ORDER BY pm2.created_at DESC LIMIT 1) as last_message
-        FROM ${privateMessages}
-        WHERE sender_id = ${userId} OR receiver_id = ${userId}
-        GROUP BY participant1_id, participant2_id
-      )
-      SELECT 
-        ROW_NUMBER() OVER (ORDER BY last_message_at DESC) as id,
-        uc.participant1_id,
-        uc.participant2_id,
-        uc.last_message,
-        uc.last_message_at,
-        0 as unread_count,
-        CASE 
-          WHEN uc.participant1_id = ${userId} THEN u2.id
-          ELSE u1.id
-        END as participant_id,
-        CASE 
-          WHEN uc.participant1_id = ${userId} THEN u2.first_name
-          ELSE u1.first_name
-        END as participant_first_name,
-        CASE 
-          WHEN uc.participant1_id = ${userId} THEN u2.last_name
-          ELSE u1.last_name
-        END as participant_last_name,
-        CASE 
-          WHEN uc.participant1_id = ${userId} THEN u2.email
-          ELSE u1.email
-        END as participant_email,
-        CASE 
-          WHEN uc.participant1_id = ${userId} THEN u2.profile_image_url
-          ELSE u1.profile_image_url
-        END as participant_profile_image_url
-      FROM unique_conversations uc
-      LEFT JOIN ${users} u1 ON uc.participant1_id = u1.id
-      LEFT JOIN ${users} u2 ON uc.participant2_id = u2.id
-      ORDER BY uc.last_message_at DESC
-    `);
+  async getUserConversations(userId: string): Promise<any[]> {
+    // Get all messages for the user
+    const messages = await db
+      .select()
+      .from(privateMessages)
+      .where(or(
+        eq(privateMessages.senderId, userId),
+        eq(privateMessages.receiverId, userId)
+      ))
+      .orderBy(desc(privateMessages.createdAt));
 
-    return result.map((row: any) => ({
-      id: row.id,
-      participant1Id: row.participant1_id,
-      participant2Id: row.participant2_id,
-      lastMessage: row.last_message,
-      lastMessageAt: row.last_message_at,
-      unreadCount: row.unread_count,
-      participant: {
-        id: row.participant_id,
-        firstName: row.participant_first_name,
-        lastName: row.participant_last_name,
-        email: row.participant_email,
-        profileImageUrl: row.participant_profile_image_url,
+    // Group by conversation participants
+    const conversationMap = new Map();
+    
+    for (const message of messages) {
+      const otherUserId = message.senderId === userId ? message.receiverId : message.senderId;
+      const conversationKey = [userId, otherUserId].sort().join('-');
+      
+      if (!conversationMap.has(conversationKey)) {
+        conversationMap.set(conversationKey, {
+          participant1Id: userId < otherUserId ? userId : otherUserId,
+          participant2Id: userId < otherUserId ? otherUserId : userId,
+          lastMessage: message.content,
+          lastMessageAt: message.createdAt,
+          otherUserId: otherUserId
+        });
       }
-    }));
+    }
+
+    // Get participant details
+    const conversations = [];
+    let id = 1;
+    
+    for (const [key, conv] of conversationMap) {
+      try {
+        const participant = await this.getUser(conv.otherUserId);
+        if (participant) {
+          conversations.push({
+            id: id++,
+            participant1Id: conv.participant1Id,
+            participant2Id: conv.participant2Id,
+            lastMessage: conv.lastMessage,
+            lastMessageAt: conv.lastMessageAt,
+            unreadCount: 0,
+            participant: {
+              id: participant.id,
+              firstName: participant.firstName,
+              lastName: participant.lastName,
+              email: participant.email,
+              profileImageUrl: participant.profileImageUrl,
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error getting participant:', error);
+      }
+    }
+
+    return conversations.sort((a, b) => 
+      new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+    );
   }
 
   async markMessageAsRead(messageId: number): Promise<void> {

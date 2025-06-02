@@ -500,12 +500,29 @@ export type PostComment = typeof postComments.$inferSelect;
 export type InsertPostComment = typeof postComments.$inferInsert;
 export type PrivateMessage = typeof privateMessages.$inferSelect;
 export type InsertPrivateMessage = typeof privateMessages.$inferInsert;
-export type Conversation = typeof conversations.$inferSelect;
+export type ConversationDb = typeof conversations.$inferSelect;
 export type InsertConversation = typeof conversations.$inferInsert;
 export type CallSession = typeof callSessions.$inferSelect;
 export type InsertCallSession = typeof callSessions.$inferInsert;
 export type NotificationTable = typeof notificationsTable.$inferSelect;
 export type InsertNotificationTable = typeof notificationsTable.$inferInsert;
+
+// Custom conversation type with participant info
+export type ConversationWithParticipant = {
+  id: number;
+  participant1Id: string;
+  participant2Id: string;
+  lastMessage: string | null;
+  lastMessageAt: Date | null;
+  unreadCount: number;
+  participant: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    profileImageUrl: string | null;
+  };
+};
 
 // Zod schemas
 export const insertModuleSchema = createInsertSchema(modules).omit({
