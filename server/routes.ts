@@ -602,6 +602,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user profile by ID
+  app.get("/api/users/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.params.userId;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Utilisateur introuvable" });
+      }
+
+      // Remove email from response for privacy
+      const { email, ...userWithoutEmail } = user;
+      res.json(userWithoutEmail);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du profil" });
+    }
+  });
+
+  // Get user progress by ID
+  app.get("/api/users/:userId/progress", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.params.userId;
+      const progress = await storage.getUserModuleProgress(userId);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching user progress:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération du progrès" });
+    }
+  });
+
+  // Get user badges by ID
+  app.get("/api/users/:userId/badges", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.params.userId;
+      const userBadges = await storage.getUserBadges(userId);
+      res.json(userBadges);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des badges" });
+    }
+  });
+
   // Get reactions for a message
   app.get("/api/forum/reactions/:messageId", isAuthenticated, async (req: any, res) => {
     try {

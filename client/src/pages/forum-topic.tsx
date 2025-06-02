@@ -25,6 +25,7 @@ import {
 import Navigation from "@/components/ui/navigation";
 import MentionNotificationPopup, { useMentionNotifications } from "@/components/mention-notification";
 import MessageReactions from "@/components/message-reactions";
+import MentionText from "@/components/mention-text";
 
 export default function ForumTopicPage() {
   const { user } = useAuth();
