@@ -222,8 +222,8 @@ export default function SimpleMessaging() {
             {/* Messages area */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
-                {Array.isArray(messages) && messages.length > 0 ? (
-                  messages.map((message: Message) => {
+                {messages && Array.isArray(messages) && messages.length > 0 ? (
+                  messages.map((message: any) => {
                     const isOwnMessage = message.senderId === user?.id;
                     
                     return (
