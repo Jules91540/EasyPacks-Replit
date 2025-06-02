@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import newLogo from "@assets/Easy Packs Logo.png";
+import newLogo from "@assets/Easy Packs Logo Brut.png";
 
 interface SplashScreenProps {
   onComplete: () => void;
