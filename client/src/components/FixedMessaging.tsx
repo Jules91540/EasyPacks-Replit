@@ -49,12 +49,27 @@ export default function FixedMessaging() {
     refetchInterval: 1000,
   });
 
-  // Function to scroll to bottom
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Function to scroll to bottom with better positioning
+  const scrollToBottom = (force = false) => {
+    if (messagesEndRef.current) {
+      const scrollContainer = messagesEndRef.current.closest('.overflow-auto') || messagesEndRef.current.parentElement?.parentElement;
+      if (scrollContainer && (force || isUserNearBottom(scrollContainer))) {
+        messagesEndRef.current.scrollIntoView({ 
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest"
+        });
+      }
+    }
   };
 
-  // Auto-scroll when messages change or when selecting a conversation
+  // Check if user is near the bottom of the chat
+  const isUserNearBottom = (container: Element) => {
+    const threshold = 150; // pixels from bottom
+    return container.scrollTop + container.clientHeight >= container.scrollHeight - threshold;
+  };
+
+  // Auto-scroll when messages change (only if we're near the bottom)
   useEffect(() => {
     if (messages && messages.length > 0) {
       setTimeout(() => {
@@ -66,8 +81,8 @@ export default function FixedMessaging() {
   useEffect(() => {
     if (selectedConversation) {
       setTimeout(() => {
-        scrollToBottom();
-      }, 100);
+        scrollToBottom(true); // Force scroll when changing conversation
+      }, 200);
     }
   }, [selectedConversation]);
 
@@ -86,7 +101,7 @@ export default function FixedMessaging() {
       }
       // Scroll to bottom after sending message
       setTimeout(() => {
-        scrollToBottom();
+        scrollToBottom(true); // Force scroll when sending message
       }, 200);
     },
   });
