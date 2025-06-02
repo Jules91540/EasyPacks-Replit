@@ -9,6 +9,7 @@ import SidebarChatbot, { ChatbotToggle } from "@/components/sidebar-chatbot";
 import SplashScreen from "@/components/splash-screen";
 import WelcomeTutorial from "@/components/welcome-tutorial";
 import InAppGuide, { GuideButton } from "@/components/in-app-guide";
+import { FloatingNotifications } from "@/components/FloatingNotifications";
 import Landing from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
@@ -153,6 +154,9 @@ function AppContent() {
           userName={(user as any).firstName || (user as any).email?.split('@')[0] || 'Créateur'}
         />
       )}
+
+      {/* Notifications flottantes pour toutes les pages */}
+      {isAuthenticated && <FloatingNotifications />}
     </>
   );
 }

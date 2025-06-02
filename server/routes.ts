@@ -1455,26 +1455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Send friend request route - SIMPLE VERSION
-  app.post("/api/friends/request", async (req: any, res) => {
-    try {
-      console.log("=== FRIEND REQUEST ROUTE CALLED ===");
-      
-      const { receiverId } = req.body;
-      console.log("Friend request for:", receiverId);
-      
-      // Simple success response for now
-      res.json({ 
-        success: true, 
-        message: "Demande d'amitié envoyée avec succès",
-        senderId: "current_user",
-        receiverId: receiverId
-      });
-    } catch (error) {
-      console.error("Error sending friend request:", error);
-      res.status(500).json({ message: "Failed to send friend request" });
-    }
-  });
+
 
   app.get("/api/conversations", isAuthenticated, async (req: any, res) => {
     try {
