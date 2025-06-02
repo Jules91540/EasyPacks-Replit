@@ -1453,7 +1453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isAuthenticated, async (req: any, res) => {
     try {
       const { receiverId, content, messageType = "text" } = req.body;
-      const senderId = req.user?.id;
+      const senderId = req.user?.claims?.sub || req.user?.id;
       
       const message = await storage.sendMessage({
         senderId,
@@ -1475,6 +1475,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  app.get("/api/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub || req.user?.id;
+      const { participant1Id, participant2Id } = req.query;
+      
+      if (participant1Id && participant2Id) {
+        // Get messages for specific conversation
+        const messages = await storage.getConversation(participant1Id, participant2Id);
+        res.json(messages);
+      } else {
+        // Return empty array if no conversation specified
+        res.json([]);
+      }
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
     }
   });
 

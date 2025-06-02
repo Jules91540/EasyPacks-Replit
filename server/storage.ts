@@ -838,14 +838,75 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserConversations(userId: string): Promise<Conversation[]> {
-    return await db
-      .select()
-      .from(conversations)
-      .where(or(
-        eq(conversations.participant1Id, userId),
-        eq(conversations.participant2Id, userId)
-      ))
-      .orderBy(desc(conversations.lastActivityAt));
+    // Get unique conversations with participant info from private_messages
+    const result = await db.execute(sql`
+      WITH unique_conversations AS (
+        SELECT DISTINCT
+          CASE 
+            WHEN sender_id < receiver_id THEN sender_id
+            ELSE receiver_id
+          END as participant1_id,
+          CASE 
+            WHEN sender_id < receiver_id THEN receiver_id
+            ELSE sender_id
+          END as participant2_id,
+          MAX(created_at) as last_message_at,
+          (SELECT content FROM ${privateMessages} pm2 
+           WHERE ((pm2.sender_id = participant1_id AND pm2.receiver_id = participant2_id) 
+                  OR (pm2.sender_id = participant2_id AND pm2.receiver_id = participant1_id))
+           ORDER BY pm2.created_at DESC LIMIT 1) as last_message
+        FROM ${privateMessages}
+        WHERE sender_id = ${userId} OR receiver_id = ${userId}
+        GROUP BY participant1_id, participant2_id
+      )
+      SELECT 
+        ROW_NUMBER() OVER (ORDER BY last_message_at DESC) as id,
+        uc.participant1_id,
+        uc.participant2_id,
+        uc.last_message,
+        uc.last_message_at,
+        0 as unread_count,
+        CASE 
+          WHEN uc.participant1_id = ${userId} THEN u2.id
+          ELSE u1.id
+        END as participant_id,
+        CASE 
+          WHEN uc.participant1_id = ${userId} THEN u2.first_name
+          ELSE u1.first_name
+        END as participant_first_name,
+        CASE 
+          WHEN uc.participant1_id = ${userId} THEN u2.last_name
+          ELSE u1.last_name
+        END as participant_last_name,
+        CASE 
+          WHEN uc.participant1_id = ${userId} THEN u2.email
+          ELSE u1.email
+        END as participant_email,
+        CASE 
+          WHEN uc.participant1_id = ${userId} THEN u2.profile_image_url
+          ELSE u1.profile_image_url
+        END as participant_profile_image_url
+      FROM unique_conversations uc
+      LEFT JOIN ${users} u1 ON uc.participant1_id = u1.id
+      LEFT JOIN ${users} u2 ON uc.participant2_id = u2.id
+      ORDER BY uc.last_message_at DESC
+    `);
+
+    return result.map((row: any) => ({
+      id: row.id,
+      participant1Id: row.participant1_id,
+      participant2Id: row.participant2_id,
+      lastMessage: row.last_message,
+      lastMessageAt: row.last_message_at,
+      unreadCount: row.unread_count,
+      participant: {
+        id: row.participant_id,
+        firstName: row.participant_first_name,
+        lastName: row.participant_last_name,
+        email: row.participant_email,
+        profileImageUrl: row.participant_profile_image_url,
+      }
+    }));
   }
 
   async markMessageAsRead(messageId: number): Promise<void> {

@@ -29,8 +29,21 @@ export default function FixedMessaging() {
   // Fetch messages for selected conversation
   const { data: messages = [] } = useQuery({
     queryKey: selectedConversation 
-      ? ['/api/messages', selectedConversation.participant1Id, selectedConversation.participant2Id]
+      ? ['/api/messages', { 
+          participant1Id: selectedConversation.participant1Id, 
+          participant2Id: selectedConversation.participant2Id 
+        }]
       : ['no-conversation'],
+    queryFn: async () => {
+      if (!selectedConversation) return [];
+      const params = new URLSearchParams({
+        participant1Id: selectedConversation.participant1Id,
+        participant2Id: selectedConversation.participant2Id
+      });
+      const response = await fetch(`/api/messages?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      return response.json();
+    },
     enabled: !!selectedConversation,
     refetchInterval: 1000,
   });
@@ -73,6 +86,17 @@ export default function FixedMessaging() {
   };
 
   const startConversationWithFriend = (friend: any) => {
+    // Check if conversation already exists
+    const existingConv = conversations?.find((conv: any) => 
+      (conv.participant1Id === user?.id && conv.participant2Id === friend.id) ||
+      (conv.participant2Id === user?.id && conv.participant1Id === friend.id)
+    );
+    
+    if (existingConv) {
+      setSelectedConversation(existingConv);
+      return;
+    }
+    
     const tempConversation = {
       id: 0,
       participant1Id: user?.id || "",
