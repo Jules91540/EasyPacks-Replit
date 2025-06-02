@@ -10,14 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ModuleCard from "@/components/module-card";
 import QuizModal from "@/components/quiz-modal";
-import { Search, Filter, BookOpen } from "lucide-react";
+import { Search, Filter, BookOpen, Youtube, Video, Gamepad2, Play } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 export default function ModulesPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterPlatform, setFilterPlatform] = useState("all");
+  const [selectedPlatform, setSelectedPlatform] = useState("all");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function ModulesPage() {
   const filteredModules = modules.filter(module => {
     const matchesSearch = module.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          module.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPlatform = filterPlatform === "all" || module.platform === filterPlatform;
+    const matchesPlatform = selectedPlatform === "all" || module.platform === selectedPlatform;
     return matchesSearch && matchesPlatform;
   });
 
