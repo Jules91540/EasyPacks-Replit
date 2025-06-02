@@ -75,7 +75,27 @@ export async function setupAuth(app: Express) {
           authProvider: 'google'
         };
 
+        // Check if this is a new user
+        const existingUser = await storage.getUser(profile.id);
+        const isNewUser = !existingUser;
+
         const user = await storage.upsertUser(userData);
+        
+        // Send welcome email for new Google OAuth users
+        if (isNewUser && user.email && user.firstName) {
+          try {
+            const { EmailService } = await import('./email');
+            await EmailService.sendWelcomeEmail({
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName
+            });
+            console.log(`✅ Email de bienvenue Google OAuth envoyé à ${user.email}`);
+          } catch (emailError) {
+            console.error('Erreur envoi email de bienvenue Google OAuth:', emailError);
+          }
+        }
+        
         return done(null, user);
       } catch (error) {
         return done(error);
