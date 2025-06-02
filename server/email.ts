@@ -9,7 +9,7 @@ const transporter = createTransport({
   secure: false,
   auth: {
     user: 'postmaster@sandboxfaec35d0c8c741e49bb3c9c736fced2b.mailgun.org',
-    pass: process.env.MAILGUN_API_KEY || 'f00d7b7b40b7d0522a0efcd6024316ed-08c79601-fbc409d2'
+    pass: 'b51bf89d80f80b9faceaed17bf662669-08c79601-3770418e'
   }
 });
 
@@ -167,7 +167,7 @@ export class EmailService {
       console.log(`Sujet: ${template.subject}`);
       
       const result = await transporter.sendMail({
-        from: `"EasyPacks Formation" <postmaster@${process.env.MAILGUN_DOMAIN}>`,
+        from: '"EasyPacks Formation" <postmaster@sandboxfaec35d0c8c741e49bb3c9c736fced2b.mailgun.org>',
         to: recipient,
         subject: template.subject,
         text: template.text,
