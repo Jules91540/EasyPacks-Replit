@@ -67,24 +67,23 @@ export default function EnhancedMessaging({ selectedConversation, onSelectConver
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { receiverId: string; content: string }) => {
-      return apiRequest(`/api/messages`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("/api/messages", "POST", data);
     },
     onSuccess: () => {
       setNewMessage("");
       queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      // Scroll to bottom after sending message
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     },
   });
 
   // Mark messages as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (messageId: number) => {
-      return apiRequest(`/api/messages/${messageId}/read`, {
-        method: "PATCH",
-      });
+      return apiRequest(`/api/messages/${messageId}/read`, "PATCH");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
@@ -99,11 +98,11 @@ export default function EnhancedMessaging({ selectedConversation, onSelectConver
 
   // Mark messages as read when conversation is selected
   useEffect(() => {
-    if (selectedConversation && messages.length > 0) {
-      const unreadMessages = messages.filter((msg: Message) => 
+    if (selectedConversation && Array.isArray(messages) && messages.length > 0) {
+      const unreadMessages = messages.filter((msg: any) => 
         !msg.isRead && msg.senderId !== user?.id
       );
-      unreadMessages.forEach((msg: Message) => {
+      unreadMessages.forEach((msg: any) => {
         markAsReadMutation.mutate(msg.id);
       });
     }
@@ -162,7 +161,7 @@ export default function EnhancedMessaging({ selectedConversation, onSelectConver
         </CardHeader>
         <ScrollArea className="h-[calc(100vh-200px)]">
           <div className="p-4 space-y-2">
-            {conversations.map((conv: Conversation) => {
+            {Array.isArray(conversations) && conversations.map((conv: any) => {
               const isSelected = selectedConversation?.id === conv.id;
               return (
                 <div
@@ -244,7 +243,7 @@ export default function EnhancedMessaging({ selectedConversation, onSelectConver
             {/* Messages */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
-                {messages.map((message: Message) => {
+                {Array.isArray(messages) && messages.map((message: any) => {
                   const isOwnMessage = message.senderId === user?.id;
                   return (
                     <div

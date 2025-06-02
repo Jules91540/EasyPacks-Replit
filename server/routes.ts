@@ -1565,6 +1565,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/messages/:messageId/read", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub || req.user?.id;
+      const messageId = parseInt(req.params.messageId);
+      
+      await storage.markMessageAsRead(messageId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+
   // Calls routes
   app.post("/api/calls", isAuthenticated, async (req: any, res) => {
     try {

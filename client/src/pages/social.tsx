@@ -15,6 +15,7 @@ import { IncomingCallPopup } from "@/components/IncomingCallPopup";
 import { MessageWithReactions } from "@/components/MessageWithReactions";
 import { UserProfile } from "@/components/UserProfile";
 import FixedMessaging from "@/components/FixedMessaging";
+import EnhancedMessaging from "@/components/EnhancedMessaging";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -120,7 +121,7 @@ export default function SocialPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messageContent, setMessageContent] = useState("");
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
   
   // Call states
   const [incomingCall, setIncomingCall] = useState<{

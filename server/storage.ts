@@ -900,10 +900,13 @@ export class DatabaseStorage implements IStorage {
     );
   }
 
-  async markMessageAsRead(messageId: number): Promise<void> {
+  async markMessageAsRead(messageId: number, userId?: string): Promise<void> {
     await db
       .update(privateMessages)
-      .set({ isRead: true })
+      .set({ 
+        isRead: true,
+        readAt: new Date()
+      })
       .where(eq(privateMessages.id, messageId));
   }
 
