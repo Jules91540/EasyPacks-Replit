@@ -218,7 +218,7 @@ export default function ProgressPage() {
                       </div>
                     );
                   }) : (
-                    <p className="text-gray-500 text-center py-8">
+                    <p className="text-white/60 text-center py-8">
                       Aucun module disponible pour le moment
                     </p>
                   )}
