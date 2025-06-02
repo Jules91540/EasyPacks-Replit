@@ -828,8 +828,9 @@ export class DatabaseStorage implements IStorage {
     return newMessage;
   }
 
-  async getConversation(userId1: string, userId2: string): Promise<PrivateMessage[]> {
-    return await db
+  async getConversation(userId1: string, userId2: string): Promise<any[]> {
+    // Get messages
+    const messages = await db
       .select()
       .from(privateMessages)
       .where(or(
@@ -843,6 +844,19 @@ export class DatabaseStorage implements IStorage {
         )
       ))
       .orderBy(privateMessages.createdAt);
+
+    // Get reactions for each message
+    const messagesWithReactions = await Promise.all(
+      messages.map(async (message) => {
+        const reactions = await this.getMessageReactions(message.id);
+        return {
+          ...message,
+          reactions
+        };
+      })
+    );
+
+    return messagesWithReactions;
   }
 
   async getUserConversations(userId: string): Promise<any[]> {

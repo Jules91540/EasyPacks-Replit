@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Phone, Video } from "lucide-react";
+import { Send, Phone, Video, Smile, Plus } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function FixedMessaging() {
@@ -14,7 +14,11 @@ export default function FixedMessaging() {
   const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Available emoji reactions
+  const availableEmojis = ['❤️', '😂', '😢', '😡', '👍', '👎', '😮', '🎉'];
 
   // Fetch conversations
   const { data: conversations = [] } = useQuery({
@@ -105,6 +109,51 @@ export default function FixedMessaging() {
       }, 200);
     },
   });
+
+  // Message reaction mutations
+  const addReactionMutation = useMutation({
+    mutationFn: async (data: { messageId: number; emoji: string }) => {
+      return apiRequest('/api/messages/reactions', 'POST', data);
+    },
+    onSuccess: () => {
+      if (selectedConversation) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['/api/messages', selectedConversation.participant1Id, selectedConversation.participant2Id] 
+        });
+      }
+    },
+  });
+
+  const removeReactionMutation = useMutation({
+    mutationFn: async (data: { messageId: number; emoji: string }) => {
+      return apiRequest(`/api/messages/${data.messageId}/reactions/${data.emoji}`, 'DELETE');
+    },
+    onSuccess: () => {
+      if (selectedConversation) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['/api/messages', selectedConversation.participant1Id, selectedConversation.participant2Id] 
+        });
+      }
+    },
+  });
+
+  const handleReaction = (messageId: number, emoji: string) => {
+    if (!user) return;
+    
+    const message = messages?.find(m => m.id === messageId);
+    if (!message) return;
+
+    // Check if user already reacted with this emoji
+    const existingReaction = message.reactions?.find(r => r.userId === user.id && r.emoji === emoji);
+    
+    if (existingReaction) {
+      removeReactionMutation.mutate({ messageId, emoji });
+    } else {
+      addReactionMutation.mutate({ messageId, emoji });
+    }
+    
+    setShowEmojiPicker(null);
+  };
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedConversation || !user) return;
@@ -267,21 +316,86 @@ export default function FixedMessaging() {
                     return (
                       <div
                         key={`message-${message.id}-${messageIndex}`}
-                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group`}
                       >
-                        <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            isOwnMessage
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-700 text-white'
-                          }`}
-                        >
-                          <p>{message.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            isOwnMessage ? 'text-blue-200' : 'text-gray-400'
-                          }`}>
-                            {formatTime(message.createdAt)}
-                          </p>
+                        <div className="relative">
+                          <div
+                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                              isOwnMessage
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-700 text-white'
+                            }`}
+                          >
+                            <p>{message.content}</p>
+                            <p className={`text-xs mt-1 ${
+                              isOwnMessage ? 'text-blue-200' : 'text-gray-400'
+                            }`}>
+                              {formatTime(message.createdAt)}
+                            </p>
+                          </div>
+
+                          {/* Reaction button */}
+                          <div className={`absolute top-1 ${isOwnMessage ? '-left-8' : '-right-8'} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-6 h-6 p-0 bg-gray-600 hover:bg-gray-500 rounded-full"
+                              onClick={() => setShowEmojiPicker(showEmojiPicker === message.id ? null : message.id)}
+                            >
+                              <Smile className="w-3 h-3" />
+                            </Button>
+                          </div>
+
+                          {/* Emoji picker */}
+                          {showEmojiPicker === message.id && (
+                            <div className={`absolute top-8 ${isOwnMessage ? 'right-0' : 'left-0'} bg-gray-800 border border-gray-600 rounded-lg p-2 flex flex-wrap gap-1 z-10 shadow-lg`}>
+                              {availableEmojis.map((emoji) => (
+                                <Button
+                                  key={emoji}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-8 h-8 p-0 hover:bg-gray-700"
+                                  onClick={() => handleReaction(message.id, emoji)}
+                                >
+                                  {emoji}
+                                </Button>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Display reactions */}
+                          {message.reactions && message.reactions.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {/* Group reactions by emoji */}
+                              {Object.entries(
+                                message.reactions.reduce((acc: any, reaction: any) => {
+                                  if (!acc[reaction.emoji]) {
+                                    acc[reaction.emoji] = { count: 0, users: [], hasUserReacted: false };
+                                  }
+                                  acc[reaction.emoji].count++;
+                                  acc[reaction.emoji].users.push(reaction.userId);
+                                  if (reaction.userId === user?.id) {
+                                    acc[reaction.emoji].hasUserReacted = true;
+                                  }
+                                  return acc;
+                                }, {})
+                              ).map(([emoji, data]: any) => (
+                                <Button
+                                  key={emoji}
+                                  variant="ghost"
+                                  size="sm"
+                                  className={`h-6 px-2 text-xs rounded-full ${
+                                    data.hasUserReacted 
+                                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                  }`}
+                                  onClick={() => handleReaction(message.id, emoji)}
+                                >
+                                  {emoji} {data.count}
+                                </Button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
