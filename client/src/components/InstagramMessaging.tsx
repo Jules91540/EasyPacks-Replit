@@ -253,9 +253,16 @@ export default function InstagramMessaging() {
     return <Check className="w-3 h-3 text-gray-400" />;
   };
 
-  const filteredConversations = conversations.filter((conv: Conversation) =>
+  const filteredConversations = conversations.filter((conv: any) =>
     conv.participant?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     conv.participant?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Add friends who don't have conversations yet
+  const friendsWithoutConversations = friends.filter((friend: any) => 
+    !conversations.find((conv: any) => 
+      conv.participant?.id === friend.id
+    )
   );
 
   const emojis = ["❤️", "😂", "😮", "😢", "😡", "👍", "👎", "🔥"];
@@ -288,7 +295,8 @@ export default function InstagramMessaging() {
         {/* Conversations list */}
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {filteredConversations.map((conversation: Conversation) => (
+            {/* Existing conversations */}
+            {filteredConversations.map((conversation: any) => (
               <div
                 key={`conversation-${conversation.id}`}
                 onClick={() => setSelectedConversation(conversation)}
@@ -332,8 +340,55 @@ export default function InstagramMessaging() {
                 </div>
               </div>
             ))}
+
+            {/* Friends without conversations */}
+            {friendsWithoutConversations.map((friend: any) => (
+              <div
+                key={`friend-${friend.id}`}
+                onClick={() => {
+                  // Create a mock conversation for this friend
+                  const mockConversation = {
+                    id: 0,
+                    participant1Id: user?.id || "",
+                    participant2Id: friend.id,
+                    lastMessage: "",
+                    lastMessageAt: new Date().toISOString(),
+                    unreadCount: 0,
+                    participant: friend,
+                    messages: []
+                  };
+                  setSelectedConversation(mockConversation);
+                }}
+                className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors hover:bg-gray-700`}
+              >
+                <div className="relative">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={friend.profileImageUrl} />
+                    <AvatarFallback className="bg-green-600 text-white">
+                      {friend.firstName?.[0]}{friend.lastName?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  {/* Online status */}
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
+                </div>
+                
+                <div className="ml-3 flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-white font-semibold truncate">
+                      {friend.firstName} {friend.lastName}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-400 text-sm truncate">
+                      Commencer une conversation
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
             
-            {filteredConversations.length === 0 && (
+            {filteredConversations.length === 0 && friendsWithoutConversations.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-gray-400">Aucune conversation trouvée</p>
               </div>
