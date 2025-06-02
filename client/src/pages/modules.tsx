@@ -80,7 +80,7 @@ export default function ModulesPage() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement des formations...</p>
+          <p className="text-white/80">Chargement des formations...</p>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ export default function ModulesPage() {
         <header className="md:hidden bg-blue-50 shadow-sm border-b border-border p-4">
           <div className="flex items-center justify-between">
             <Navigation variant="student" />
-            <h1 className="text-lg font-bold text-foreground">Formations</h1>
+            <h1 className="text-lg font-bold text-white">Formations</h1>
             <div></div>
           </div>
         </header>
@@ -111,8 +111,8 @@ export default function ModulesPage() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground heading-french">Formations</h1>
-                <p className="text-muted-foreground subtitle-french">
+                <h1 className="text-3xl font-bold text-white heading-french">Formations</h1>
+                <p className="text-white/80 subtitle-french">
                   Découvrez nos modules de formation pour devenir créateur de contenu
                 </p>
               </div>
