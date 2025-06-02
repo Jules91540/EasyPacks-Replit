@@ -2,25 +2,12 @@ import { createTransport } from 'nodemailer';
 import { storage } from './storage';
 import { InsertEmailLog } from '@shared/schema';
 
-// Configuration du transport email
+// Configuration du transport email pour les tests
 const transporter = createTransport({
-  // Configuration pour un service SMTP local ou de développement
-  host: 'localhost',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || ''
-  },
-  // En mode développement, on utilise ethereal pour les tests
-  ...(process.env.NODE_ENV === 'development' && {
-    host: 'smtp.ethereal.email',
-    port: 587,
-    auth: {
-      user: 'ethereal.user@ethereal.email',
-      pass: 'ethereal.pass'
-    }
-  })
+  // En mode développement, on simule l'envoi et on log les emails
+  streamTransport: true,
+  newline: 'unix',
+  buffer: true
 });
 
 interface EmailTemplate {
