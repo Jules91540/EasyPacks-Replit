@@ -20,7 +20,7 @@ const knownUsers: User[] = [
 export default function MentionText({ content }: MentionTextProps) {
   // Fonction pour parser le contenu et identifier les mentions
   const parseContent = (text: string) => {
-    const mentionRegex = /@(\w+\s?\w*)/g;
+    const mentionRegex = /@(\w+\s*\w*)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
@@ -36,12 +36,16 @@ export default function MentionText({ content }: MentionTextProps) {
       }
 
       // Trouver l'utilisateur correspondant à la mention
-      const mentionText = match[1];
-      const user = knownUsers.find(u => 
-        `${u.firstName} ${u.lastName}`.toLowerCase() === mentionText.toLowerCase() ||
-        `${u.firstName}${u.lastName}`.toLowerCase() === mentionText.toLowerCase() ||
-        u.firstName.toLowerCase() === mentionText.toLowerCase()
-      );
+      const mentionText = match[1].trim();
+      const user = knownUsers.find(u => {
+        const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
+        const firstNameOnly = u.firstName.toLowerCase();
+        const mentionLower = mentionText.toLowerCase();
+        
+        return fullName === mentionLower || 
+               firstNameOnly === mentionLower ||
+               fullName.replace(/\s+/g, '') === mentionLower;
+      });
 
       if (user) {
         parts.push({

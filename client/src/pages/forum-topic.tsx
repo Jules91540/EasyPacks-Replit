@@ -283,9 +283,9 @@ export default function ForumTopicPage() {
                         })}
                       </span>
                     </div>
-                    <p className={`text-sm leading-relaxed ${isCurrentUser ? 'text-white' : 'text-white/90'}`}>
-                      {reply?.content}
-                    </p>
+                    <div className={`text-sm leading-relaxed ${isCurrentUser ? 'text-white' : 'text-white/90'}`}>
+                      <MentionText content={reply?.content || ""} />
+                    </div>
                     
                     {/* Reply Attachments */}
                     {reply?.attachments && reply.attachments.length > 0 && (

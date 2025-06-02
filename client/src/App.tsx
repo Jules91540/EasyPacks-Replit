@@ -68,6 +68,7 @@ function Router() {
           <Route path="/admin/students" component={AdminDashboard} />
           <Route path="/admin/analytics" component={AdminAnalyticsPage} />
           <Route path="/admin/settings" component={AdminSettingsPage} />
+          <Route path="/profile/:userId" component={UserProfile} />
           <Route path="/profile" component={ProfilePage} />
         </>
       )}
