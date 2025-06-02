@@ -94,244 +94,155 @@ export default function ProgressPage() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center mb-6">
-              <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mr-4">
-                <BarChart3 className="h-6 w-6" />
+        <main className="flex-1 p-4 h-screen overflow-hidden">
+          {/* Compact Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <div className="bg-primary text-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                <BarChart3 className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground heading-french">Ma Progression</h1>
-                <p className="text-white/80 subtitle-french">
-                  Suivez votre avancement dans votre parcours de formation
-                </p>
+                <h1 className="text-xl font-bold text-foreground">Ma Progression</h1>
+                <p className="text-white/80 text-sm">Niveau {currentLevel} - {currentXP} XP</p>
               </div>
             </div>
-
-            {/* XP Progress Section */}
-            <div className="gradient-primary rounded-2xl text-white p-8 mb-8">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                <div className="mb-6 md:mb-0">
-                  <h2 className="text-2xl font-bold mb-2">
-                    Niveau {currentLevel} - {currentXP} XP
-                  </h2>
-                  <p className="text-blue-100 text-lg">
-                    {currentLevel === 1 ? 'Débutant' : 
-                     currentLevel === 2 ? 'Novice' : 
-                     currentLevel === 3 ? 'Intermédiaire' : 
-                     currentLevel === 4 ? 'Avancé' : 'Expert'}
-                  </p>
-                </div>
-                
-                <XPProgress 
-                  currentXP={xpInCurrentLevel}
-                  totalXP={xpNeededForCurrentLevel}
-                  progress={xpProgressPercent}
-                  nextLevel={currentLevel + 1}
-                />
-              </div>
-            </div>
+            
+            <XPProgress 
+              currentXP={xpInCurrentLevel}
+              totalXP={xpNeededForCurrentLevel}
+              progress={xpProgressPercent}
+              nextLevel={currentLevel + 1}
+            />
           </div>
 
-          {/* Progress Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {/* Compact Stats Grid */}
+          <div className="grid grid-cols-4 gap-3 mb-4">
             <Card className="gradient-card">
-              <CardContent className="p-6 text-center">
-                <div className="bg-green-100 text-green-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <CheckCircle className="h-6 w-6" />
+              <CardContent className="p-3 text-center">
+                <div className="bg-green-100 text-green-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <CheckCircle className="h-4 w-4" />
                 </div>
-                <div className="text-2xl font-bold text-white mb-1">{completedModules}</div>
-                <p className="text-white/80 text-sm">Modules terminés</p>
+                <div className="text-lg font-bold text-white">{completedModules}</div>
+                <p className="text-white/80 text-xs">Terminés</p>
               </CardContent>
             </Card>
 
             <Card className="gradient-card">
-              <CardContent className="p-6 text-center">
-                <div className="bg-blue-100 text-primary w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Clock className="h-6 w-6" />
+              <CardContent className="p-3 text-center">
+                <div className="bg-blue-100 text-primary w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Clock className="h-4 w-4" />
                 </div>
-                <div className="text-2xl font-bold text-white mb-1">{inProgressModules}</div>
-                <p className="text-white/80 text-sm">En cours</p>
+                <div className="text-lg font-bold text-white">{inProgressModules}</div>
+                <p className="text-white/80 text-xs">En cours</p>
               </CardContent>
             </Card>
 
             <Card className="gradient-card">
-              <CardContent className="p-6 text-center">
-                <div className="bg-purple-100 text-purple-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Trophy className="h-6 w-6" />
+              <CardContent className="p-3 text-center">
+                <div className="bg-purple-100 text-purple-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Trophy className="h-4 w-4" />
                 </div>
-                <div className="text-2xl font-bold text-white mb-1">{passedQuizzes}</div>
-                <p className="text-white/80 text-sm">Quiz réussis</p>
+                <div className="text-lg font-bold text-white">{passedQuizzes}</div>
+                <p className="text-white/80 text-xs">Quiz OK</p>
               </CardContent>
             </Card>
 
             <Card className="gradient-card">
-              <CardContent className="p-6 text-center">
-                <div className="bg-orange-100 text-orange-600 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Target className="h-6 w-6" />
+              <CardContent className="p-3 text-center">
+                <div className="bg-orange-100 text-orange-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Target className="h-4 w-4" />
                 </div>
-                <div className="text-2xl font-bold text-white mb-1">{overallProgress}%</div>
-                <p className="text-white/80 text-sm">Progression totale</p>
+                <div className="text-lg font-bold text-white">{overallProgress}%</div>
+                <p className="text-white/80 text-xs">Total</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Detailed Progress */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Compact Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-280px)]">
             {/* Module Progress */}
             <Card className="gradient-card">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 heading-french">
-                  Progression par Module
-                </h3>
-                <div className="space-y-4">
+              <CardContent className="p-4 h-full">
+                <h3 className="text-sm font-semibold text-white mb-3">Progression par Module</h3>
+                <div className="space-y-2 overflow-y-auto h-[calc(100%-2rem)]">
                   {modules.length > 0 ? modules.map((module) => {
                     const moduleProgress = progress.find(p => p.moduleId === module.id);
                     const progressPercent = moduleProgress?.progress || 0;
                     const status = moduleProgress?.status || 'not_started';
                     
                     return (
-                      <div key={module.id} className="border border-gray-600 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-white">{module.title}</h4>
-                          <Badge variant={
-                            status === 'completed' ? 'default' : 
-                            status === 'in_progress' ? 'secondary' : 
-                            'outline'
-                          } className={
-                            status === 'completed' ? 'bg-green-100 text-green-700' :
-                            status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-600'
-                          }>
+                      <div key={module.id} className="border border-gray-600 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-medium text-white text-sm">{module.title}</h4>
+                          <Badge variant="outline" className="text-xs">
                             {status === 'completed' ? 'Terminé' :
                              status === 'in_progress' ? 'En cours' :
                              'Non commencé'}
                           </Badge>
                         </div>
-                        <div className="mb-2">
-                          <Progress value={progressPercent} className="h-2" />
-                        </div>
-                        <p className="text-sm text-white/80">
-                          {progressPercent}% terminé • Plateforme: {module.platform || 'Général'}
+                        <Progress value={progressPercent} className="h-1 mb-1" />
+                        <p className="text-xs text-white/80">
+                          {progressPercent}% • {module.platform || 'Général'}
                         </p>
                       </div>
                     );
                   }) : (
-                    <p className="text-white/60 text-center py-8">
-                      Aucun module disponible pour le moment
+                    <p className="text-white/60 text-center py-4 text-sm">
+                      Aucun module disponible
                     </p>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Quiz Performance */}
-            <Card className="gradient-card">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">
-                  Performance aux Quiz
-                </h3>
-                
-                {totalQuizAttempts > 0 ? (
-                  <div className="space-y-6">
-                    {/* Overall Stats */}
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-primary">{averageScore}%</div>
-                          <p className="text-sm text-gray-600">Score moyen</p>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">{passedQuizzes}</div>
-                          <p className="text-sm text-gray-600">Quiz réussis</p>
-                        </div>
+            {/* Quiz Performance & Goals */}
+            <div className="space-y-4">
+              <Card className="gradient-card">
+                <CardContent className="p-4">
+                  <h3 className="text-sm font-semibold text-white mb-3">Performance Quiz</h3>
+                  {totalQuizAttempts > 0 ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-primary">{averageScore}%</div>
+                        <p className="text-xs text-white/80">Score moyen</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-green-400">{passedQuizzes}</div>
+                        <p className="text-xs text-white/80">Réussis</p>
                       </div>
                     </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <Trophy className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-white/60 text-xs">Aucun quiz tenté</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                    {/* Recent Attempts */}
+              <Card className="gradient-card">
+                <CardContent className="p-4">
+                  <h3 className="text-sm font-semibold text-white mb-3">Objectifs</h3>
+                  <div className="space-y-3">
                     <div>
-                      <h4 className="font-medium text-gray-800 mb-3">Tentatives récentes</h4>
-                      <div className="space-y-2">
-                        {quizAttempts.slice(0, 5).map((attempt) => (
-                          <div key={attempt.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center">
-                              <div className={`w-3 h-3 rounded-full mr-3 ${
-                                attempt.passed ? 'bg-green-500' : 'bg-red-500'
-                              }`}></div>
-                              <span className="text-sm text-gray-800">Quiz #{attempt.quizId}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-sm font-medium ${
-                                attempt.passed ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                {attempt.score}%
-                              </span>
-                              {attempt.passed && <Star className="h-4 w-4 text-yellow-500" />}
-                            </div>
-                          </div>
-                        ))}
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-white/80">Prochain niveau</span>
+                        <span className="text-xs text-white">{Math.max(xpNeededForCurrentLevel - xpInCurrentLevel, 0)} XP</span>
                       </div>
+                      <Progress value={xpProgressPercent} className="h-1" />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-white/80">Modules (5)</span>
+                        <span className="text-xs text-white">{completedModules}/5</span>
+                      </div>
+                      <Progress value={Math.min((completedModules / 5) * 100, 100)} className="h-1" />
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Aucun quiz tenté pour le moment</p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      Commencez un module pour débloquer les quiz
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-
-          {/* Achievement Goals */}
-          <Card className="gradient-card mt-8">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">
-                Objectifs et Récompenses
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="bg-yellow-100 text-yellow-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Target className="h-8 w-8" />
-                  </div>
-                  <h4 className="font-medium text-gray-800 mb-2">Prochain Objectif</h4>
-                  <p className="text-sm text-gray-600">
-                    Terminer {5 - completedModules > 0 ? 5 - completedModules : 1} module(s) de plus
-                  </p>
-                  <div className="mt-2">
-                    <Progress value={Math.min((completedModules / 5) * 100, 100)} className="h-2" />
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="bg-purple-100 text-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Star className="h-8 w-8" />
-                  </div>
-                  <h4 className="font-medium text-gray-800 mb-2">Prochain Niveau</h4>
-                  <p className="text-sm text-gray-600">
-                    {Math.max(xpNeededForCurrentLevel - xpInCurrentLevel, 0)} XP restants
-                  </p>
-                  <div className="mt-2">
-                    <Progress value={xpProgressPercent} className="h-2" />
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="bg-green-100 text-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Trophy className="h-8 w-8" />
-                  </div>
-                  <h4 className="font-medium text-gray-800 mb-2">Score Parfait</h4>
-                  <p className="text-sm text-gray-600">
-                    Obtenez 100% à un quiz pour débloquer un badge spécial
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </main>
       </div>
     </div>

@@ -367,87 +367,85 @@ export default function StudentDashboard() {
     <div className="flex h-screen bg-background overflow-hidden">
       <Navigation variant="student" />
       
-      <main className="flex-1 p-4 md:ml-20 overflow-y-auto">
-        <div className="max-w-7xl mx-auto space-y-4">
-          {/* Header with welcome message */}
-          <div className="gradient-blue-header p-6 rounded-lg mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-white">
-                Bonjour {userTyped?.firstName || 'Créateur'} ! 👋
-              </h1>
-              <p className="text-blue-100 mt-2">
-                Continuez votre parcours de formation en création de contenu
-              </p>
+      <main className="flex-1 p-4 md:ml-20 h-screen overflow-hidden">
+        <div className="h-full flex flex-col">
+          {/* Compact Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <div className="bg-primary text-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                <BookOpen className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">
+                  Bonjour {userTyped?.firstName || 'Créateur'} !
+                </h1>
+                <p className="text-white/80 text-sm">
+                  Niveau {currentLevel} - {currentXP} XP
+                </p>
+              </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Button
                 onClick={() => completeDailyChallenge.mutate()}
+                size="sm"
                 className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
               >
                 <Gift className="mr-2 h-4 w-4" />
-                Défi Quotidien
+                Défi
               </Button>
               
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/20 rounded-full">
-                    <Crown className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Niveau {currentLevel}</p>
-                    <p className="text-xs text-white/80">{currentXP} XP</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard
-              icon={BookOpen}
-              value={`${completedModules}/${modules.length}`}
-              label="Modules Terminés"
-              color="blue"
-            />
-            <StatsCard
-              icon={Trophy}
-              value={(userBadges as any[]).length}
-              label="Badges Obtenus"
-              color="green"
-            />
-            <StatsCard
-              icon={Target}
-              value={`${overallProgress}%`}
-              label="Progression Globale"
-              color="purple"
-            />
-            <StatsCard
-              icon={Flame}
-              value={`${dailyStreak} jours`}
-              label="Série Quotidienne"
-              color="orange"
-            />
-          </div>
-
-          {/* XP Progress */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Progression XP
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <XPProgress
+              <XPProgress 
                 currentXP={xpInCurrentLevel}
                 totalXP={xpNeededForCurrentLevel}
                 progress={xpProgressPercent}
                 nextLevel={currentLevel + 1}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          {/* Compact Stats Grid */}
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            <Card className="gradient-card">
+              <CardContent className="p-3 text-center">
+                <div className="bg-blue-100 text-primary w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <BookOpen className="h-4 w-4" />
+                </div>
+                <div className="text-lg font-bold text-white">{completedModules}/{modules.length}</div>
+                <p className="text-white/80 text-xs">Modules</p>
+              </CardContent>
+            </Card>
+
+            <Card className="gradient-card">
+              <CardContent className="p-3 text-center">
+                <div className="bg-green-100 text-green-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Trophy className="h-4 w-4" />
+                </div>
+                <div className="text-lg font-bold text-white">{(userBadges as any[]).length}</div>
+                <p className="text-white/80 text-xs">Badges</p>
+              </CardContent>
+            </Card>
+
+            <Card className="gradient-card">
+              <CardContent className="p-3 text-center">
+                <div className="bg-purple-100 text-purple-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Target className="h-4 w-4" />
+                </div>
+                <div className="text-lg font-bold text-white">{overallProgress}%</div>
+                <p className="text-white/80 text-xs">Progrès</p>
+              </CardContent>
+            </Card>
+
+            <Card className="gradient-card">
+              <CardContent className="p-3 text-center">
+                <div className="bg-orange-100 text-orange-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Flame className="h-4 w-4" />
+                </div>
+                <div className="text-lg font-bold text-white">{dailyStreak}</div>
+                <p className="text-white/80 text-xs">Série</p>
+              </CardContent>
+            </Card>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Modules Section */}
