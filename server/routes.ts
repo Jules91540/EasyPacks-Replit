@@ -379,6 +379,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test email route
+  app.post("/api/test-email", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.email) {
+        return res.status(400).json({ message: "Utilisateur ou email introuvable" });
+      }
+
+      const { EmailService } = await import('./email');
+      const success = await EmailService.sendEmail(
+        'notification',
+        user.email,
+        {
+          firstName: user.firstName || 'Utilisateur',
+          title: 'Test du système d\'emails',
+          message: 'Ceci est un email de test pour vérifier que le système fonctionne correctement.'
+        },
+        user.id
+      );
+
+      if (success) {
+        res.json({ message: "Email de test envoyé avec succès" });
+      } else {
+        res.status(500).json({ message: "Échec de l'envoi de l'email de test" });
+      }
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ message: "Erreur lors de l'envoi de l'email de test" });
+    }
+  });
+
   // Admin stats routes
   app.get("/api/admin/stats", isAuthenticated, async (req: any, res) => {
     try {
