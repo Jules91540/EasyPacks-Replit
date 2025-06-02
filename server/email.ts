@@ -2,17 +2,12 @@ import { createTransport } from 'nodemailer';
 import { storage } from './storage';
 import { InsertEmailLog } from '@shared/schema';
 
-// Configuration du transport email avec Mailgun
+// Configuration du transport email en mode test
 const transporter = createTransport({
-  host: 'smtp.mailgun.org',
-  port: 587,
-  secure: false,
-  auth: {
-    user: `postmaster@${process.env.MAILGUN_DOMAIN}`,
-    pass: process.env.MAILGUN_API_KEY
-  },
-  logger: true,
-  debug: true
+  // Mode test : les emails ne sont pas envoyés mais enregistrés
+  streamTransport: true,
+  newline: 'unix',
+  buffer: true
 });
 
 interface EmailTemplate {
@@ -164,20 +159,22 @@ export class EmailService {
           throw new Error(`Type d'email non supporté: ${type}`);
       }
 
-      // Envoi réel de l'email via Gmail
-      console.log(`📧 Tentative d'envoi d'email à ${recipient}`);
+      // Mode test : simulation d'envoi d'email
+      console.log(`\n=== EMAIL DE TEST SIMULÉ ===`);
+      console.log(`À: ${recipient}`);
       console.log(`Sujet: ${template.subject}`);
+      console.log(`Contenu:\n${template.text}`);
+      console.log(`===========================\n`);
       
       const result = await transporter.sendMail({
-        from: `"EasyPacks Formation" <postmaster@${process.env.MAILGUN_DOMAIN}>`,
+        from: '"EasyPacks Formation" <noreply@easypacks.fr>',
         to: recipient,
         subject: template.subject,
         text: template.text,
         html: template.html
       });
       
-      console.log(`✅ Email envoyé avec succès à ${recipient}`);
-      console.log(`Message ID: ${result.messageId}`);
+      console.log(`✅ Email simulé enregistré pour ${recipient}`);
 
       // Enregistrer dans les logs
       if (userId) {
