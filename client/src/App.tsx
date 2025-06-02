@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import IntelligentChatbot, { ChatbotToggle } from "@/components/intelligent-chatbot";
 import FloatingChatbot from "@/components/floating-chatbot";
 import SplashScreen from "@/components/splash-screen";
+import WelcomeTutorial from "@/components/welcome-tutorial";
 import Landing from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
@@ -91,6 +92,29 @@ function Router() {
 function App() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const [showWelcomeTutorial, setShowWelcomeTutorial] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    // Vérifier si c'est la première connexion de l'utilisateur
+    if (isAuthenticated && user && !showSplash) {
+      const tutorialCompleted = localStorage.getItem('welcomeTutorialCompleted');
+      const userKey = `welcomeTutorialCompleted_${(user as any).id}`;
+      const userTutorialCompleted = localStorage.getItem(userKey);
+      
+      if (!tutorialCompleted && !userTutorialCompleted) {
+        setShowWelcomeTutorial(true);
+      }
+    }
+  }, [isAuthenticated, user, showSplash]);
+
+  const handleWelcomeTutorialClose = () => {
+    setShowWelcomeTutorial(false);
+    if (user) {
+      const userKey = `welcomeTutorialCompleted_${(user as any).id}`;
+      localStorage.setItem(userKey, 'true');
+    }
+  };
 
   if (showSplash) {
     return <SplashScreen onComplete={() => setShowSplash(false)} />;
@@ -104,6 +128,15 @@ function App() {
         
         {/* Chatbot flottant global */}
         <FloatingChatbot />
+
+        {/* Tutoriel de bienvenue pour nouveaux utilisateurs */}
+        {showWelcomeTutorial && user && (
+          <WelcomeTutorial
+            isOpen={showWelcomeTutorial}
+            onClose={handleWelcomeTutorialClose}
+            userName={(user as any).firstName || (user as any).email?.split('@')[0] || 'Créateur'}
+          />
+        )}
 
       </TooltipProvider>
     </QueryClientProvider>
