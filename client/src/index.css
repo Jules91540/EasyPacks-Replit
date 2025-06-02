@@ -24,7 +24,7 @@ html, body, #root {
   --background: 240 10% 8%; /* Dark background */
   --foreground: 0 0% 98%; /* White text */
   --muted: 240 6% 15%;
-  --muted-foreground: 240 5% 64.9%;
+  --muted-foreground: 0 0% 80%;
   --popover: 240 10% 12%;
   --popover-foreground: 0 0% 98%;
   --card: 240 10% 12%;
@@ -59,7 +59,7 @@ html, body, #root {
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
   --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
+  --muted-foreground: 0 0% 80%;
   --popover: 240 10% 3.9%;
   --popover-foreground: 0 0% 98%;
   --card: 240 10% 3.9%;
