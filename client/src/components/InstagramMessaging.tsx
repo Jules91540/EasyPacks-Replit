@@ -444,10 +444,11 @@ export default function InstagramMessaging() {
             {/* Messages area */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
-                {currentMessages.map((message: Message) => {
-                  const isOwnMessage = message.senderId === user?.id;
-                  
-                  return (
+                {currentMessages && currentMessages.length > 0 ? (
+                  currentMessages.map((message: Message) => {
+                    const isOwnMessage = message.senderId === user?.id;
+                    
+                    return (
                     <div
                       key={`message-${message.id}`}
                       className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
@@ -525,7 +526,16 @@ export default function InstagramMessaging() {
                       </div>
                     </div>
                   );
-                })}
+                })
+                ) : (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-400 text-lg">Pas encore de messages</p>
+                      <p className="text-gray-500 text-sm">Envoyez un message pour commencer la conversation</p>
+                    </div>
+                  </div>
+                )}
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
