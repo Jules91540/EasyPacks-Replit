@@ -682,10 +682,10 @@ export default function ProfilePage() {
                             <Trophy className="h-4 w-4" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-sm font-medium text-white">
                               {completedModules} module{completedModules > 1 ? 's' : ''} terminé{completedModules > 1 ? 's' : ''}
                             </p>
-                            <p className="text-xs text-gray-600">Félicitations pour votre progression !</p>
+                            <p className="text-xs text-gray-300">Félicitations pour votre progression !</p>
                           </div>
                         </div>
                       )}
@@ -696,10 +696,10 @@ export default function ProfilePage() {
                             <BarChart3 className="h-4 w-4" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-sm font-medium text-white">
                               {passedQuizzes} quiz réussi{passedQuizzes > 1 ? 's' : ''}
                             </p>
-                            <p className="text-xs text-gray-600">Score moyen: {averageScore}%</p>
+                            <p className="text-xs text-gray-300">Score moyen: {averageScore}%</p>
                           </div>
                         </div>
                       )}
