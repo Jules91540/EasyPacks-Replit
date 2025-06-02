@@ -95,7 +95,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
               className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group relative cursor-pointer ${
                 isActive 
                   ? 'bg-primary text-white shadow-lg scale-110' 
-                  : 'bg-white/20 text-gray-300 hover:text-white hover:bg-primary/80 hover:scale-105'
+                  : 'bg-white/20 text-white/80 hover:text-white hover:bg-primary/80 hover:scale-105'
               }`}
               title={item.label}
             >
@@ -129,7 +129,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
         onClick={handleLogout}
         variant="ghost" 
         size="sm"
-        className="w-11 h-11 p-0 text-gray-300 hover:text-red-400 hover:bg-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
+        className="w-11 h-11 p-0 text-white/80 hover:text-red-400 hover:bg-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
         title="Se déconnecter"
       >
         <LogOut className="h-5 w-5" />
@@ -148,7 +148,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
           <h1 className="text-lg font-bold text-white">
             {variant === 'admin' ? 'Administration' : 'Créateur Academy'}
           </h1>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-white/80">
             {variant === 'admin' ? 'Panneau Admin' : 'Formation Créateur'}
           </p>
         </div>
@@ -172,7 +172,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
             <p className="font-medium text-white">
               {(user as any)?.firstName || 'Utilisateur'} {(user as any)?.lastName || ''}
             </p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-white/80">
               {variant === 'admin' ? 'Administrateur' : `Niveau ${(user as any)?.level || 1} - ${(user as any)?.xp || 0} XP`}
             </p>
           </div>
@@ -212,7 +212,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
         <Button 
           onClick={handleLogout}
           variant="ghost" 
-          className="w-full justify-start text-gray-400 hover:text-red-400"
+          className="w-full justify-start text-white/80 hover:text-red-400"
         >
           <LogOut className="mr-3 h-5 w-5" />
           Se déconnecter
