@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,7 @@ export default function FixedMessaging() {
   const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch conversations
   const { data: conversations = [] } = useQuery({
@@ -48,6 +49,28 @@ export default function FixedMessaging() {
     refetchInterval: 1000,
   });
 
+  // Function to scroll to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Auto-scroll when messages change or when selecting a conversation
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (selectedConversation) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [selectedConversation]);
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { receiverId: string; content: string }) => {
@@ -61,6 +84,10 @@ export default function FixedMessaging() {
           queryKey: ['/api/messages', selectedConversation.participant1Id, selectedConversation.participant2Id] 
         });
       }
+      // Scroll to bottom after sending message
+      setTimeout(() => {
+        scrollToBottom();
+      }, 200);
     },
   });
 
@@ -249,6 +276,8 @@ export default function FixedMessaging() {
                     <p className="text-gray-400">Aucun message encore. Commencez la conversation !</p>
                   </div>
                 )}
+                {/* Element for auto-scroll */}
+                <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 
