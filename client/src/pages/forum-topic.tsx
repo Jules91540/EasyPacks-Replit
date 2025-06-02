@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,7 +22,10 @@ import {
   Image as ImageIcon,
   Video,
   Send,
-  Paperclip
+  Paperclip,
+  Smile,
+  Heart,
+  MoreVertical
 } from "lucide-react";
 import Navigation from "@/components/ui/navigation";
 
@@ -32,6 +35,7 @@ export default function ForumTopicPage() {
   const [match, params] = useRoute("/forum/topic/:id");
   const [replyContent, setReplyContent] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const topicId = params?.id;
 
@@ -43,7 +47,15 @@ export default function ForumTopicPage() {
   const { data: replies } = useQuery({
     queryKey: [`/api/forum/topics/${topicId}/replies`],
     enabled: !!topicId,
+    refetchInterval: 1000, // Auto-refresh every 1 second for real-time feel
   });
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [replies]);
 
   const createReplyMutation = useMutation({
     mutationFn: async (replyData: { content: string; files?: File[] }) => {
