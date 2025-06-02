@@ -834,7 +834,7 @@ export class DatabaseStorage implements IStorage {
           eq(privateMessages.receiverId, userId1)
         )
       ))
-      .orderBy(desc(privateMessages.createdAt));
+      .orderBy(privateMessages.createdAt);
   }
 
   async getUserConversations(userId: string): Promise<any[]> {

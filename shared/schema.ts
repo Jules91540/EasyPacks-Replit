@@ -220,7 +220,16 @@ export const privateMessages = pgTable("private_messages", {
   content: text("content").notNull(),
   messageType: varchar("message_type").notNull().default("text"), // text, image, file, call_invite
   isRead: boolean("is_read").notNull().default(false),
+  readAt: timestamp("read_at"),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const typingStatus = pgTable("typing_status", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
+  isTyping: boolean("is_typing").notNull().default(false),
+  lastTypingAt: timestamp("last_typing_at").defaultNow(),
 });
 
 export const conversations = pgTable("conversations", {
@@ -500,6 +509,8 @@ export type PostComment = typeof postComments.$inferSelect;
 export type InsertPostComment = typeof postComments.$inferInsert;
 export type PrivateMessage = typeof privateMessages.$inferSelect;
 export type InsertPrivateMessage = typeof privateMessages.$inferInsert;
+export type TypingStatus = typeof typingStatus.$inferSelect;
+export type InsertTypingStatus = typeof typingStatus.$inferInsert;
 export type ConversationDb = typeof conversations.$inferSelect;
 export type InsertConversation = typeof conversations.$inferInsert;
 export type CallSession = typeof callSessions.$inferSelect;
