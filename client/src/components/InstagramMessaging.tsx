@@ -455,7 +455,12 @@ export default function InstagramMessaging() {
                   <h3 className="text-white font-semibold">
                     {selectedConversation.participant?.firstName} {selectedConversation.participant?.lastName}
                   </h3>
-                  <p className="text-green-400 text-sm">En ligne</p>
+                  <p className="text-gray-400 text-sm">
+                    {selectedConversation.lastMessageAt ? 
+                      `Dernier message: ${formatMessageTime(selectedConversation.lastMessageAt)}` : 
+                      'En ligne'
+                    }
+                  </p>
                 </div>
               </div>
               
