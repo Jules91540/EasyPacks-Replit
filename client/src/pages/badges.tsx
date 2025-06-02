@@ -148,20 +148,19 @@ export default function BadgesPage() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center mb-6">
-              <div className="bg-primary text-white w-12 h-12 rounded-lg flex items-center justify-center mr-4">
-                <Award className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Mes Badges</h1>
-                <p className="text-muted-foreground">
-                  Vos récompenses et accomplissements
-                </p>
-              </div>
+        <main className="flex-1 p-4 h-screen overflow-hidden">
+          {/* Compact Header */}
+          <div className="flex items-center mb-4">
+            <div className="bg-primary text-white w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+              <Award className="h-5 w-5" />
             </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Mes Badges</h1>
+              <p className="text-muted-foreground text-sm">
+                {earnedBadges.length} obtenus • {unearnedBadges.length} à débloquer
+              </p>
+            </div>
+          </div>
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -197,159 +196,67 @@ export default function BadgesPage() {
                 </CardContent>
               </Card>
             </div>
-          </div>
 
-          {/* Earned Badges */}
-          {earnedBadges.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-white mb-6 heading-french">
-                Badges Obtenus ({earnedBadges.length})
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {earnedBadges.map((badge) => {
-                  const Icon = badge.icon;
-                  return (
-                    <Card key={badge.id} className="gradient-card hover:shadow-lg transition-shadow">
-                      <CardContent className="p-6 text-center">
-                        <div className={`${badge.color} text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 badge-glow`}>
-                          <Icon className="h-8 w-8" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-white mb-2">{badge.name}</h3>
-                        <p className="text-white/80 text-sm mb-3">{badge.description}</p>
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                          ✓ Obtenu
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+          {/* Compact Badges Grid */}
+          <div className="h-[calc(100vh-240px)] overflow-y-auto">
+            {earnedBadges.length > 0 && (
+              <div className="mb-4">
+                <h2 className="text-lg font-bold text-white mb-3">
+                  Badges Obtenus ({earnedBadges.length})
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {earnedBadges.map((badge) => {
+                    const Icon = badge.icon;
+                    return (
+                      <Card key={badge.id} className="gradient-card">
+                        <CardContent className="p-4 text-center">
+                          <div className={`${badge.color} text-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3`}>
+                            <Icon className="h-6 w-6" />
+                          </div>
+                          <h3 className="text-sm font-semibold text-white mb-1">{badge.name}</h3>
+                          <p className="text-white/80 text-xs mb-2">{badge.description}</p>
+                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                            ✓ Obtenu
+                          </Badge>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Progress Towards Badges */}
-          {unearnedBadges.length > 0 && (
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-6 heading-french">
-                Objectifs en Cours ({unearnedBadges.length})
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {unearnedBadges.map((badge) => {
-                  const Icon = badge.icon;
-                  const progressPercent = Math.round((badge.progress / badge.total) * 100);
-                  
-                  return (
-                    <Card key={badge.id} className="gradient-card opacity-75 hover:opacity-100 transition-opacity">
-                      <CardContent className="p-6 text-center">
-                        <div className="bg-gray-300 text-gray-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Icon className="h-8 w-8" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-white mb-2">{badge.name}</h3>
-                        <p className="text-white/80 text-sm mb-3">{badge.description}</p>
-                        
-                        <div className="mb-3">
-                          <div className="bg-white/20 rounded-full h-3 mb-2">
+            {unearnedBadges.length > 0 && (
+              <div className="mb-4">
+                <h2 className="text-lg font-bold text-white mb-3">
+                  À Débloquer ({unearnedBadges.length})
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {unearnedBadges.map((badge) => {
+                    const Icon = badge.icon;
+                    return (
+                      <Card key={badge.id} className="gradient-card opacity-75">
+                        <CardContent className="p-4 text-center">
+                          <div className="bg-gray-600 text-gray-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Icon className="h-6 w-6" />
+                          </div>
+                          <h3 className="text-sm font-semibold text-white/60 mb-1">{badge.name}</h3>
+                          <p className="text-white/40 text-xs mb-2">{badge.description}</p>
+                          <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
                             <div 
-                              className="bg-blue-500 h-3 rounded-full transition-all duration-500" 
-                              style={{ width: `${progressPercent}%` }}
+                              className="bg-blue-600 h-2 rounded-full" 
+                              style={{ width: `${(badge.progress / badge.total) * 100}%` }}
                             ></div>
                           </div>
-                          <p className="text-xs text-white/60">
-                            {badge.progress} / {badge.total} ({progressPercent}%)
-                          </p>
-                        </div>
-                        
-                        <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                          En cours...
-                        </Badge>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {earnedBadges.length === 0 && (
-            <Card className="gradient-card">
-              <CardContent className="p-12 text-center">
-                <Award className="h-16 w-16 text-white/40 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Aucun badge obtenu pour le moment
-                </h3>
-                <p className="text-white/80 mb-6">
-                  Commencez votre parcours de formation pour débloquer vos premiers badges !
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <Star className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-blue-700">Premier badge</p>
-                    <p className="text-xs text-blue-600">Terminez votre premier module</p>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <Trophy className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-green-700">Réussite</p>
-                    <p className="text-xs text-green-600">Réussissez votre premier quiz</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Tips for Earning Badges */}
-          <Card className="gradient-card mt-8">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">
-                Comment Gagner des Badges
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-blue-100 text-primary w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-sm font-bold">1</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Terminez des modules</p>
-                      <p className="text-sm text-gray-600">Chaque module terminé vous rapproche d'un nouveau badge</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-sm font-bold">2</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Réussissez les quiz</p>
-                      <p className="text-sm text-gray-600">Obtenez de bons scores pour débloquer des récompenses</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-purple-100 text-purple-600 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-sm font-bold">3</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Accumulez de l'XP</p>
-                      <p className="text-sm text-gray-600">Plus vous participez, plus vous gagnez d'expérience</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-orange-100 text-orange-600 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-sm font-bold">4</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Montez en niveau</p>
-                      <p className="text-sm text-gray-600">Atteignez de nouveaux niveaux pour des badges exclusifs</p>
-                    </div>
-                  </div>
+                          <p className="text-xs text-white/60">{badge.progress}/{badge.total}</p>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         </main>
       </div>
     </div>
