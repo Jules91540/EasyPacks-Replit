@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Navigation from "@/components/ui/navigation";
 import { IncomingCallPopup } from "@/components/IncomingCallPopup";
 import { MessageWithReactions } from "@/components/MessageWithReactions";
+import { UserProfile } from "@/components/UserProfile";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -128,6 +129,10 @@ export default function SocialPage() {
     isMuted: boolean;
     isVideoOn: boolean;
   }>({ active: false, isScreenSharing: false, isMuted: false, isVideoOn: true });
+  
+  // User profile modal
+  const [selectedProfile, setSelectedProfile] = useState<User | null>(null);
+  const [showUserProfile, setShowUserProfile] = useState(false);
 
   // Fetch posts
   const { data: posts = [], isLoading: postsLoading } = useQuery({
@@ -316,6 +321,31 @@ export default function SocialPage() {
     },
   });
 
+  // Remove friend mutation
+  const removeFriend = useMutation({
+    mutationFn: async (friendId: string) => {
+      const response = await fetch(`/api/friends/remove/${friendId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/friends"] });
+      toast({
+        title: "Ami retiré",
+        description: "L'ami a été retiré de votre liste",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur",
+        description: error.message.includes("already exists") ? "Cette amitié n'existe plus" : "Impossible de retirer cet ami",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Mark all notifications as read mutation
   const markAllNotificationsRead = useMutation({
     mutationFn: async () => {
@@ -341,6 +371,93 @@ export default function SocialPage() {
       content: newPostContent,
       visibility: newPostVisibility,
     });
+  };
+
+  // Handle user profile clicks
+  const handleUserClick = (clickedUser: User) => {
+    setSelectedProfile(clickedUser);
+    setShowUserProfile(true);
+  };
+
+  // Handle screen sharing toggle
+  const toggleScreenShare = async () => {
+    if (!activeCall.active) return;
+    
+    try {
+      if (!activeCall.isScreenSharing) {
+        // Start screen sharing
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true
+        });
+        setActiveCall(prev => ({ ...prev, isScreenSharing: true }));
+        toast({
+          title: "Partage d'écran activé",
+          description: "Votre écran est maintenant partagé",
+        });
+      } else {
+        // Stop screen sharing
+        setActiveCall(prev => ({ ...prev, isScreenSharing: false }));
+        toast({
+          title: "Partage d'écran désactivé",
+          description: "Le partage d'écran a été arrêté",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de partager l'écran",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle call functions
+  const handleStartCall = (userId: string) => {
+    initiateCall.mutate({ receiverId: userId, callType: "audio" });
+    setActiveCall({
+      active: true,
+      participant: allUsers?.find((u: User) => u.id === userId),
+      isScreenSharing: false,
+      isMuted: false,
+      isVideoOn: false
+    });
+  };
+
+  const handleStartVideoCall = (userId: string) => {
+    initiateCall.mutate({ receiverId: userId, callType: "video" });
+    setActiveCall({
+      active: true,
+      participant: allUsers?.find((u: User) => u.id === userId),
+      isScreenSharing: false,
+      isMuted: false,
+      isVideoOn: true
+    });
+  };
+
+  const handleStartMessage = (userId: string) => {
+    setSelectedConversation(userId);
+    setActiveTab("messages");
+  };
+
+  // Handle incoming call
+  const handleAcceptCall = () => {
+    setActiveCall({
+      active: true,
+      participant: incomingCall.caller,
+      isScreenSharing: false,
+      isMuted: false,
+      isVideoOn: true
+    });
+    setIncomingCall({ visible: false });
+  };
+
+  const handleRejectCall = () => {
+    setIncomingCall({ visible: false });
+  };
+
+  const handleEndCall = () => {
+    setActiveCall({ active: false, isScreenSharing: false, isMuted: false, isVideoOn: true });
   };
 
   const handleSendMessage = () => {
@@ -950,6 +1067,93 @@ export default function SocialPage() {
           </Tabs>
         </div>
       </main>
+
+      {/* User Profile Modal */}
+      <UserProfile
+        user={selectedProfile}
+        isOpen={showUserProfile}
+        onClose={() => setShowUserProfile(false)}
+        currentUserId={user?.id}
+        friends={friends as User[]}
+        onAddFriend={(userId) => sendFriendRequest.mutate({ receiverId: userId })}
+        onRemoveFriend={(userId) => removeFriend.mutate(userId)}
+        onStartCall={handleStartCall}
+        onStartVideoCall={handleStartVideoCall}
+        onStartMessage={handleStartMessage}
+      />
+
+      {/* Incoming Call Popup */}
+      <IncomingCallPopup
+        isVisible={incomingCall.visible}
+        caller={incomingCall.caller!}
+        onAccept={handleAcceptCall}
+        onReject={handleRejectCall}
+        onClose={() => setIncomingCall({ visible: false })}
+      />
+
+      {/* Active Call Interface */}
+      {activeCall.active && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
+          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+            <div className="text-center mb-6">
+              <Avatar className="w-20 h-20 mx-auto mb-4">
+                <AvatarImage src={activeCall.participant?.profileImageUrl} />
+                <AvatarFallback className="text-2xl">
+                  {activeCall.participant?.firstName[0]}{activeCall.participant?.lastName[0]}
+                </AvatarFallback>
+              </Avatar>
+              <h3 className="text-xl font-semibold text-white">
+                {activeCall.participant?.firstName} {activeCall.participant?.lastName}
+              </h3>
+              <p className="text-gray-400">
+                {activeCall.isVideoOn ? "Appel vidéo" : "Appel audio"} en cours
+              </p>
+              {activeCall.isScreenSharing && (
+                <p className="text-blue-400 text-sm mt-2">Partage d'écran actif</p>
+              )}
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveCall(prev => ({ ...prev, isMuted: !prev.isMuted }))}
+                className={activeCall.isMuted ? "bg-red-600 text-white" : ""}
+              >
+                {activeCall.isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </Button>
+              
+              {activeCall.isVideoOn && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleScreenShare}
+                  className={activeCall.isScreenSharing ? "bg-blue-600 text-white" : ""}
+                >
+                  <Monitor className="w-4 h-4" />
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveCall(prev => ({ ...prev, isVideoOn: !prev.isVideoOn }))}
+                className={!activeCall.isVideoOn ? "bg-red-600 text-white" : ""}
+              >
+                {activeCall.isVideoOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+              </Button>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleEndCall}
+              >
+                <PhoneOff className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
