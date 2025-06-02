@@ -328,12 +328,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send notification email
       const user = await storage.getUser(userId);
       if (user && user.email && user.firstName) {
-        const { EmailService } = await import('./email');
-        await EmailService.sendPasswordChangeEmail({
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName
-        });
+        try {
+          const { EmailService } = await import('./email');
+          await EmailService.sendPasswordChangeEmail({
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName
+          });
+          console.log(`✅ Email de changement de mot de passe envoyé à ${user.email}`);
+        } catch (emailError) {
+          console.error('Erreur envoi email de changement de mot de passe:', emailError);
+        }
       }
       
       res.json({ message: "Mot de passe modifié avec succès" });

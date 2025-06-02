@@ -144,6 +144,21 @@ export async function setupAuth(app: Express) {
 
       const user = await storage.upsertUser(userData);
       
+      // Send welcome email
+      if (user.email && user.firstName) {
+        try {
+          const { EmailService } = await import('./email');
+          await EmailService.sendWelcomeEmail({
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName
+          });
+          console.log(`✅ Email de bienvenue envoyé à ${user.email}`);
+        } catch (emailError) {
+          console.error('Erreur envoi email de bienvenue:', emailError);
+        }
+      }
+      
       // Auto login after registration
       req.login(user, (err) => {
         if (err) {
