@@ -386,17 +386,17 @@ export default function ProfilePage() {
   const navigationVariant = (user as any)?.role === 'admin' ? 'admin' : 'student';
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-background">
       {/* Navigation Sidebar */}
       <Navigation variant={navigationVariant} />
       
       {/* Main Content with left margin for desktop sidebar */}
       <div className="md:ml-20 flex flex-col min-h-screen">
         {/* Mobile Header */}
-        <header className="md:hidden bg-blue-50 shadow-sm border-b border-border p-4">
+        <header className="md:hidden bg-background shadow-sm border-b border-border p-4">
           <div className="flex items-center justify-between">
             <Navigation variant={navigationVariant} />
-            <h1 className="text-lg font-bold text-foreground">Mon Profil</h1>
+            <h1 className="text-lg font-bold text-white">Mon Profil</h1>
             <div></div>
           </div>
         </header>
@@ -411,8 +411,8 @@ export default function ProfilePage() {
                   <User className="h-6 w-6" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800 heading-french">Mon Profil</h1>
-                  <p className="text-gray-600 subtitle-french">
+                  <h1 className="text-3xl font-bold text-white heading-french">Mon Profil</h1>
+                  <p className="text-gray-300 subtitle-french">
                     Gérez vos informations personnelles et consultez vos statistiques
                   </p>
                 </div>
@@ -430,7 +430,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Profile Information */}
             <div className="lg:col-span-1">
-              <Card className="gradient-card">
+              <Card className="gradient-blue-card">
                 <CardContent className="p-6">
                   <div className="text-center mb-6">
                     <div className="relative inline-block">
@@ -478,7 +478,7 @@ export default function ProfilePage() {
                     {isEditing ? (
                       <>
                         <div>
-                          <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                          <Label htmlFor="firstName" className="text-sm font-medium text-white">
                             Prénom
                           </Label>
                           <Input
@@ -490,7 +490,7 @@ export default function ProfilePage() {
                         </div>
                         
                         <div>
-                          <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                          <Label htmlFor="lastName" className="text-sm font-medium text-white">
                             Nom
                           </Label>
                           <Input
@@ -502,7 +502,7 @@ export default function ProfilePage() {
                         </div>
                         
                         <div>
-                          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                          <Label htmlFor="email" className="text-sm font-medium text-white">
                             Email
                           </Label>
                           <Input
