@@ -384,6 +384,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Forum routes
+  app.get("/api/forum/categories", isAuthenticated, async (req: any, res) => {
+    try {
+      // For now, return basic categories - in a real app, these would be stored in database
+      const categories = [
+        {
+          id: 1,
+          name: "Création de contenu YouTube",
+          description: "Discutez de vos stratégies, conseils et expériences sur YouTube",
+          color: "#FF0000",
+          topicsCount: 0,
+          latestTopics: []
+        },
+        {
+          id: 2,
+          name: "Instagram & Réseaux sociaux",
+          description: "Partagez vos astuces pour Instagram, TikTok et autres plateformes",
+          color: "#E4405F",
+          topicsCount: 0,
+          latestTopics: []
+        },
+        {
+          id: 3,
+          name: "Streaming Twitch",
+          description: "Conseils et discussions sur le streaming en direct",
+          color: "#9146FF",
+          topicsCount: 0,
+          latestTopics: []
+        },
+        {
+          id: 4,
+          name: "Questions générales",
+          description: "Posez vos questions sur la création de contenu",
+          color: "#00D2FF",
+          topicsCount: 0,
+          latestTopics: []
+        }
+      ];
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching forum categories:", error);
+      res.status(500).json({ message: "Erreur lors du chargement des catégories" });
+    }
+  });
+
   // Test email route - mode simulation
   app.post("/api/test-email", isAuthenticated, async (req: any, res) => {
     try {
