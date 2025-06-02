@@ -46,6 +46,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
     { href: "/modules", label: "Formations", icon: BookOpen },
     { href: "/progress", label: "Ma Progression", icon: BarChart3 },
     { href: "/badges", label: "Mes Badges", icon: Award },
+    { href: "/social", label: "Social", icon: Users },
     { href: "/forum", label: "Forum", icon: MessageSquare },
     { href: "/simulations", label: "Simulations", icon: Video },
     { href: "/profile", label: "Mon Profil", icon: User },
@@ -76,7 +77,7 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
         const Icon = item.icon;
         const isActive = location === item.href;
         const isForum = item.href === '/forum';
-        const unreadCount = notifications?.unreadCount || 0;
+        const unreadCount = (notifications as any)?.unreadCount || 0;
         
         // Attributs de données pour la surbrillance
         const getNavId = (href: string) => {
