@@ -8,14 +8,38 @@ interface SplashScreenProps {
 
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const [showSplash, setShowSplash] = useState(true);
+  const [loadingStep, setLoadingStep] = useState(0);
+
+  const loadingSteps = [
+    "Initialisation de l'application...",
+    "Chargement des modules de formation...",
+    "Configuration de l'interface utilisateur...",
+    "Connexion à la base de données...",
+    "Préparation de l'expérience d'apprentissage...",
+    "Finalisation du chargement..."
+  ];
 
   useEffect(() => {
+    // Progression du chargement toutes les 500ms
+    const stepInterval = setInterval(() => {
+      setLoadingStep(prev => {
+        if (prev < loadingSteps.length - 1) {
+          return prev + 1;
+        }
+        return prev;
+      });
+    }, 500);
+
+    // Fin du splash screen après 3 secondes
     const timer = setTimeout(() => {
       setShowSplash(false);
       setTimeout(onComplete, 500); // Délai pour l'animation de sortie
-    }, 2500);
+    }, 3000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(stepInterval);
+    };
   }, [onComplete]);
 
   return (
@@ -95,12 +119,30 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               />
             </motion.div>
 
+            {/* Texte de chargement */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5 }}
+              className="mt-8"
+            >
+              <motion.p
+                key={loadingStep}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="text-purple-200 text-sm font-medium"
+              >
+                {loadingSteps[loadingStep]}
+              </motion.p>
+            </motion.div>
+
             {/* Points de chargement */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
-              className="mt-6 flex justify-center space-x-2"
+              className="mt-4 flex justify-center space-x-2"
             >
               {[0, 1, 2].map((i) => (
                 <motion.div
