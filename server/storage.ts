@@ -153,6 +153,7 @@ export interface IStorage {
   createNotification(notification: InsertNotificationTable): Promise<NotificationTable>;
   getUserNotifications(userId: string): Promise<NotificationTable[]>;
   markNotificationAsRead(notificationId: number): Promise<void>;
+  markAllNotificationsAsRead(userId: string): Promise<void>;
   getUnreadNotificationCount(userId: string): Promise<number>;
   
   // Search operations
