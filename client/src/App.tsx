@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import IntelligentChatbot, { ChatbotToggle } from "@/components/intelligent-chatbot";
 import FloatingChatbot from "@/components/floating-chatbot";
+import SplashScreen from "@/components/splash-screen";
 import Landing from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import StudentDashboard from "@/pages/student-dashboard";
@@ -89,6 +90,11 @@ function Router() {
 
 function App() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
