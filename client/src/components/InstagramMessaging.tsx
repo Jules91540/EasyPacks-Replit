@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +69,7 @@ interface Conversation {
 
 export default function InstagramMessaging() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messageContent, setMessageContent] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,7 +88,7 @@ export default function InstagramMessaging() {
   });
 
   // Fetch messages for selected conversation
-  const { data: currentMessages = [] } = useQuery({
+  const { data: currentMessages = [], isLoading: messagesLoading } = useQuery({
     queryKey: ["/api/conversations", selectedConversation?.id, "messages"],
     queryFn: async () => {
       if (!selectedConversation) return [];
@@ -95,11 +97,16 @@ export default function InstagramMessaging() {
       if (selectedConversation.id === 0) return [];
       
       const response = await fetch(`/api/conversations/${selectedConversation.id}/messages`);
-      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
-      return response.json();
+      if (!response.ok) {
+        console.error(`Failed to fetch messages: ${response.status}`);
+        return [];
+      }
+      const messages = await response.json();
+      console.log(`Messages récupérés pour conversation ${selectedConversation.id}:`, messages);
+      return messages;
     },
     enabled: !!user && !!selectedConversation && selectedConversation.id > 0,
-    refetchInterval: 1000,
+    refetchInterval: 2000,
   });
 
   // Fetch friends for new conversations
@@ -452,7 +459,12 @@ export default function InstagramMessaging() {
             {/* Messages area */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
-                {currentMessages && currentMessages.length > 0 ? (
+                {messagesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <span className="ml-2 text-gray-400">Chargement des messages...</span>
+                  </div>
+                ) : currentMessages && currentMessages.length > 0 ? (
                   currentMessages.map((message: Message) => {
                     const isOwnMessage = message.senderId === user?.id;
                     
