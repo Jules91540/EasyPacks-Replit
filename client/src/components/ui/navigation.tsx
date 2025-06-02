@@ -78,9 +78,20 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
         const isForum = item.href === '/forum';
         const unreadCount = notifications?.unreadCount || 0;
         
+        // Attributs de données pour la surbrillance
+        const getNavId = (href: string) => {
+          if (href === '/') return 'nav-home';
+          if (href === '/modules') return 'nav-modules';
+          if (href === '/forum') return 'nav-forum';
+          if (href === '/progress') return 'nav-progress';
+          if (href === '/badges') return 'nav-badges';
+          return null;
+        };
+        
         return (
           <Link key={item.href} href={item.href}>
-            <div 
+            <div
+              data-nav-id={getNavId(item.href)} 
               className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group relative cursor-pointer ${
                 isActive 
                   ? 'bg-primary text-white shadow-lg scale-110' 
