@@ -2,14 +2,14 @@ import { createTransport } from 'nodemailer';
 import { storage } from './storage';
 import { InsertEmailLog } from '@shared/schema';
 
-// Configuration du transport email avec Mailgun
+// Configuration du transport email avec Ionos
 const transporter = createTransport({
-  host: 'smtp.mailgun.org',
+  host: 'smtp.ionos.fr',
   port: 587,
   secure: false,
   auth: {
-    user: 'postmaster@sandboxfaec35d0c8c741e49bb3c9c736fced2b.mailgun.org',
-    pass: 'b51bf89d80f80b9faceaed17bf662669-08c79601-3770418e'
+    user: 'no.reply@easypacks.fr',
+    pass: 'Ttvpywiix91_540_Mennecy'
   }
 });
 
@@ -162,10 +162,20 @@ export class EmailService {
           throw new Error(`Type d'email non supporté: ${type}`);
       }
 
-      // Mode simulation - enregistrement en base de données uniquement
-      console.log(`📧 [SIMULATION] Envoi d'email à ${recipient}`);
+      // Envoi réel via Ionos SMTP
+      console.log(`📧 Envoi d'email via Ionos à ${recipient}`);
       console.log(`Sujet: ${template.subject}`);
-      console.log(`✅ [SIMULATION] Email enregistré en base de données`);
+      
+      const result = await transporter.sendMail({
+        from: '"EasyPacks Formation" <no.reply@easypacks.fr>',
+        to: recipient,
+        subject: template.subject,
+        text: template.text,
+        html: template.html
+      });
+      
+      console.log(`✅ Email envoyé avec succès à ${recipient}`);
+      console.log(`Message ID: ${result.messageId}`);
 
       // Enregistrer dans les logs
       if (userId) {

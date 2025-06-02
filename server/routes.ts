@@ -391,24 +391,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📧 Tentative d'envoi d'email à ${user.email}`);
       console.log(`Sujet: 📢 Test du système d'emails`);
-      
-      // Mode simulation - enregistrement direct en base de données
-      console.log(`📧 [SIMULATION] Envoi d'email à ${user.email}`);
-      console.log(`Sujet: 📢 Test du système d'emails`);
-      console.log(`✅ [SIMULATION] Email enregistré en base de données`);
 
-      // Enregistrer dans les logs
-      await storage.logEmail({
-        id: Date.now().toString(),
-        userId: user.id,
-        type: 'notification',
-        recipient: user.email,
-        subject: '📢 Test du système d\'emails',
-        content: 'Ceci est un email de test pour vérifier que le système fonctionne correctement.',
-        status: 'sent'
-      });
+      const { EmailService } = await import('./email');
+      const success = await EmailService.sendEmail(
+        'notification',
+        user.email,
+        {
+          firstName: user.firstName || 'Utilisateur',
+          title: 'Test du système d\'emails',
+          message: 'Ceci est un email de test pour vérifier que le système fonctionne correctement.'
+        },
+        user.id
+      );
 
-      res.json({ message: "Email de test envoyé avec succès" });
+      if (success) {
+        res.json({ message: "Email de test envoyé avec succès" });
+      } else {
+        res.status(500).json({ message: "Échec de l'envoi de l'email de test" });
+      }
     } catch (error) {
       console.error("Error sending test email:", error);
       res.status(500).json({ message: "Erreur lors de l'envoi de l'email de test" });
