@@ -485,10 +485,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/forum/topics/:id", isAuthenticated, async (req: any, res) => {
     try {
       const topicId = parseInt(req.params.id);
+      const userId = req.user.id;
       const topic = forumTopics.find(t => t.id === topicId);
       
       if (!topic) {
         return res.status(404).json({ message: "Sujet introuvable" });
+      }
+
+      // Supprimer les notifications liées à ce topic pour cet utilisateur
+      if (userNotifications[userId]) {
+        userNotifications[userId] = userNotifications[userId].filter(notification => 
+          !(notification.type === 'forum_mention' && notification.topicId === topicId) &&
+          !(notification.type === 'forum_reply' && notification.topicId === topicId)
+        );
       }
 
       // Increment view count
