@@ -604,62 +604,62 @@ export default function ProfilePage() {
             <div className="lg:col-span-2 space-y-8">
               {/* Statistics Overview */}
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 heading-french">
+                <h2 className="text-2xl font-bold text-white mb-6 heading-french">
                   Statistiques d'Activité
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <Card className="gradient-card">
+                  <Card className="gradient-blue-card">
                     <CardContent className="p-6">
                       <div className="flex items-center">
                         <div className="bg-green-100 text-green-600 w-12 h-12 rounded-lg flex items-center justify-center mr-4">
                           <Trophy className="h-6 w-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold text-gray-800">{completedModules}</p>
-                          <p className="text-gray-600 text-sm">Modules terminés</p>
+                          <p className="text-2xl font-bold text-white">{completedModules}</p>
+                          <p className="text-gray-300 text-sm">Modules terminés</p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="gradient-card">
+                  <Card className="gradient-blue-card">
                     <CardContent className="p-6">
                       <div className="flex items-center">
                         <div className="bg-blue-100 text-primary w-12 h-12 rounded-lg flex items-center justify-center mr-4">
                           <BarChart3 className="h-6 w-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold text-gray-800">{averageScore}%</p>
-                          <p className="text-gray-600 text-sm">Score moyen aux quiz</p>
+                          <p className="text-2xl font-bold text-white">{averageScore}%</p>
+                          <p className="text-gray-300 text-sm">Score moyen aux quiz</p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="gradient-card">
+                  <Card className="gradient-blue-card">
                     <CardContent className="p-6">
                       <div className="flex items-center">
                         <div className="bg-purple-100 text-purple-600 w-12 h-12 rounded-lg flex items-center justify-center mr-4">
                           <Award className="h-6 w-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold text-gray-800">{Array.isArray(userBadges) ? userBadges.length : 0}</p>
-                          <p className="text-gray-600 text-sm">Badges obtenus</p>
+                          <p className="text-2xl font-bold text-white">{Array.isArray(userBadges) ? userBadges.length : 0}</p>
+                          <p className="text-gray-300 text-sm">Badges obtenus</p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="gradient-card">
+                  <Card className="gradient-blue-card">
                     <CardContent className="p-6">
                       <div className="flex items-center">
                         <div className="bg-orange-100 text-orange-600 w-12 h-12 rounded-lg flex items-center justify-center mr-4">
                           <Calendar className="h-6 w-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold text-gray-800">{passedQuizzes}</p>
-                          <p className="text-gray-600 text-sm">Quiz réussis</p>
+                          <p className="text-2xl font-bold text-white">{passedQuizzes}</p>
+                          <p className="text-gray-300 text-sm">Quiz réussis</p>
                         </div>
                       </div>
                     </CardContent>
@@ -668,9 +668,9 @@ export default function ProfilePage() {
               </div>
 
               {/* Recent Activity */}
-              <Card className="gradient-card">
+              <Card className="gradient-blue-card">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">
+                  <h3 className="text-lg font-semibold text-white mb-4 heading-french">
                     Activité Récente
                   </h3>
                   
@@ -721,7 +721,7 @@ export default function ProfilePage() {
                   ) : (
                     <div className="text-center py-8">
                       <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">Aucune activité récente</p>
+                      <p className="text-gray-300">Aucune activité récente</p>
                       <p className="text-sm text-gray-400 mt-2">
                         Commencez un module pour voir votre activité ici
                       </p>
@@ -731,9 +731,9 @@ export default function ProfilePage() {
               </Card>
 
               {/* Account Settings */}
-              <Card className="gradient-card">
+              <Card className="gradient-blue-card">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 heading-french">
+                  <h3 className="text-lg font-semibold text-white mb-4 heading-french">
                     Paramètres du Compte
                   </h3>
                   

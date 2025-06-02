@@ -166,16 +166,16 @@ export default function ModulesPage() {
               ))}
             </div>
           ) : (
-            <Card className="gradient-card">
+            <Card className="gradient-blue-card">
               <CardContent className="p-12 text-center">
                 <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   {searchTerm || filterPlatform !== "all" 
                     ? "Aucune formation trouvée" 
                     : "Aucune formation disponible"
                   }
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-300 mb-4">
                   {searchTerm || filterPlatform !== "all"
                     ? "Essayez de modifier vos critères de recherche"
                     : "Les formations seront bientôt disponibles"
