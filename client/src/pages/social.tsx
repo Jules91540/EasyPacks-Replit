@@ -148,6 +148,12 @@ export default function SocialPage() {
     enabled: searchQuery.length >= 2,
   });
 
+  // Discover all users
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ["/api/users/discover"],
+    enabled: !!user,
+  });
+
   // Create post mutation
   const createPost = useMutation({
     mutationFn: async (data: { content: string; visibility: string }) => {
@@ -795,9 +801,39 @@ export default function SocialPage() {
                     </div>
                   )}
                   {searchQuery.length < 2 && (
-                    <div className="text-center py-8">
-                      <Search className="w-12 h-12 mx-auto mb-4 opacity-50 text-white" />
-                      <p className="text-white/70">Recherchez des utilisateurs pour les ajouter comme amis</p>
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-white mb-4">Découvrir des utilisateurs</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {allUsers.map((user: any) => (
+                          <Card key={user.id}>
+                            <CardContent className="p-6 text-center">
+                              <Avatar className="w-16 h-16 mx-auto mb-4">
+                                <AvatarImage src={user.profileImageUrl} />
+                                <AvatarFallback>
+                                  {user.firstName?.[0]}{user.lastName?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <h3 className="font-semibold text-white mb-2">
+                                {user.firstName} {user.lastName}
+                              </h3>
+                              <Button
+                                size="sm"
+                                onClick={() => sendFriendRequest.mutate(user.id)}
+                                disabled={sendFriendRequest.isPending}
+                              >
+                                <UserPlus className="w-4 h-4 mr-1" />
+                                Ajouter
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                      {allUsers.length === 0 && (
+                        <div className="text-center py-8">
+                          <Users className="w-12 h-12 mx-auto mb-4 opacity-50 text-white" />
+                          <p className="text-white/70">Aucun utilisateur disponible pour le moment</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

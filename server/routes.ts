@@ -1507,7 +1507,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/search/users", isAuthenticated, async (req: any, res) => {
     try {
       const { q } = req.query;
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
       
       if (!q || q.length < 2) {
         return res.json([]);
@@ -1518,6 +1522,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error searching users:", error);
       res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
+  // Discover all users route
+  app.get("/api/users/discover", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const users = await storage.searchUsers("", userId);
+      res.json(users);
+    } catch (error) {
+      console.error("Error discovering users:", error);
+      res.status(500).json({ message: "Failed to discover users" });
     }
   });
 

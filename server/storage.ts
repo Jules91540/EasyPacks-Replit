@@ -898,15 +898,18 @@ export class DatabaseStorage implements IStorage {
 
   // Search operations
   async searchUsers(query: string, excludeUserId?: string): Promise<User[]> {
-    let searchQuery = db
-      .select()
-      .from(users)
-      .where(or(
+    let searchQuery = db.select().from(users);
+    
+    // If query is provided, filter by name or email
+    if (query && query.trim().length > 0) {
+      searchQuery = searchQuery.where(or(
         like(users.firstName, `%${query}%`),
         like(users.lastName, `%${query}%`),
         like(users.email, `%${query}%`)
       ));
+    }
     
+    // Exclude current user
     if (excludeUserId) {
       searchQuery = searchQuery.where(ne(users.id, excludeUserId));
     }
