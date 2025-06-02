@@ -429,9 +429,9 @@ export default function SocialPage() {
               <TabsTrigger value="search">Découvrir</TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 mt-4 overflow-hidden">
+            <div className="flex-1 mt-4 overflow-y-auto">
               <TabsContent value="feed" className="h-full space-y-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-full">
                   {/* Create Post */}
                   <div className="lg:col-span-2">
                     <Card className="mb-6">
@@ -554,8 +554,8 @@ export default function SocialPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="friends" className="h-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full overflow-y-auto">
+              <TabsContent value="friends" className="h-full overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
                   {friends.map((friend: User) => (
                     <Card key={friend.id}>
                       <CardContent className="p-6 text-center">
@@ -601,8 +601,8 @@ export default function SocialPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="requests" className="h-full">
-                <div className="space-y-4 h-full overflow-y-auto">
+              <TabsContent value="requests" className="h-full overflow-y-auto">
+                <div className="space-y-4 pb-4">
                   {friendRequests.map((request: Friendship) => (
                     <Card key={request.id}>
                       <CardContent className="p-6">
@@ -654,8 +654,8 @@ export default function SocialPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="messages" className="h-full">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-160px)]">
+              <TabsContent value="messages" className="h-full overflow-y-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[calc(100vh-160px)] pb-4">
                   {/* Conversations list */}
                   <div className="lg:col-span-1">
                     <Card className="h-full flex flex-col">
@@ -771,8 +771,8 @@ export default function SocialPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="search" className="h-full">
-                <div className="space-y-6 h-full overflow-y-auto">
+              <TabsContent value="search" className="h-full overflow-y-auto">
+                <div className="space-y-6 pb-4">
                   {searchQuery.length >= 2 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {searchResults.map((user: User) => (
