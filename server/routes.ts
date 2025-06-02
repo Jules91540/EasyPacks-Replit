@@ -301,6 +301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/change-password", isAuthenticated, async (req: any, res) => {
     try {
       const { currentPassword, newPassword } = req.body;
+      const userId = req.user.id;
       
       if (!currentPassword || !newPassword) {
         return res.status(400).json({ message: "Mot de passe actuel et nouveau mot de passe requis" });
@@ -310,7 +311,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Le mot de passe doit contenir au moins 6 caractères" });
       }
       
-      // Simulate password change validation (in real app, you'd verify current password)
+      // Verify current password
+      const isCurrentPasswordValid = await storage.verifyPassword(userId, currentPassword);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "Mot de passe actuel incorrect" });
+      }
+      
+      // Hash new password
+      const bcrypt = await import('bcrypt');
+      const saltRounds = 12;
+      const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+      
+      // Update password
+      await storage.updatePassword(userId, newPasswordHash);
+      
+      // Send notification email
+      const user = await storage.getUser(userId);
+      if (user && user.email && user.firstName) {
+        const { EmailService } = await import('./email');
+        await EmailService.sendPasswordChangeEmail({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName
+        });
+      }
+      
       res.json({ message: "Mot de passe modifié avec succès" });
     } catch (error) {
       console.error("Error changing password:", error);
@@ -321,11 +346,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/email-preferences", isAuthenticated, async (req: any, res) => {
     try {
       const { marketing, notifications, weeklyDigest } = req.body;
+      const userId = req.user.id;
       
-      // In a real app, you'd save these preferences to the database
+      const preferences = { marketing, notifications, weeklyDigest };
+      await storage.updateEmailPreferences(userId, preferences);
+      
       res.json({ 
         message: "Préférences email mises à jour",
-        preferences: { marketing, notifications, weeklyDigest }
+        preferences
       });
     } catch (error) {
       console.error("Error updating email preferences:", error);
@@ -336,11 +364,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/privacy-settings", isAuthenticated, async (req: any, res) => {
     try {
       const { profileVisible, showBadges, showProgress } = req.body;
+      const userId = req.user.id;
       
-      // In a real app, you'd save these settings to the database
+      const settings = { profileVisible, showBadges, showProgress };
+      await storage.updatePrivacySettings(userId, settings);
+      
       res.json({ 
         message: "Paramètres de confidentialité mis à jour",
-        settings: { profileVisible, showBadges, showProgress }
+        settings
       });
     } catch (error) {
       console.error("Error updating privacy settings:", error);

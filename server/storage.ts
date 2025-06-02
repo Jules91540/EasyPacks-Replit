@@ -27,6 +27,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
+import bcrypt from "bcrypt";
 
 export interface IStorage {
   // User operations
@@ -71,6 +72,18 @@ export interface IStorage {
   
   // Simulation operations
   recordSimulationUsage(userId: string, simulationType: string): Promise<SimulationUsage>;
+  
+  // Email operations
+  logEmail(emailLog: InsertEmailLog): Promise<EmailLog>;
+  getUserEmails(userId: string): Promise<EmailLog[]>;
+  
+  // Password operations
+  updatePassword(userId: string, newPasswordHash: string): Promise<User>;
+  verifyPassword(userId: string, password: string): Promise<boolean>;
+  
+  // Settings operations
+  updateEmailPreferences(userId: string, preferences: any): Promise<User>;
+  updatePrivacySettings(userId: string, settings: any): Promise<User>;
   
   // Stats operations
   getStudentStats(): Promise<{
@@ -380,17 +393,17 @@ export class DatabaseStorage implements IStorage {
     totalQuizzes: number;
     averageProgress: number;
   }> {
-    const [studentsCount] = await db
-      .select({ count: eq(users.role, "student") })
-      .from(users);
+    // Count students
+    const studentUsers = await db.select().from(users).where(eq(users.role, "student"));
+    const totalStudents = studentUsers.length;
     
-    const [modulesCount] = await db
-      .select({ count: modules.id })
-      .from(modules);
+    // Count modules
+    const allModules = await db.select().from(modules);
+    const totalModules = allModules.length;
     
-    const [quizzesCount] = await db
-      .select({ count: quizzes.id })
-      .from(quizzes);
+    // Count quizzes
+    const allQuizzes = await db.select().from(quizzes);
+    const totalQuizzes = allQuizzes.length;
 
     // Calculate average progress (simplified)
     const allProgress = await db.select().from(moduleProgress);
@@ -404,6 +417,72 @@ export class DatabaseStorage implements IStorage {
       totalQuizzes: quizzesCount?.count || 0,
       averageProgress: Math.round(averageProgress),
     };
+  }
+
+  // Email operations
+  async logEmail(emailLog: InsertEmailLog): Promise<EmailLog> {
+    const [log] = await db
+      .insert(emailLogs)
+      .values(emailLog)
+      .returning();
+    return log;
+  }
+
+  async getUserEmails(userId: string): Promise<EmailLog[]> {
+    return await db
+      .select()
+      .from(emailLogs)
+      .where(eq(emailLogs.userId, userId))
+      .orderBy(desc(emailLogs.sentAt));
+  }
+
+  // Password operations
+  async updatePassword(userId: string, newPasswordHash: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        passwordHash: newPasswordHash,
+        lastPasswordChange: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async verifyPassword(userId: string, password: string): Promise<boolean> {
+    const user = await this.getUser(userId);
+    if (!user?.passwordHash) {
+      // For OAuth users without password, return false
+      return false;
+    }
+    
+    return await bcrypt.compare(password, user.passwordHash);
+  }
+
+  // Settings operations
+  async updateEmailPreferences(userId: string, preferences: any): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        emailPreferences: preferences,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updatePrivacySettings(userId: string, settings: any): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        privacySettings: settings,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
   }
 }
 
