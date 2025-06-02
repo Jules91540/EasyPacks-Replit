@@ -559,6 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/search", isAuthenticated, async (req: any, res) => {
     try {
       const query = req.query.q as string;
+      console.log("User search query:", query);
       
       if (!query || query.length < 1) {
         return res.json([]);

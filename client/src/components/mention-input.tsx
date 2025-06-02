@@ -26,6 +26,13 @@ export default function MentionInput({ value, onChange, placeholder, className }
   // Query users when @ is typed
   const { data: users = [] } = useQuery({
     queryKey: ['/api/users/search', mentionQuery],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/search?q=${encodeURIComponent(mentionQuery)}`);
+      if (!response.ok) {
+        throw new Error('Failed to search users');
+      }
+      return response.json();
+    },
     enabled: mentionQuery.length > 0 && showSuggestions,
   });
 
