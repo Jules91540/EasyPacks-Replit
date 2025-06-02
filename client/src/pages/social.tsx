@@ -743,7 +743,7 @@ export default function SocialPage() {
               <TabsContent value="friends" className="overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
                   {friends.map((friend: User) => (
-                    <Card key={friend.id}>
+                    <Card key={`friends-tab-${friend.id}`}>
                       <CardContent className="p-6 text-center">
                         <Avatar className="w-16 h-16 mx-auto mb-4">
                           <AvatarImage src={friend.profileImageUrl} />
@@ -852,7 +852,7 @@ export default function SocialPage() {
                         <ScrollArea className="h-full">
                           {friends.map((friend: User) => (
                             <div
-                              key={friend.id}
+                              key={`messages-friend-${friend.id}`}
                               className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-white/10 ${
                                 selectedUser?.id === friend.id ? "bg-white/10" : ""
                               }`}
