@@ -55,11 +55,11 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
 
   const navItems = variant === 'admin' ? adminNavItems : studentNavItems;
 
-  // Modern sidebar like the mockup
+  // Modern floating sidebar
   const ModernSidebar = () => (
-    <div className="w-16 bg-[hsl(var(--sidebar-bg))] flex flex-col items-center py-6 space-y-4">
+    <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-2xl p-3 flex flex-col items-center space-y-3">
       {/* Logo/Brand at top */}
-      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center mb-4">
+      <div className="w-12 h-12 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center mb-2 shadow-lg">
         <Package className="h-6 w-6 text-white" />
       </div>
       
@@ -71,35 +71,37 @@ export default function Navigation({ variant = 'student' }: NavigationProps) {
         return (
           <Link key={item.href} href={item.href}>
             <div 
-              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 group relative cursor-pointer ${
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group relative cursor-pointer ${
                 isActive 
-                  ? 'bg-primary text-white shadow-lg' 
-                  : 'bg-[hsl(var(--sidebar-item-hover))] text-gray-400 hover:text-white hover:bg-[hsl(var(--sidebar-item-active))]'
+                  ? 'bg-primary text-white shadow-lg scale-110' 
+                  : 'bg-white/20 text-gray-300 hover:text-white hover:bg-primary/80 hover:scale-105'
               }`}
               title={item.label}
             >
               <Icon className="h-5 w-5" />
               {/* Tooltip */}
-              <div className="absolute left-16 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+              <div className="absolute left-14 bg-gray-900/90 backdrop-blur text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
                 {item.label}
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900/90 rotate-45"></div>
               </div>
             </div>
           </Link>
         );
       })}
       
+      {/* Divider */}
+      <div className="w-8 h-px bg-white/20 my-2"></div>
+      
       {/* Bottom section */}
-      <div className="mt-auto space-y-4">
-        <Button 
-          onClick={handleLogout}
-          variant="ghost" 
-          size="sm"
-          className="w-10 h-10 p-0 text-gray-400 hover:text-red-400 hover:bg-red-900/20"
-          title="Se déconnecter"
-        >
-          <LogOut className="h-5 w-5" />
-        </Button>
-      </div>
+      <Button 
+        onClick={handleLogout}
+        variant="ghost" 
+        size="sm"
+        className="w-11 h-11 p-0 text-gray-300 hover:text-red-400 hover:bg-red-500/20 rounded-xl transition-all duration-300 hover:scale-105"
+        title="Se déconnecter"
+      >
+        <LogOut className="h-5 w-5" />
+      </Button>
     </div>
   );
 
