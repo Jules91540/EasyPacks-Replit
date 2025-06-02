@@ -89,24 +89,21 @@ function Router() {
   );
 }
 
-function App() {
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+function AppContent() {
   const [showWelcomeTutorial, setShowWelcomeTutorial] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     // Vérifier si c'est la première connexion de l'utilisateur
-    if (isAuthenticated && user && !showSplash) {
-      const tutorialCompleted = localStorage.getItem('welcomeTutorialCompleted');
+    if (isAuthenticated && user) {
       const userKey = `welcomeTutorialCompleted_${(user as any).id}`;
       const userTutorialCompleted = localStorage.getItem(userKey);
       
-      if (!tutorialCompleted && !userTutorialCompleted) {
+      if (!userTutorialCompleted) {
         setShowWelcomeTutorial(true);
       }
     }
-  }, [isAuthenticated, user, showSplash]);
+  }, [isAuthenticated, user]);
 
   const handleWelcomeTutorialClose = () => {
     setShowWelcomeTutorial(false);
@@ -116,6 +113,29 @@ function App() {
     }
   };
 
+  return (
+    <>
+      <Toaster />
+      <Router />
+      
+      {/* Chatbot flottant global */}
+      <FloatingChatbot />
+
+      {/* Tutoriel de bienvenue pour nouveaux utilisateurs */}
+      {showWelcomeTutorial && user && (
+        <WelcomeTutorial
+          isOpen={showWelcomeTutorial}
+          onClose={handleWelcomeTutorialClose}
+          userName={(user as any).firstName || (user as any).email?.split('@')[0] || 'Créateur'}
+        />
+      )}
+    </>
+  );
+}
+
+function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
   if (showSplash) {
     return <SplashScreen onComplete={() => setShowSplash(false)} />;
   }
@@ -123,21 +143,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Router />
-        
-        {/* Chatbot flottant global */}
-        <FloatingChatbot />
-
-        {/* Tutoriel de bienvenue pour nouveaux utilisateurs */}
-        {showWelcomeTutorial && user && (
-          <WelcomeTutorial
-            isOpen={showWelcomeTutorial}
-            onClose={handleWelcomeTutorialClose}
-            userName={(user as any).firstName || (user as any).email?.split('@')[0] || 'Créateur'}
-          />
-        )}
-
+        <AppContent />
       </TooltipProvider>
     </QueryClientProvider>
   );
