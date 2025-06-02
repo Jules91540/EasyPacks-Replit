@@ -710,10 +710,10 @@ export default function ProfilePage() {
                             <Award className="h-4 w-4" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-sm font-medium text-white">
                               {userBadges.length} badge{userBadges.length > 1 ? 's' : ''} obtenu{userBadges.length > 1 ? 's' : ''}
                             </p>
-                            <p className="text-xs text-gray-600">Continuez vos efforts !</p>
+                            <p className="text-xs text-gray-300">Continuez vos efforts !</p>
                           </div>
                         </div>
                       )}
