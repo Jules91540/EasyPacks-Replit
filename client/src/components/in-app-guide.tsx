@@ -37,6 +37,8 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredSteps, setFilteredSteps] = useState<GuideStep[]>([]);
+  const [visitedSteps, setVisitedSteps] = useState<Set<string>>(new Set());
+  const [completedCategories, setCompletedCategories] = useState<Set<string>>(new Set());
 
   const guideSteps: GuideStep[] = [
     // Getting Started
@@ -169,6 +171,44 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
     setCurrentStep(0);
   }, [currentCategory, searchQuery]);
 
+  // Marquer la step actuelle comme visitée
+  useEffect(() => {
+    if (filteredSteps[currentStep]) {
+      const stepId = filteredSteps[currentStep].id;
+      setVisitedSteps(prev => new Set([...Array.from(prev), stepId]));
+      
+      // Vérifier si toutes les étapes de la catégorie ont été visitées
+      const categorySteps = guideSteps.filter(step => step.category === currentCategory);
+      const allVisited = categorySteps.every(step => visitedSteps.has(step.id) || step.id === stepId);
+      
+      if (allVisited) {
+        setCompletedCategories(prev => new Set([...Array.from(prev), currentCategory]));
+      }
+    }
+  }, [currentStep, filteredSteps, currentCategory]);
+
+  // Fonction pour vérifier si une catégorie peut être accédée
+  const canAccessCategory = (categoryId: string) => {
+    const categoryOrder = ['getting_started', 'navigation', 'features', 'tips'];
+    const currentIndex = categoryOrder.indexOf(categoryId);
+    const currentCategoryIndex = categoryOrder.indexOf(currentCategory);
+    
+    // Si on est en mode recherche, tout est accessible
+    if (searchQuery.trim() !== '') return true;
+    
+    // La première catégorie est toujours accessible
+    if (currentIndex === 0) return true;
+    
+    // Les autres catégories ne sont accessibles que si la précédente est complétée
+    for (let i = 0; i < currentIndex; i++) {
+      if (!completedCategories.has(categoryOrder[i])) {
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   const nextStep = () => {
     if (currentStep < filteredSteps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -197,7 +237,7 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-full max-w-4xl max-h-[90vh] mx-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl shadow-2xl border border-purple-500/20 overflow-hidden"
+          className="relative w-full max-w-5xl max-h-[90vh] mx-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl shadow-2xl border border-purple-500/20 overflow-hidden"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-purple-500/20">
@@ -239,18 +279,36 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
                 <div className="space-y-2 mb-4">
                   {categories.map((category) => {
                     const Icon = category.icon;
+                    const isAccessible = canAccessCategory(category.id);
+                    const isCompleted = completedCategories.has(category.id);
+                    
                     return (
                       <button
                         key={category.id}
-                        onClick={() => setCurrentCategory(category.id)}
-                        className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                        onClick={() => isAccessible && setCurrentCategory(category.id)}
+                        disabled={!isAccessible}
+                        className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                           currentCategory === category.id
                             ? 'bg-purple-600 text-white'
-                            : 'bg-slate-800/50 text-purple-200 hover:bg-slate-700'
+                            : isAccessible
+                            ? 'bg-slate-800/50 text-purple-200 hover:bg-slate-700'
+                            : 'bg-slate-800/20 text-slate-400 cursor-not-allowed'
                         }`}
                       >
-                        <Icon className="w-5 h-5" />
-                        <span className="font-medium">{category.name}</span>
+                        <div className="flex items-center space-x-3">
+                          <Icon className="w-5 h-5" />
+                          <span className="font-medium">{category.name}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {isCompleted && (
+                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                          )}
+                          {!isAccessible && (
+                            <div className="w-4 h-4 bg-slate-600 rounded-full flex items-center justify-center">
+                              <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                            </div>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
@@ -283,62 +341,90 @@ export default function InAppGuide({ isOpen, onClose }: InAppGuideProps) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 p-8 overflow-y-auto">
               {currentStepData ? (
                 <motion.div
                   key={currentStep}
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.3 }}
+                  className="max-w-4xl"
                 >
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className="p-3 bg-purple-600 rounded-lg">
-                      <currentStepData.icon className="w-8 h-8 text-white" />
+                  <div className="flex items-start space-x-4 mb-8">
+                    <div className="p-4 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl shadow-lg">
+                      <currentStepData.icon className="w-10 h-10 text-white" />
                     </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">{currentStepData.title}</h3>
-                      <p className="text-purple-200">{currentStepData.description}</p>
+                    <div className="flex-1">
+                      <h3 className="text-3xl font-bold text-white mb-2">{currentStepData.title}</h3>
+                      <p className="text-purple-200 text-lg">{currentStepData.description}</p>
                     </div>
                   </div>
 
-                  <div className="prose prose-invert max-w-none">
-                    <p className="text-purple-100 text-lg leading-relaxed">
+                  <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/10">
+                    <p className="text-purple-100 text-lg leading-relaxed mb-6">
                       {currentStepData.content}
                     </p>
+                    
+                    {/* Ajout d'une liste de conseils spécifiques selon la catégorie */}
+                    {currentStepData.category === 'tips' && (
+                      <div className="bg-purple-900/30 rounded-lg p-4 border-l-4 border-purple-400">
+                        <h4 className="text-purple-200 font-semibold mb-2">💡 Conseil supplémentaire :</h4>
+                        <p className="text-purple-100 text-sm">
+                          {currentStepData.id === 'study_tips' 
+                            ? "Créez un planning d'étude personnalisé et respectez-le. La régularité est la clé du succès !"
+                            : "Engagez-vous authentiquement avec la communauté. Vos contributions sincères seront valorisées !"
+                          }
+                        </p>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Navigation */}
-                  <div className="flex items-center justify-between mt-8 pt-6 border-t border-purple-500/20">
+                  {/* Navigation améliorée */}
+                  <div className="flex items-center justify-between mt-10 pt-6 border-t border-purple-500/20">
                     <Button
                       variant="ghost"
                       onClick={prevStep}
                       disabled={currentStep === 0}
-                      className="text-purple-200 hover:text-white hover:bg-purple-600/20 disabled:opacity-50"
+                      className="text-purple-200 hover:text-white hover:bg-purple-600/20 disabled:opacity-50 px-6 py-3"
                     >
-                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      <ChevronLeft className="w-5 h-5 mr-2" />
                       Précédent
                     </Button>
 
-                    <div className="text-purple-300 text-sm">
-                      {currentStep + 1} sur {filteredSteps.length}
+                    <div className="flex items-center space-x-2">
+                      <span className="text-purple-300 text-sm font-medium">
+                        {currentStep + 1} / {filteredSteps.length}
+                      </span>
+                      <div className="flex space-x-1">
+                        {filteredSteps.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`w-2 h-2 rounded-full transition-colors ${
+                              index === currentStep ? 'bg-purple-400' : 'bg-slate-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
 
                     <Button
                       variant="ghost"
                       onClick={nextStep}
                       disabled={currentStep === filteredSteps.length - 1}
-                      className="text-purple-200 hover:text-white hover:bg-purple-600/20 disabled:opacity-50"
+                      className="text-purple-200 hover:text-white hover:bg-purple-600/20 disabled:opacity-50 px-6 py-3"
                     >
                       Suivant
-                      <ChevronRight className="w-4 h-4 ml-2" />
+                      <ChevronRight className="w-5 h-5 ml-2" />
                     </Button>
                   </div>
                 </motion.div>
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <div className="text-center text-purple-300">
-                    <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <p>Aucun résultat trouvé pour "{searchQuery}"</p>
+                  <div className="text-center text-purple-300 bg-slate-800/30 rounded-xl p-8">
+                    <Search className="w-20 h-20 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-xl font-semibold mb-2">Aucun résultat trouvé</h3>
+                    <p>Aucun guide ne correspond à "{searchQuery}"</p>
+                    <p className="text-sm mt-2 opacity-75">Essayez avec d'autres mots-clés</p>
                   </div>
                 </div>
               )}

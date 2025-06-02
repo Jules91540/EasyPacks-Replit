@@ -112,6 +112,8 @@ function AppContent() {
     if (user) {
       const userKey = `welcomeTutorialCompleted_${(user as any).id}`;
       localStorage.setItem(userKey, 'true');
+      // Afficher le guide après le tutoriel de bienvenue
+      setTimeout(() => setShowInAppGuide(true), 500);
     }
   };
 
@@ -123,10 +125,7 @@ function AppContent() {
       {/* Chatbot flottant global */}
       <FloatingChatbot />
 
-      {/* Bouton du guide d'utilisation */}
-      {isAuthenticated && (
-        <GuideButton onClick={() => setShowInAppGuide(true)} />
-      )}
+
 
       {/* Guide d'utilisation in-app */}
       <InAppGuide 
