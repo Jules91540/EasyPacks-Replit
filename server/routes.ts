@@ -560,21 +560,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const query = req.query.q as string;
       
-      if (!query || query.length < 2) {
+      if (!query || query.length < 1) {
         return res.json([]);
       }
 
-      // Simuler la recherche d'utilisateurs (à remplacer par une vraie recherche en base)
-      const allUsers = [
+      // Utiliser les vrais utilisateurs authentifiés
+      const currentUserId = req.user.id;
+      
+      // Récupérer les utilisateurs connus
+      const knownUsers = [
         { id: "43311594", firstName: "Easy", lastName: "Packs", email: "easy.packs0@gmail.com" },
         { id: "109791419912459995702", firstName: "Gameli", lastName: "SENYO", email: "gamelisenyo@gmail.com" },
         { id: "105806234081112158042", firstName: "Julien", lastName: "Pariès", email: "julparinova@gmail.com" }
       ];
 
-      const filteredUsers = allUsers.filter(user => 
-        user.firstName.toLowerCase().startsWith(query.toLowerCase()) ||
-        user.lastName.toLowerCase().startsWith(query.toLowerCase())
-      );
+      // Ajouter l'utilisateur actuel s'il n'est pas déjà dans la liste
+      const currentUser = await storage.getUser(currentUserId);
+      if (currentUser && !knownUsers.find(u => u.id === currentUser.id)) {
+        knownUsers.push({
+          id: currentUser.id,
+          firstName: currentUser.firstName || "Utilisateur",
+          lastName: currentUser.lastName || "",
+          email: currentUser.email || ""
+        });
+      }
+
+      // Filtrer avec une recherche plus permissive
+      const filteredUsers = knownUsers
+        .filter(user => user.id !== currentUserId) // Exclure l'utilisateur actuel
+        .filter(user => 
+          user.firstName.toLowerCase().includes(query.toLowerCase()) ||
+          user.lastName.toLowerCase().includes(query.toLowerCase()) ||
+          `${user.firstName} ${user.lastName}`.toLowerCase().includes(query.toLowerCase())
+        );
 
       res.json(filteredUsers.slice(0, 5)); // Limiter à 5 résultats
     } catch (error) {
