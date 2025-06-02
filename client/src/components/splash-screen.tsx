@@ -30,11 +30,11 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       });
     }, 500);
 
-    // Fin du splash screen après 3 secondes
+    // Fin du splash screen après 4 secondes
     const timer = setTimeout(() => {
       setShowSplash(false);
       setTimeout(onComplete, 500); // Délai pour l'animation de sortie
-    }, 3000);
+    }, 4000);
 
     return () => {
       clearTimeout(timer);
