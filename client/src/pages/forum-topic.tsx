@@ -216,7 +216,9 @@ export default function ForumTopicPage() {
                     })}
                   </span>
                 </div>
-                <p className="text-white/90 leading-relaxed">{topic?.content}</p>
+                <div className="text-white/90 leading-relaxed">
+                  <MentionText content={topic?.content || ""} />
+                </div>
                 
                 {/* Topic Attachments */}
                 {topic?.attachments && topic.attachments.length > 0 && (
